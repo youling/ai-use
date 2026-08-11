@@ -1,6 +1,6 @@
 # Session & Context Lifecycle
 
-ai-use v1.1.0
+ai-use v1.2.0
 
 跨项目通用的 Agent 会话生命周期与上下文管理方法论。适用于 Codex、OpenCode 及其他兼容 Agent / Skill 与其控制平面。
 
@@ -63,6 +63,8 @@ ai-use v1.1.0
 ## 3. Executor Cold Bootstrap template
 
 用于新 Work Order、跨设备 Handoff、旧会话丢失或污染。占位符由派发者填好，执行 Agent 不改写。
+
+> 说明：本模板是完整 protocol / reference。默认用户侧启动文案应使用 §9 的 pointer seed（只寻址，不复制本模板全文）。
 
 ```text
 <CONTROL_PLANE> Executor Cold Bootstrap
@@ -128,6 +130,8 @@ FINISH
 
 同一 Work Order、旧会话仍健康时使用。不做全量冷启动。
 
+> 说明：本模板是完整 protocol / reference。默认用户侧启动文案应使用 §9 的 pointer seed。
+
 ```text
 <CONTROL_PLANE> Executor Warm Resume
 
@@ -161,6 +165,8 @@ branch: <branch>
 ## 5. Architect Fast Restore template
 
 新 Architect 不追求理解全部历史，只恢复"现在什么是真的、当前活跃图、冻结边界、风险与下一动作"。
+
+> 说明：本模板是完整 protocol / reference。默认用户侧启动文案应使用 §9 的 pointer seed。
 
 ```text
 <CONTROL_PLANE> Architect Fast Restore
@@ -257,3 +263,48 @@ ARCHITECT CONVERGENCE
 | Architect 换阶段 | 新会话；按阶段切换，不按每张单切换 |
 
 判断依据是持久状态能否安全恢复当前任务，而不是"聊天里还有多少内容"。
+
+## 9. Seed / Dispatch Minimality
+
+原则：**Seed 负责寻址，不负责承载知识。**
+
+Git / GitHub / durable docs 保存任务合同、约束、验收标准、协议和可恢复状态；聊天 seed 默认只提供启动所需的最小指针，避免复制 durable context、制造协议副本和上下文膨胀。
+
+### 9.1 最小必要项
+
+seed 默认只包含：
+
+- identity / role（必要时）；
+- task 或 control-plane pointer（Work Order Issue 或控制平面引用）；
+- startup mode（Cold Bootstrap / Warm Resume / Review 等）；
+- 必要的 exact ref（branch / commit / PR / label，如需要）；
+- stop condition。
+
+不复制：requirements、acceptance、review/recovery protocol、长期架构边界等已存在于 durable source 的内容。
+
+### 9.2 规则
+
+- durable knowledge（Work Order、requirements、constraints、acceptance、review/recovery protocol、长期架构边界）必须保存于 durable source，不靠聊天 seed 保存；
+- 只有"尚未持久化且当前执行必需"的临时事实才允许补充进 seed；应尽快转存 durable source，不允许 seed 演化成第二份合同；
+- §3–§5 的完整模板继续作为 protocol / reference；默认用户侧启动文案使用 pointer seed，不机械复制整份模板；
+- durable source / live state 与 seed 冲突时，以 durable source / live state 为准，seed 不成为第二 SSOT；
+- 原则适用于 Builder / Reviewer / Verifier / Architect / Runner 等，不绑定 ai-hub；ai-hub 只做自身映射；
+- 不引入 Bot、自动调度器、数据库、session recorder、prompt registry 或新的状态源。
+
+### 9.3 Pointer seed 示例
+
+```text
+<CONTROL_PLANE> <startup_mode> pointer seed
+
+TASK
+control_plane: <control_plane_repo>
+work_order: #<issue>
+project: <project_repo>
+branch: <branch>
+startup_mode: Cold Bootstrap / Warm Resume / Review / Architect Fast Restore
+exact_ref: <branch/commit/PR，如需要>
+stop: <PR → READY_FOR_REVIEW 后停止>
+
+原则：Git / GitHub 是唯一持久状态源；seed 只寻址，不承载知识。
+完整协议见 <control_plane>/AGENT_PROTOCOL.md 与 ai-use §3–§5 模板。
+```
