@@ -1,6 +1,6 @@
 # AI Engineering Global Rules
 
-Version: 1.1.0
+Version: 1.2.0
 
 本文件是所有 AI Coding 项目的全局工程规则，适用于 Codex、OpenCode 及其他兼容 Agent/Skill 的工具。
 
@@ -654,3 +654,19 @@ Chat session 是可丢弃的工作内存，不是持久状态源。可恢复的�
 - 会话名仅供人类导航，不是任务状态源。
 
 完整模板、分层定义与新旧会话判断规则见 docs/SESSION_LIFECYCLE.md。
+
+## 22. Seed / Dispatch Minimality
+
+Seed 负责寻址，不负责承载知识。
+
+Git / GitHub / durable docs 保存任务合同、约束、验收标准、协议和可恢复状态；聊天 seed 默认只提供启动所需的最小指针，避免复制 durable context、制造协议副本和上下文膨胀。
+
+- seed / dispatch 默认只做 durable context 寻址，不复制 GitHub 已有任务合同与协议；
+- durable knowledge（Work Order、requirements、constraints、acceptance、review/recovery protocol、长期架构边界）必须保存于 durable source，不靠聊天 seed 保存；
+- seed 默认只包含最小必要项：identity/role（必要时）、task or control-plane pointer、startup mode（Cold Bootstrap / Warm Resume / Review 等）、必要的 exact ref、stop condition；
+- 只有"尚未持久化且当前执行必需"的临时事实才允许补充进 seed；应尽快转存 durable source，不允许 seed 演化成第二份合同；
+- 已有详细 Cold Bootstrap / Warm Resume / Architect Fast Restore 模板可继续作为 protocol / reference，但默认用户侧启动文案应采用 pointer seed，不机械复制整份模板；
+- 原则适用于 Builder / Reviewer / Verifier / Architect / Runner 等，不绑定 ai-hub；ai-hub 只做自身映射；
+- 不引入 Bot、自动调度器、数据库、session recorder、prompt registry 或新的状态源。
+
+完整模板与 pointer seed 示例见 docs/SESSION_LIFECYCLE.md。
