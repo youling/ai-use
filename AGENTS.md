@@ -1,6 +1,6 @@
 # AI Engineering Global Rules
 
-Version: 1.0.1
+Version: 1.1.0
 
 本文件是所有 AI Coding 项目的全局工程规则，适用于 Codex、OpenCode 及其他兼容 Agent/Skill 的工具。
 
@@ -640,3 +640,17 @@ Skill 负责"怎么做"。
 而是：
 
 让项目以尽可能低的复杂度，持续得到可靠结果。
+
+## 21. Session / Context Lifecycle
+
+Chat session 是可丢弃的工作内存，不是持久状态源。可恢复的事实只保存在 Git / GitHub / 项目长期文档中。
+
+- 同一 Work Order 且旧会话仍健康 → 优先 Warm Resume；
+- 新 Work Order、跨设备 Handoff、旧会话丢失或污染 → Cold Bootstrap；
+- Bootstrap 必须按 L0（规则与身份）→ L1（当前任务上下文）→ L2（按需深挖）分层读取，禁止默认全历史 / 全仓扫描；
+- 默认启动成本与当前活跃任务范围相关，不与全部历史规模线性增长；
+- 阶段结束执行 Convergence，只沉淀仍有效结论；
+- 不把聊天 transcript 或模型推理过程保存为项目状态；
+- 会话名仅供人类导航，不是任务状态源。
+
+完整模板、分层定义与新旧会话判断规则见 docs/SESSION_LIFECYCLE.md。
