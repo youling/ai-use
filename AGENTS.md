@@ -1,6 +1,6 @@
 # AI Engineering Global Rules
 
-Version: 1.1.1
+Version: 1.1.2
 
 本文件是所有 AI Coding 项目的全局工程规则，适用于 Codex、OpenCode 及其他兼容 Agent/Skill 的工具。
 
@@ -327,6 +327,29 @@ Review 的目的不是打分，而是发现问题。
 - 是否存在用户未提交修改。
 
 不得覆盖或回滚用户已有修改。
+
+### Execution Preflight
+
+任何会修改仓库、文件、数据库、云资源或其他外部状态的任务，在**第一次 mutation 前**必须做最小环境预检。至少确认：
+
+- 当前工作目录与仓库根目录；
+- remote 是否为目标仓库；
+- 当前 branch / HEAD 是否与任务基线一致；
+- `git status` 与未跟踪文件；
+- `git worktree list` 或等价信息，确认本任务工作区没有与其他并行任务共享；
+- 当前目录中是否存在无法归属本任务的修改、锁文件、临时产物或其他 Agent 活动迹象；
+- 任务所需运行时、端口、设备、凭据**是否存在**。检查凭据时只确认变量名/可用性，不打印 secret 值。
+
+并行写任务必须使用**物理隔离的可变工作区**，优先 `git worktree`、独立 clone、容器或独立工作目录。**不同 branch 但共享同一个 working tree 不算隔离。**
+
+发现疑似属于用户或其他 Agent 的未提交/未跟踪内容时：
+
+- 不得 `reset`、`clean`、删除、覆盖、stash、cherry-pick 后清场，或切 branch 试图“整理现场”；
+- 先停止 mutation，保存事实；
+- 能安全切换到独立工作区则切换后继续；
+- 无法确认归属或安全迁移时，报告 `BLOCKED` / 请求上层裁决。
+
+只读研究任务如果完全不产生 mutation，可以不创建独立 worktree，但仍不得破坏现有现场。
 
 复杂并行任务如果工具支持，应优先使用：
 
