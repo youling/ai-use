@@ -1,6 +1,6 @@
 # AI Engineering Global Rules
 
-Version: 1.1.2
+Version: 1.2.0
 
 本文件是所有 AI Coding 项目的全局工程规则，适用于 Codex、OpenCode 及其他兼容 Agent/Skill 的工具。
 
@@ -330,17 +330,25 @@ Review 的目的不是打分，而是发现问题。
 
 ### Execution Preflight
 
-任何会修改仓库、文件、数据库、云资源或其他外部状态的任务，在**第一次 mutation 前**必须做最小环境预检。至少确认：
+任何会修改仓库、文件、数据库、云资源或其他外部状态的任务，在**第一次 mutation 前**必须做**最小**环境预检。预检只确认当前任务开工所需的必要事实，禁止为了开工扫描整台机器、全量 env、所有仓库或其他 Agent 的内部上下文。至少确认：
 
 - 当前工作目录与仓库根目录；
+- 当前节点 / 运行时是否满足任务的 hard requirements（如需要）；
 - remote 是否为目标仓库；
 - 当前 branch / HEAD 是否与任务基线一致；
 - `git status` 与未跟踪文件；
 - `git worktree list` 或等价信息，确认本任务工作区没有与其他并行任务共享；
 - 当前目录中是否存在无法归属本任务的修改、锁文件、临时产物或其他 Agent 活动迹象；
-- 任务所需运行时、端口、设备、凭据**是否存在**。检查凭据时只确认变量名/可用性，不打印 secret 值。
+- 任务所需运行时、端口、设备、凭据**是否存在**。检查凭据时只确认变量名/可用性，不打印 secret 值；**禁止全量打印环境变量值**。
 
 并行写任务必须使用**物理隔离的可变工作区**，优先 `git worktree`、独立 clone、容器或独立工作目录。**不同 branch 但共享同一个 working tree 不算隔离。**
+
+写任务默认使用独立、任务级可变工作区，目录名可包含稳定任务标识（如 `issue-<n>`）供人类与本地工具快速识别。原则：
+
+- **隔离优先于协作**：绝大多数 Agent 不需要知道其他 Agent 的内部施工细节；
+- 只在共享 / 稀缺外部资源（端口、设备、账号、缓存等）发生交集时才需要协调；
+- 任务私有临时文件默认关在任务工作区内，远端可恢复 / 验收后可整体删除；
+- 不把本地任务工作区当长期资产；远端可恢复后允许整体删除。
 
 发现疑似属于用户或其他 Agent 的未提交/未跟踪内容时：
 
@@ -349,15 +357,7 @@ Review 的目的不是打分，而是发现问题。
 - 能安全切换到独立工作区则切换后继续；
 - 无法确认归属或安全迁移时，报告 `BLOCKED` / 请求上层裁决。
 
-只读研究任务如果完全不产生 mutation，可以不创建独立 worktree，但仍不得破坏现有现场。
-
-复杂并行任务如果工具支持，应优先使用：
-
-- branch；
-- worktree；
-- 独立工作目录；
-
-避免多个 Agent 同时修改同一工作区。
+只读研究任务如果完全不产生 mutation，可以不创建完整独立 worktree，但仍不得破坏现有现场。
 
 提交应保持：
 
@@ -691,16 +691,58 @@ Skill 负责"怎么做"。
 
 让项目以尽可能低的复杂度，持续得到可靠结果。
 
-## 21. Session / Context Lifecycle
+## 21. Durable vs Ephemeral：Session / Context / Workspace Lifecycle
 
-Chat session 是可丢弃的工作内存，不是持久状态源。可恢复的事实只保存在 Git / GitHub / 项目长期文档中。
+核心模型：
+
+> **用户 + Architect 是长期控制角色；Builder / Verifier / Runner 默认是可替换、可丢弃的临时执行资源。长期知识上 Git / GitHub，本地任务现场默认可删除、可重建。**
+
+三层边界：
+
+- **Durable knowledge / state**：全局规则（本文件与 ai-use）、控制平面、项目仓库及其远端 commit / PR / 文档。可恢复事实的唯一来源。
+- **Chat session = working memory / cache**：可随时丢弃；开新会话从 durable source 重建。不把聊天 transcript 或模型推理过程保存为项目状态。
+- **本地任务 workspace = ephemeral execution state**：任务级可变工作区，远端可恢复后可整体删除；归属优先由 task / workspace / Git history 表达，**不要求在业务文件内写 Agent 身份注释**。
+
+Bootstrap 分层（L0 → L1 → L2）：
+
+- **L0 固定且小**：全局规则 + 精确控制平面任务指针（Work Order Issue）+ 本机必要能力 / active-task 摘要；
+- **L1** 只展开当前 Work Order 明确引用的项目上下文与 owns 范围；
+- **L2** 仅在冲突、BLOCKED、Review、安全 / 权限边界、恢复异常时深挖；
+- 禁止默认全历史 / 全仓扫描；默认启动成本与当前活跃任务范围相关，不与全部历史规模线性增长。
 
 - 同一 Work Order 且旧会话仍健康 → 优先 Warm Resume；
 - 新 Work Order、跨设备 Handoff、旧会话丢失或污染 → Cold Bootstrap；
-- Bootstrap 必须按 L0（规则与身份）→ L1（当前任务上下文）→ L2（按需深挖）分层读取，禁止默认全历史 / 全仓扫描；
-- 默认启动成本与当前活跃任务范围相关，不与全部历史规模线性增长；
 - 阶段结束执行 Convergence，只沉淀仍有效结论；
-- 不把聊天 transcript 或模型推理过程保存为项目状态；
 - 会话名仅供人类导航，不是任务状态源。
 
 完整模板、分层定义与新旧会话判断规则见 docs/SESSION_LIFECYCLE.md。
+
+## 22. Seed / Dispatch Minimality
+
+**Seed 负责寻址，不负责承载知识。**
+
+Git / GitHub / durable docs 保存任务合同（requirements、base、scope、acceptance、stop condition、review / recovery protocol、长期架构边界）；聊天 seed 默认只提供启动所需的最小指针，不复制 durable context、不制造协议副本。
+
+- seed 默认只包含：identity / role（必要时）、task 或 control-plane pointer、startup mode（Cold Bootstrap / Warm Resume / Review 等）、必要的 exact ref、stop condition；
+- 用户 → Builder 的 seed 默认应能压到最小，例如 `领取架构师任务 <Issue URL>`；控制平面项目已持久化的 requirements / base / scope / acceptance / stop 不在聊天 seed 重复；
+- 只有“尚未持久化且当前执行必需”的临时事实才允许补进 seed，且应尽快转存 durable source；seed 不得演化成第二份合同；
+- durable source / live state 与 seed 冲突时，以 durable source / live state 为准；
+- 原则适用于 Builder / Reviewer / Verifier / Architect / Runner，不绑定 ai-hub；ai-hub 只做自身映射；
+- 不引入 Bot、自动调度器、数据库、session recorder、prompt registry 或新的状态源。
+
+完整规则与 pointer seed 示例见 docs/SESSION_LIFECYCLE.md。
+
+## 23. Project Reproducibility Contract
+
+每个项目必须把自身可复现所需的知识放回项目仓库，而不是复制进 ai-use / ai-hub。
+
+项目仓库至少应保存：
+
+- 依赖与 lockfile；
+- setup / run / test / lint 入口；
+- 必要 runtime 版本；
+- 必要 env var 的**名称与语义**（不包含 secret 值）；
+- fixture / migration / local service 要求；
+- 项目 AGENTS / README / RUNBOOK 等长期约束。
+
+不强制所有项目使用同一种文件名或工具；优先使用项目原生机制。ai-use 不复制 Python / Node / Docker 等项目专属安装清单。
