@@ -1,6 +1,6 @@
 # Session & Context Lifecycle
 
-ai-use v1.1.0
+ai-use v1.2.0
 
 跨项目通用的 Agent 会话生命周期与上下文管理方法论。适用于 Codex、OpenCode 及其他兼容 Agent / Skill 与其控制平面。
 
@@ -8,8 +8,18 @@ ai-use v1.1.0
 
 ## 1. Mental model
 
-- **Chat session = working memory / cache**。可随时丢弃，开新会话重建。
-- **Git / GitHub / 项目长期文档 = persistent state**。唯一可恢复事实来源。
+核心模型：
+
+> **用户 + Architect 是长期控制角色；Builder / Verifier / Runner 默认是可替换、可丢弃的临时执行资源。长期知识上 Git / GitHub，本地任务现场默认可删除、可重建。**
+
+> 说明：“长期”指角色职责跨阶段持续，不表示 chat / session 持久；Architect 的 session 同样可丢弃，按 §5 Architect Fast Restore 从 durable state 恢复。
+
+三层边界：
+
+- **Durable knowledge / state**：全局规则（ai-use）、控制平面、项目仓库及其远端 commit / PR / 文档。唯一可恢复事实来源。
+- **Chat session = working memory / cache**。可随时丢弃，开新会话从 durable source 重建。
+- **本地任务 workspace = ephemeral execution state**：任务级独立可变工作区（worktree / clone / container / 独立目录），远端可恢复后可整体删除；归属优先由 task / workspace / Git history 表达，不要求在业务文件内写 Agent 身份注释。
+
 - 会话可以死，但任务必须能从持久状态恢复。
 - 聊天 transcript、推理过程、临时结论不是任务合同，也不进入持久状态。
 
@@ -32,7 +42,8 @@ ai-use v1.1.0
 - 全局规则（ai-use/AGENTS.md）；
 - 控制平面核心协议（AGENTS.md / AGENT_PROTOCOL.md，如存在）；
 - 精确任务（Work Order Issue）及其当前状态；
-- 自身身份 `<node_id>/<agent_type>/<session_id>`。
+- 自身身份 `<node_id>/<agent_type>/<session_id>`；
+- 本机必要能力 / active-task 摘要：优先取控制平面、本地 runtime 或派发者已提供的当前任务相关摘要（只读，不读其他 Agent 的任务全文）；不存在摘要源时只做当前任务的 targeted preflight，禁止为生成摘要扫描整机、所有 worktree / 进程 / 仓库或其他任务全文。
 
 ### L1 — Task Context
 
@@ -63,6 +74,8 @@ ai-use v1.1.0
 ## 3. Executor Cold Bootstrap template
 
 用于新 Work Order、跨设备 Handoff、旧会话丢失或污染。占位符由派发者填好，执行 Agent 不改写。
+
+> 说明：本模板是完整 protocol / reference。默认用户侧启动文案应使用 §9 的 pointer seed（只寻址，不复制本模板全文）。
 
 ```text
 <CONTROL_PLANE> Executor Cold Bootstrap
@@ -128,6 +141,8 @@ FINISH
 
 同一 Work Order、旧会话仍健康时使用。不做全量冷启动。
 
+> 说明：本模板是完整 protocol / reference。默认用户侧启动文案应使用 §9 的 pointer seed。
+
 ```text
 <CONTROL_PLANE> Executor Warm Resume
 
@@ -161,6 +176,8 @@ branch: <branch>
 ## 5. Architect Fast Restore template
 
 新 Architect 不追求理解全部历史，只恢复"现在什么是真的、当前活跃图、冻结边界、风险与下一动作"。
+
+> 说明：本模板是完整 protocol / reference。默认用户侧启动文案应使用 §9 的 pointer seed。
 
 ```text
 <CONTROL_PLANE> Architect Fast Restore
@@ -257,3 +274,77 @@ ARCHITECT CONVERGENCE
 | Architect 换阶段 | 新会话；按阶段切换，不按每张单切换 |
 
 判断依据是持久状态能否安全恢复当前任务，而不是"聊天里还有多少内容"。
+
+## 9. Seed / Dispatch Minimality
+
+原则：**Seed 负责寻址，不负责承载知识。**
+
+Git / GitHub / durable docs 保存任务合同、约束、验收标准、协议和可恢复状态；聊天 seed 默认只提供启动所需的最小指针，避免复制 durable context、制造协议副本和上下文膨胀。
+
+### 9.1 最小必要项
+
+seed 默认只包含：
+
+- identity / role（必要时）；
+- task 或 control-plane pointer（Work Order Issue 或控制平面引用）；
+- startup mode（Cold Bootstrap / Warm Resume / Review 等）；
+- 必要的 exact ref（branch / commit / PR / label，如需要）；
+- stop condition。
+
+凡能由 durable dispatch / Work Order 无歧义推导者，seed 不必重复；只有无法无歧义推导时才补字段。
+
+不复制：requirements、acceptance、review/recovery protocol、长期架构边界等已存在于 durable source 的内容。
+
+### 9.2 规则
+
+- durable knowledge（Work Order、requirements、constraints、acceptance、review/recovery protocol、长期架构边界）必须保存在 durable source，不靠聊天 seed 保存；
+- 只有"尚未持久化且当前执行必需"的临时事实才允许补充进 seed；应尽快转存 durable source，不允许 seed 演化成第二份合同；
+- §3–§5 的完整模板继续作为 protocol / reference；默认用户侧启动文案使用 pointer seed，不机械复制整份模板；
+- durable source / live state 与 seed 冲突时，以 durable source / live state 为准，seed 不成为第二 SSOT；
+- 访问路径属于寻址元数据：当 pointer 指向 GitHub 且 public / private 会影响启动路由时，seed / dispatch 应显式给最小 access hint（如 `access: github-private | github-public`），不得要求 Agent 先试错探测；该 hint 不承载任务合同，不成为第二 SSOT；机制保持通用，不绑定 ai-hub；
+- 原则适用于 Builder / Reviewer / Verifier / Architect / Runner 等，不绑定 ai-hub；ai-hub 只做自身映射；
+- 不引入 Bot、自动调度器、数据库、session recorder、prompt registry 或新的状态源。
+
+### 9.3 Pointer seed 示例
+
+用户 → Builder 的默认 seed 应能压缩到最小，例如：
+
+```text
+领取架构师任务 <Issue URL>
+```
+
+与 §9.1 不冲突：startup mode / stop condition 等若能由 durable dispatch / Work Order 无歧义推导（例如 Issue label 与 WO 已明确启动方式与停止条件），seed 不必重复；只有无法无歧义推导时才补最小字段。requirements / base / scope / acceptance 已持久化在 Work Order 中，不在聊天 seed 重复。
+
+完整参考格式（派发者填好，执行 Agent 不改写）：
+
+```text
+<CONTROL_PLANE> <startup_mode> pointer seed
+
+TASK
+control_plane: <control_plane_repo>
+work_order: #<issue>
+project: <project_repo>
+access: github-private | github-public（public / private 会影响启动路由时给）
+branch: <branch>
+startup_mode: Cold Bootstrap / Warm Resume / Review / Architect Fast Restore
+exact_ref: <branch/commit/PR，如需要>
+stop: <PR 到 READY_FOR_REVIEW 后停止>
+
+原则：Git / GitHub 是唯一持久状态源；seed 只寻址，不承载知识。
+完整协议见 <control_plane>/AGENT_PROTOCOL.md 与 ai-use §3–§5 模板。
+```
+
+## 10. Project Reproducibility Contract
+
+每个项目必须把自身可复现所需的知识放回项目仓库，而不是复制进 ai-use / ai-hub。
+
+项目仓库至少应保存：
+
+- 依赖与 lockfile；
+- setup / run / test / lint 入口；
+- 必要 runtime 版本；
+- 必要 env var 的**名称与语义**（不包含 secret 值）；
+- fixture / migration / local service 要求；
+- 项目 AGENTS / README / RUNBOOK 等长期约束。
+
+不强制所有项目使用同一种文件名或工具；优先使用项目原生机制。ai-use 不复制 Python / Node / Docker 等项目专属安装清单。
