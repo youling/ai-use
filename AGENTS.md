@@ -697,15 +697,18 @@ Skill 负责"怎么做"。
 
 > **用户 + Architect 是长期控制角色；Builder / Verifier / Runner 默认是可替换、可丢弃的临时执行资源。长期知识上 Git / GitHub，本地任务现场默认可删除、可重建。**
 
+> 说明：这里“长期”指角色职责跨阶段持续，不是 chat / session 持久；Architect 的 session 同样可丢弃，从 durable state Fast Restore 恢复。
+
 三层边界：
 
-- **Durable knowledge / state**：全局规则（本文件与 ai-use）、控制平面、项目仓库及其远端 commit / PR / 文档。可恢复事实的唯一来源。
+- **Durable knowledge / state**：全局规则（本文件与 ai-use）、控制平面、项目仓库及其远端 commit / PR / 文档。唯一可恢复事实来源。
 - **Chat session = working memory / cache**：可随时丢弃；开新会话从 durable source 重建。不把聊天 transcript 或模型推理过程保存为项目状态。
 - **本地任务 workspace = ephemeral execution state**：任务级可变工作区，远端可恢复后可整体删除；归属优先由 task / workspace / Git history 表达，**不要求在业务文件内写 Agent 身份注释**。
 
 Bootstrap 分层（L0 → L1 → L2）：
 
 - **L0 固定且小**：全局规则 + 精确控制平面任务指针（Work Order Issue）+ 本机必要能力 / active-task 摘要；
+  - active-task / capability 摘要优先取控制平面、本地 runtime 或派发者已提供的当前任务相关摘要（只读，不读其他 Agent 任务全文）；无摘要源时只做当前任务的 targeted preflight，禁止为生成摘要扫描整机、所有 worktree / 进程 / 仓库或其他任务全文；
 - **L1** 只展开当前 Work Order 明确引用的项目上下文与 owns 范围；
 - **L2** 仅在冲突、BLOCKED、Review、安全 / 权限边界、恢复异常时深挖；
 - 禁止默认全历史 / 全仓扫描；默认启动成本与当前活跃任务范围相关，不与全部历史规模线性增长。
@@ -723,9 +726,10 @@ Bootstrap 分层（L0 → L1 → L2）：
 
 Git / GitHub / durable docs 保存任务合同（requirements、base、scope、acceptance、stop condition、review / recovery protocol、长期架构边界）；聊天 seed 默认只提供启动所需的最小指针，不复制 durable context、不制造协议副本。
 
-- seed 默认只包含：identity / role（必要时）、task 或 control-plane pointer、startup mode（Cold Bootstrap / Warm Resume / Review 等）、必要的 exact ref、stop condition；
-- 用户 → Builder 的 seed 默认应能压到最小，例如 `领取架构师任务 <Issue URL>`；控制平面项目已持久化的 requirements / base / scope / acceptance / stop 不在聊天 seed 重复；
+- seed 默认只包含：identity / role（必要时）、task 或 control-plane pointer、startup mode（Cold Bootstrap / Warm Resume / Review 等）、必要的 exact ref、stop condition；凡能由 durable dispatch / Work Order 无歧义推导者，seed 不必重复；
+- 用户 → Builder 的 seed 默认应能压到最小，例如 `领取架构师任务 <Issue URL>`；startup mode / stop 等若能由 durable dispatch / Work Order 无歧义推导（如 Issue label 与 WO 已明确启动方式与停止条件），就不在 seed 重复；只有无法无歧义推导时才补最小字段；控制平面项目已持久化的 requirements / base / scope / acceptance / stop 不在聊天 seed 重复；
 - 只有“尚未持久化且当前执行必需”的临时事实才允许补进 seed，且应尽快转存 durable source；seed 不得演化成第二份合同；
+- 访问路径属于寻址元数据：当 pointer 指向 GitHub 且 public / private 会影响启动路由时，seed / dispatch 应显式给最小 access hint（如 `access: github-private | github-public`），不得要求 Agent 先试错探测；该 hint 不承载任务合同，不成为第二 SSOT；机制保持通用，不绑定 ai-hub；
 - durable source / live state 与 seed 冲突时，以 durable source / live state 为准；
 - 原则适用于 Builder / Reviewer / Verifier / Architect / Runner，不绑定 ai-hub；ai-hub 只做自身映射；
 - 不引入 Bot、自动调度器、数据库、session recorder、prompt registry 或新的状态源。

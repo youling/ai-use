@@ -12,6 +12,8 @@ ai-use v1.2.0
 
 > **用户 + Architect 是长期控制角色；Builder / Verifier / Runner 默认是可替换、可丢弃的临时执行资源。长期知识上 Git / GitHub，本地任务现场默认可删除、可重建。**
 
+> 说明：“长期”指角色职责跨阶段持续，不表示 chat / session 持久；Architect 的 session 同样可丢弃，按 §5 Architect Fast Restore 从 durable state 恢复。
+
 三层边界：
 
 - **Durable knowledge / state**：全局规则（ai-use）、控制平面、项目仓库及其远端 commit / PR / 文档。唯一可恢复事实来源。
@@ -41,7 +43,7 @@ ai-use v1.2.0
 - 控制平面核心协议（AGENTS.md / AGENT_PROTOCOL.md，如存在）；
 - 精确任务（Work Order Issue）及其当前状态；
 - 自身身份 `<node_id>/<agent_type>/<session_id>`；
-- 本机必要能力 / active-task 摘要（启动当前任务所需的节点能力与本地活跃任务概览；只读摘要，不读其他 Agent 的任务全文）。
+- 本机必要能力 / active-task 摘要：优先取控制平面、本地 runtime 或派发者已提供的当前任务相关摘要（只读，不读其他 Agent 的任务全文）；不存在摘要源时只做当前任务的 targeted preflight，禁止为生成摘要扫描整机、所有 worktree / 进程 / 仓库或其他任务全文。
 
 ### L1 — Task Context
 
@@ -289,6 +291,8 @@ seed 默认只包含：
 - 必要的 exact ref（branch / commit / PR / label，如需要）；
 - stop condition。
 
+凡能由 durable dispatch / Work Order 无歧义推导者，seed 不必重复；只有无法无歧义推导时才补字段。
+
 不复制：requirements、acceptance、review/recovery protocol、长期架构边界等已存在于 durable source 的内容。
 
 ### 9.2 规则
@@ -297,6 +301,7 @@ seed 默认只包含：
 - 只有"尚未持久化且当前执行必需"的临时事实才允许补充进 seed；应尽快转存 durable source，不允许 seed 演化成第二份合同；
 - §3–§5 的完整模板继续作为 protocol / reference；默认用户侧启动文案使用 pointer seed，不机械复制整份模板；
 - durable source / live state 与 seed 冲突时，以 durable source / live state 为准，seed 不成为第二 SSOT；
+- 访问路径属于寻址元数据：当 pointer 指向 GitHub 且 public / private 会影响启动路由时，seed / dispatch 应显式给最小 access hint（如 `access: github-private | github-public`），不得要求 Agent 先试错探测；该 hint 不承载任务合同，不成为第二 SSOT；机制保持通用，不绑定 ai-hub；
 - 原则适用于 Builder / Reviewer / Verifier / Architect / Runner 等，不绑定 ai-hub；ai-hub 只做自身映射；
 - 不引入 Bot、自动调度器、数据库、session recorder、prompt registry 或新的状态源。
 
@@ -308,7 +313,7 @@ seed 默认只包含：
 领取架构师任务 <Issue URL>
 ```
 
-控制平面项目的 requirements / base / scope / acceptance / stop condition 已持久化在 Work Order 中，不在聊天 seed 重复。
+与 §9.1 不冲突：startup mode / stop condition 等若能由 durable dispatch / Work Order 无歧义推导（例如 Issue label 与 WO 已明确启动方式与停止条件），seed 不必重复；只有无法无歧义推导时才补最小字段。requirements / base / scope / acceptance 已持久化在 Work Order 中，不在聊天 seed 重复。
 
 完整参考格式（派发者填好，执行 Agent 不改写）：
 
@@ -319,6 +324,7 @@ TASK
 control_plane: <control_plane_repo>
 work_order: #<issue>
 project: <project_repo>
+access: github-private | github-public（public / private 会影响启动路由时给）
 branch: <branch>
 startup_mode: Cold Bootstrap / Warm Resume / Review / Architect Fast Restore
 exact_ref: <branch/commit/PR，如需要>
