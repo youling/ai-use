@@ -48,12 +48,13 @@ ai-use v2.0.0
 启动必读，成本固定且小。L0 只指 **slim `ai-use/AGENTS.md`（机器 L0）+ 精确任务指针**，不要求 Agent 通读整个 ai-use 代码库或完整控制面文档：
 
 - 全局 L0 规则（`ai-use/AGENTS.md`，slim L0，不递归读其他 ai-use 文档）；
-- 控制平面核心协议（AGENTS.md / AGENT_PROTOCOL.md，如存在）；
 - 精确任务（Work Order Issue）及其当前状态；
 - 自身身份 `<node_id>/<agent_type>/<session_id>`；
 - 本机必要能力 / active-task 摘要：优先取控制平面、本地 runtime 或派发者已提供的当前任务相关摘要（只读，不读其他 Agent 的任务全文）；不存在摘要源时只做当前任务的 targeted preflight，禁止为生成摘要扫描整机、所有 worktree / 进程 / 仓库或其他任务全文。
 
 需要更多上下文时，按 `READING_MAP.md` 决定 targeted 读取哪一层，不默认全量读。
+
+控制平面核心协议（AGENTS.md / AGENT_PROTOCOL.md 等）**不属于所有 Agent 的默认 L0**；只有当精确 Dispatch / Work Order 或当前场景明确需要时才 targeted 读取。
 
 ### L1 — Task Context
 
@@ -117,10 +118,11 @@ BOOTSTRAP（分层定义见本文档 §2，只做必要读取，禁止默认全�
 L0 — Rules / Identity
 1. 获取最新 <control_plane_repo> 与 <project_repo>。
 2. 读全局 L0 规则（ai-use/AGENTS.md，slim L0，不递归读整个 ai-use 或完整控制面文档）。
-3. 读控制平面 AGENTS.md / AGENT_PROTOCOL.md（如存在）。
-4. 打开精确 Work Order：#<issue>。
-5. 识别身份：<node_id>/<agent_type>/<session_id>。
+3. 打开精确 Work Order：#<issue>。
+4. 识别身份：<node_id>/<agent_type>/<session_id>。
 不要读取其他无关 Issues。
+
+控制平面 AGENTS.md / AGENT_PROTOCOL.md 仅在 #<issue> 的 Dispatch/Work Order 或当前场景明确引用时才 targeted 读取，不作为默认 L0。
 
 L1 — Task Context
 只读取与 #<issue> 直接相关的信息：

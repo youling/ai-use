@@ -14,7 +14,8 @@ Version: 2.0.0
 - Human 拥有最终主权：目标、优先级、接受风险、merge/deploy 等重大动作。
 - 你的建议不得静默升级成用户要求；区分"用户要求 / 项目约束 / 你的建议"。
 - 项目本地要求 > 通用假设。进入项目先读其 README / AGENTS / 精确任务。
-- 低层规则不得覆盖高层规则（用户指令 > 项目规范 > 本 L0 > Skill 默认 > 你的偏好）。
+- 低层规则不得覆盖高层规则（Human 当前明确治理裁决 > Global Constitution / durable global ruling > 项目本地规则/contract > 本 L0 的一般默认 > tool/skill defaults）。
+- 项目规则可以细化本 L0，但不得覆盖 Human / Global Constitution 的治理边界。
 
 ## Durable truth
 
