@@ -1,6 +1,11 @@
 # Session & Context Lifecycle
 
-ai-use v1.2.0
+ai-use v2.0.0
+
+**Classification: L2 Reference / Playbook. Not default bootstrap reading.**
+
+本文是 targeted reference：仅在 session / handoff / recovery 等场景触发后读取。
+普通任务默认不读本文件；需要知道该读什么时先看 `READING_MAP.md`。
 
 跨项目通用的 Agent 会话生命周期与上下文管理方法论。适用于 Codex、OpenCode 及其他兼容 Agent / Skill 与其控制平面。
 
@@ -33,17 +38,22 @@ ai-use v1.2.0
   4. snapshot / cache / index（如 CURRENT_ARCHITECTURE_SNAPSHOT、Decision Index、Bootstrap Index）；
   5. 聊天记忆。
 
-## 2. Bootstrap levels：L0 → L1 → L2
+## 2. Bootstrap levels：L0 → L1 → L2 → L3
+
+> 附：宪法规定四层阅读（L0/L1/L2/L3），见 `CONSTITUTION.md` §10 与 `READING_MAP.md`。
+> 本文档历史使用了 L0→L1→L2 三层称呼，含义等价：本文的 "L0" 即宪法 L0（只指 slim `AGENTS.md`，**不指通读整个 ai-use 或控制面文档**）；本文未单列 L3（rationale/archive），该类内容默认不属于任何 Bootstrap 层。
 
 ### L0 — Rules / Identity
 
-启动必读，成本固定且小：
+启动必读，成本固定且小。L0 只指 **slim `ai-use/AGENTS.md`（机器 L0）+ 精确任务指针**，不要求 Agent 通读整个 ai-use 代码库或完整控制面文档：
 
-- 全局规则（ai-use/AGENTS.md）；
+- 全局 L0 规则（`ai-use/AGENTS.md`，slim L0，不递归读其他 ai-use 文档）；
 - 控制平面核心协议（AGENTS.md / AGENT_PROTOCOL.md，如存在）；
 - 精确任务（Work Order Issue）及其当前状态；
 - 自身身份 `<node_id>/<agent_type>/<session_id>`；
 - 本机必要能力 / active-task 摘要：优先取控制平面、本地 runtime 或派发者已提供的当前任务相关摘要（只读，不读其他 Agent 的任务全文）；不存在摘要源时只做当前任务的 targeted preflight，禁止为生成摘要扫描整机、所有 worktree / 进程 / 仓库或其他任务全文。
+
+需要更多上下文时，按 `READING_MAP.md` 决定 targeted 读取哪一层，不默认全量读。
 
 ### L1 — Task Context
 
@@ -106,7 +116,7 @@ BOOTSTRAP（分层定义见本文档 §2，只做必要读取，禁止默认全�
 
 L0 — Rules / Identity
 1. 获取最新 <control_plane_repo> 与 <project_repo>。
-2. 读全局规则（ai-use/AGENTS.md）。
+2. 读全局 L0 规则（ai-use/AGENTS.md，slim L0，不递归读整个 ai-use 或完整控制面文档）。
 3. 读控制平面 AGENTS.md / AGENT_PROTOCOL.md（如存在）。
 4. 打开精确 Work Order：#<issue>。
 5. 识别身份：<node_id>/<agent_type>/<session_id>。
@@ -154,8 +164,8 @@ issue: #<issue>
 branch: <branch>
 
 只刷新：
-1. fetch 最新全局规则 / 控制平面；
-2. 若全局规则或控制平面协议自本会话启动后发生变化，只重读变化部分；
+1. fetch 最新全局 L0 规则（ai-use/AGENTS.md）与当前控制平面最小入口；
+2. 若全局 L0 规则或控制平面协议自本会话启动后发生变化，只重读变化部分；
 3. 读取 #<issue> 最新状态与 meaningful events：
    REVIEW / BLOCKED / ARCHITECT_DECISION / HANDOFF / READY_FOR_REVIEW 等；
 4. fetch 当前 remote branch；检查 branch HEAD、worktree、PR；
@@ -191,8 +201,8 @@ GitHub / Git 是唯一持久状态源。
 
 PHASE A — FAST RESTORE
 只读取：
-1. 全局规则（ai-use/AGENTS.md）；
-2. 控制平面 README / AGENTS.md / AGENT_PROTOCOL.md / 架构与运行模型文档（如存在）；
+1. 全局 L0 规则（ai-use/AGENTS.md，slim L0，不递归读整个 ai-use）；
+2. 控制平面 README / AGENTS.md / AGENT_PROTOCOL.md / 架构与运行模型文档（如存在）；不默认扫描整个控制平面全文，只读恢复当前状态所需的最小入口；
 3. compact snapshot / index（如 CURRENT_ARCHITECTURE_SNAPSHOT、Decision Index、Bootstrap Index）——仅作 cache / index，不是实时状态事实源；
 4. registry 中当前活跃任务涉及的条目；
 5. 当前所有 OPEN Work Orders（实时状态以 Issue status label 为准）。
