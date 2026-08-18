@@ -317,34 +317,16 @@ seed 默认只包含：
 - 原则适用于 Builder / Reviewer / Verifier / Architect / Runner 等，不绑定 ai-hub；ai-hub 只做自身映射；
 - 不引入 Bot、自动调度器、数据库、session recorder、prompt registry 或新的状态源。
 
-### 9.3 Pointer seed 示例
+### 9.3 指向规范源
 
-用户 → Builder 的默认 seed 应能压缩到最小，例如：
+Human Agent Seed 的**唯一规范格式**见 `docs/AGENT_INTERFACE.md` §3（Default Minimal Agent Seed：pointer + work + startup_mode 三行）。
 
-```text
-领取架构师任务 <Issue URL>
-```
+本文 §9.1 的最小必要项列表与 §3–§5 的完整协议模板属于历史参考，不是 Human Agent Seed 的规范格式。以下格式均为**非规范参考**，仅用于说明演进背景：
 
-与 §9.1 不冲突：startup mode / stop condition 等若能由 durable dispatch / Work Order 无歧义推导（例如 Issue label 与 WO 已明确启动方式与停止条件），seed 不必重复；只有无法无歧义推导时才补最小字段。requirements / base / scope / acceptance 已持久化在 Work Order 中，不在聊天 seed 重复。
+- 早期一-line pointer seed（如 `领取架构师任务 <Issue URL>`）—— 说明极简指针的可行性，但规范格式为 AGENT_INTERFACE.md §3 的三行结构；
+- 完整 control-plane protocol template（含 control_plane / work_order / project / access / branch / startup_mode / exact_ref / stop）—— 属于控制平面协议设计参考，不是日常派发的 Human Agent Seed 格式。
 
-完整参考格式（派发者填好，执行 Agent 不改写）：
-
-```text
-<CONTROL_PLANE> <startup_mode> pointer seed
-
-TASK
-control_plane: <control_plane_repo>
-work_order: #<issue>
-project: <project_repo>
-access: github-private | github-public（public / private 会影响启动路由时给）
-branch: <branch>
-startup_mode: Cold Bootstrap / Warm Resume / Review / Architect Fast Restore
-exact_ref: <branch/commit/PR，如需要>
-stop: <PR 到 READY_FOR_REVIEW 后停止>
-
-原则：Git / GitHub 是唯一持久状态源；seed 只寻址，不承载知识。
-完整协议见 <control_plane>/AGENT_PROTOCOL.md 与 ai-use §3–§5 模板。
-```
+> 日常派发**不复制**以上非规范格式。Human Agent Seed 的规范源为 `docs/AGENT_INTERFACE.md` §3。
 
 ## 10. Project Reproducibility Contract
 
