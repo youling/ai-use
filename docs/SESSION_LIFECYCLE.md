@@ -327,6 +327,10 @@ seed 默认只包含：
 
 与 §9.1 不冲突：startup mode / stop condition 等若能由 durable dispatch / Work Order 无歧义推导（例如 Issue label 与 WO 已明确启动方式与停止条件），seed 不必重复；只有无法无歧义推导时才补最小字段。requirements / base / scope / acceptance 已持久化在 Work Order 中，不在聊天 seed 重复。
 
+> **Reference / protocol template only — 不是 Human Agent Seed 的规范格式。**
+> Human Agent Seed 的规范格式见 `docs/AGENT_INTERFACE.md` §3（Default Minimal Agent Seed）。
+> 本节的完整参考格式仅供控制平面协议设计参考；日常派发不机械复制整份模板。
+
 完整参考格式（派发者填好，执行 Agent 不改写）：
 
 ```text
