@@ -15,20 +15,19 @@
 
 ### 1.1 Durable Dispatch Comment
 
-每次 Agent-facing 执行派发**必须**有一个 `ARCHITECT_*_DISPATCH` comment，位于 Human seed 之前。
+每次 Agent-facing 执行派发**必须**有一个 `ARCHITECT_*_DISPATCH` comment，位于 Human seed 之前。Durable dispatch 携带 task knowledge；Human seed 只寻址。
+
+Dispatch comment 的字段由 Architect 按任务需要填写，不强制统一字段集。以下为常见字段参考（非必须全集）：
 
 ```text
 ARCHITECT_EXECUTOR_DISPATCH
 ---
 work_coordinate: `<owner/repo>#<issue>@<step>`
-parent_coordinate: `<parent_owner/repo>#<issue>@<step>`
-source_global_dispatch: `<owner/repo>#<issue>` comment `<id>`
-source_architect_plan: `<owner/repo>#<issue>` comment `<id>`
 role: `<Builder | Verifier | Research | Repair | Release>`
-Builder: `<identity>`
 startup_mode: `<Fresh Builder | Warm Resume | Fresh Verifier | ...>`
-access: `github-private | github-public`
 ```
+
+Durable Work Order + dispatch layer 携带任务知识；Human seed 只负责寻址。派发前 Architect 必须确认 durable source 足以让 fresh Agent 执行。
 
 ## 2. Human Dispatch Card
 
@@ -87,7 +86,7 @@ Agent 完成后，Builder/Research/Repair/Verifier 保持详细的持久报告�
 | # | 字段 | 内容 |
 |---|------|------|
 | 1 | 结果 | 完成情况 |
-| 2 | 交付 | 交付物（PR / commit / document） |
+| 2 | 交付 | 交付物 + 精确可恢复指针（PR / commit / exact head / durable report pointer） |
 | 3 | 验证 | 验证方法与结果 |
 | 4 | 剩余风险 | 已知风险 / 未覆盖区域 |
 | 5 | 下一步 | 建议的后续动作 |
