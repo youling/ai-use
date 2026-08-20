@@ -31,6 +31,21 @@ startup_mode: `<Fresh Builder | Warm Resume | Fresh Verifier | ...>`
 
 Durable Work Order + dispatch layer 携带任务知识；Human seed 只负责寻址。派发前 Architect 必须确认 durable source 足以让 fresh Agent 执行。
 
+### 1.2 Bootstrap Check
+
+启动时，Agent 执行 **Bootstrap Check**（协议见 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`，
+固定输出 schema：`BOOTSTRAP_CHECK_REPORT` v1.0.0）。
+
+用途：**验证初始化状态**。
+
+Bootstrap Check **不是**：
+
+- 补充上下文（上下文加载按 `docs/PROGRESSIVE_CONTEXT_BOOT.md`）；
+- 恢复聊天历史（聊天不是 durable source）；
+- 重新解释架构（架构说明按项目 README / `CONSTITUTION.md`）。
+
+Bootstrap Check Report 必须可回写 durable source，并返回可恢复 pointer。
+
 ## 2. Human Dispatch Card
 
 Human Dispatch Card **恰好五个字段**，按以下顺序：
