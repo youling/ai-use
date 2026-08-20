@@ -71,6 +71,7 @@ Human
 | [`10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`](10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md) | 所有执行 Agent | 启动状态验证（L2 按需） |
 | [`30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md`](30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) | 所有执行 Agent | 需要留痕/返回 pointer 时（L2 按需） |
 | [`00_KERNEL/LANGUAGE_POLICY.md`](00_KERNEL/LANGUAGE_POLICY.md) | 所有执行 Agent | 人类可见输出默认简体中文（L2 按需） |
+| [`50_TEMPLATES/`](50_TEMPLATES/README.md) | Human / Architect / 执行 Agent | 派发、启动核验、完成、对齐、授权需要填空模板时（L2 按需） |
 
 一句话版：**不要通读整个仓库。** 先看 `READING_MAP.md` 决定你按当前角色/场景该读哪几篇；普通执行者默认只需要 `AGENTS.md`(机器 L0) + 自己的精确任务 + 项目本地上下文。
 

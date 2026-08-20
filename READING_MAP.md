@@ -36,6 +36,7 @@
 | --- | --- |
 | session / handoff / recovery | `docs/SESSION_LIFECYCLE.md` |
 | dispatch / completion / interface contract | `docs/AGENT_INTERFACE.md` |
+| 派发 / 交互模板（seed / dispatch card / completion / bootstrap check / 对齐 / 授权） | `50_TEMPLATES/` |
 | 启动状态验证 | `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md` |
 | durable trace / 事实留痕 | `30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md` |
 | 命名空间导航 / 冷启动入口 | `NAMESPACE.md` |
