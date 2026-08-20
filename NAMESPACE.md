@@ -30,11 +30,11 @@
 | 层 | 职责 | 对应文档 |
 | --- | --- | --- |
 | `00_KERNEL` | 稳定权威与接口入口；机器 L0 与治理原则 | [`AGENTS.md`](AGENTS.md)、[`CONSTITUTION.md`](CONSTITUTION.md)、[`README.md`](README.md)、[`READING_MAP.md`](READING_MAP.md)、`00_KERNEL/LANGUAGE_POLICY.md` |
-| `10_BOOT` | 启动路由：确认下一步要读什么，避免全仓扫描 | `10_BOOT/README.md`、`10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`、[`docs/PROGRESSIVE_CONTEXT_BOOT.md`](docs/PROGRESSIVE_CONTEXT_BOOT.md) |
+| `10_BOOT` | 启动路由：确认下一步要读什么，避免全仓扫描 | `10_BOOT/README.md`、`10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`、`10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md`、[`docs/PROGRESSIVE_CONTEXT_BOOT.md`](docs/PROGRESSIVE_CONTEXT_BOOT.md) |
 | `20_ROLES` | 角色划分与职责边界 | 角色分层见 [`CONSTITUTION.md`](CONSTITUTION.md) §2、[`README.md`](README.md) Governance model |
 | `30_PROTOCOLS` | 固定接口契约与原则 | [`docs/AGENT_INTERFACE.md`](docs/AGENT_INTERFACE.md)、`30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md`、[`docs/SESSION_LIFECYCLE.md`](docs/SESSION_LIFECYCLE.md) |
-| `40_GUIDES` | 人类可见输出与表达规范 | `00_KERNEL/LANGUAGE_POLICY.md`（语言政策） |
-| `50_TEMPLATES` | 可复用的启动/报告模板 | [`docs/SESSION_LIFECYCLE.md`](docs/SESSION_LIFECYCLE.md) §3–§6 模板 |
+| `40_GUIDES` | 人类可见输出与表达规范 | `00_KERNEL/LANGUAGE_POLICY.md`（语言政策）、`40_GUIDES/PUBLIC_COLD_START_CHECKLIST.md`（冷启动测试入口） |
+| `50_TEMPLATES` | 可复用的启动/报告/交互模板 | `50_TEMPLATES/`（Agent Seed、Bootstrap Check、Dispatch Card、Completion、对齐、授权、`HUMAN_WORKSPACE_BOOTSTRAP.md` 等填空模板）；历史完整协议见 [`docs/SESSION_LIFECYCLE.md`](docs/SESSION_LIFECYCLE.md) §3–§6 模板 |
 | `90_HISTORY` | 历史、案例、rationale | 当前为空；默认不进入 Agent 上下文 |
 
 > 注：`20_ROLES` / `40_GUIDES` / `50_TEMPLATES` / `90_HISTORY` 尚无独立文档时，由本表直接

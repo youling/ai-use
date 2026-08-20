@@ -4,6 +4,8 @@
 
 版本：2.0.0
 
+> 第一次进入？先读 [`START_HERE.md`](START_HERE.md)。
+
 ---
 
 ## Why
@@ -63,12 +65,14 @@ Human
 
 | 文件 | 给谁看 | 何时读 |
 | --- | --- | --- |
+| [`START_HERE.md`](START_HERE.md) | 全角色（首次进入者） | 第一次进入 ai-use、需要知道从哪开始 / 如何初始化 workspace 时 |
 | [`CONSTITUTION.md`](CONSTITUTION.md) | 全角色（尤其 Architect） | 治理冲突、重大裁决、理解体系时；普通任务不必通读 |
 | [`READING_MAP.md`](READING_MAP.md) | 全角色（机器/人类导航） | 需要知道"我该读什么"时 |
 | [`NAMESPACE.md`](NAMESPACE.md) | 全角色（冷启动入口） | 需要理解 00→90 命名空间流向、定位各层文档时 |
 | [`AGENTS.md`](AGENTS.md) | 所有执行 Agent（机器 L0） | 每个 Agent 启动时默认只读这一层 |
 | [`docs/SESSION_LIFECYCLE.md`](docs/SESSION_LIFECYCLE.md) | Architect / 需要恢复或交接的人 | L2 按需参考，仅在 session/handoff/recovery 场景触发 |
 | [`10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`](10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md) | 所有执行 Agent | 启动状态验证（L2 按需） |
+| [`10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md`](10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md) | 新组织 / Global Architect | 初始化 workspace、发现仓库角色、确认 Global Architect Ready（L2 按需） |
 | [`30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md`](30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) | 所有执行 Agent | 需要留痕/返回 pointer 时（L2 按需） |
 | [`00_KERNEL/LANGUAGE_POLICY.md`](00_KERNEL/LANGUAGE_POLICY.md) | 所有执行 Agent | 人类可见输出默认简体中文（L2 按需） |
 

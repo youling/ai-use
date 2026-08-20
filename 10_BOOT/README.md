@@ -11,4 +11,5 @@
 相关协议：
 
 - Bootstrap Check（`BOOTSTRAP_CHECK_PROTOCOL.md`）
+- Workspace Bootstrap（`WORKSPACE_BOOTSTRAP_PROTOCOL.md`）
 - 渐进式上下文启动（`../docs/PROGRESSIVE_CONTEXT_BOOT.md`）
