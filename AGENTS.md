@@ -67,4 +67,11 @@ Version: 2.0.0
 ## Seed & tools
 
 - Seed 负责寻址，不承载完整知识；模型/时间/token 建议只进 Human 调度，不进你的 seed。
+- Durable Dispatch 负责任务上下文；Bootstrap Check 负责启动状态验证（见 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`）。
+- 不要把完整任务知识塞入 Seed。
 - Runner 是确定性执行/安全工具，不是架构师，也不是所有修改的必经层。
+
+## Durable trace
+
+- 任何具有事实价值的 Agent 行为（决策/修改/验证/状态变化/风险判断）必须留下 durable artifact，并返回可恢复 pointer。
+- 聊天输出不是事实源。只存在于聊天的结论不算留痕。见 `30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md`。
