@@ -154,6 +154,17 @@ WAITING_FOR_HUMAN
 
 不要：扫描全部历史。
 
+## Common Agent Operations
+
+常用操作的入口（陌生 Human / Agent 无需询问作者）：
+
+| 操作 | 指向 |
+| --- | --- |
+| 初始化检查 | Bootstrap Check Template（`50_TEMPLATES/bootstrap_check_request.md`） |
+| 分配任务 | Human Dispatch Template（`docs/AGENT_INTERFACE.md` §2 Human Dispatch Card） |
+| 完成回报 | Completion Report Template（`docs/AGENT_INTERFACE.md` §4 Human Completion Card） |
+| 状态对齐 | Alignment Template（`CONSTITUTION.md` §1 Human sovereignty） |
+
 ## 验证入口
 
 冷启动冒烟测试清单：`40_GUIDES/PUBLIC_COLD_START_CHECKLIST.md`

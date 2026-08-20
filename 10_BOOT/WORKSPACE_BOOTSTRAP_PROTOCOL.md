@@ -62,6 +62,38 @@ registry 保存在 governance repo 内（如 `workspace_registry.yaml`），作�
 4. **启动 Global Architect** —— 执行 Bootstrap Check（`10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`）。
 5. **确认 Ready** —— 输出 `GLOBAL_ARCHITECT_READY` 状态。
 
+## Workspace State Machine
+
+workspace 的初始化状态按序演进。**local registry 直接代表 READY** 是错误语义。
+
+```
+WORKSPACE_EMPTY
+   ↓
+WORKSPACE_DISCOVERED
+   ↓
+WORKSPACE_REGISTERED_LOCAL
+   ↓
+WORKSPACE_REGISTERED_DURABLE
+   ↓
+GLOBAL_ARCHITECT_READY
+```
+
+各状态含义：
+
+| 状态 | 含义 |
+| --- | --- |
+| `WORKSPACE_EMPTY` | 尚未发现任何 workspace 拓扑。 |
+| `WORKSPACE_DISCOVERED` | 已发现仓库角色，但未注册。 |
+| `WORKSPACE_REGISTERED_LOCAL` | registry 已写入，但**仅存在于本地**（未进入 durable source）。 |
+| `WORKSPACE_REGISTERED_DURABLE` | registry 已进入 durable source（如已提交的 `workspace_registry.yaml`）。 |
+| `GLOBAL_ARCHITECT_READY` | workspace 完整且已 durable，Global Architect 可接手调度。 |
+
+判定规则：
+
+- 若 registry 只存在本地：状态为 `WORKSPACE_REGISTERED_LOCAL`，**不得**视为 READY。
+- 仅当 registry 已进入 durable source：才允许 `WORKSPACE_REGISTERED_DURABLE`。
+- 只有达到 `WORKSPACE_REGISTERED_DURABLE` 且角色齐全，才可推进到 `GLOBAL_ARCHITECT_READY`。
+
 ## Global Architect Ready 状态
 
 初始化完成时输出固定状态块：

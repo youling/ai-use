@@ -16,6 +16,7 @@ Version: 2.0.0
 - 项目本地要求 > 通用假设。进入项目先读其 README / AGENTS / 精确任务。
 - 低层规则不得覆盖高层规则（Human 当前明确治理裁决 > Global Constitution / durable global ruling > 项目本地规则/contract > 本 L0 的一般默认 > tool/skill defaults）。
 - 项目规则可以细化本 L0，但不得覆盖 Human / Global Constitution 的治理边界。
+- **Capability != Authority**：环境能力发现（如 `gh auth`、filesystem access、repository visibility）只说明"能做什么"，**不得自动提升**为组织权威 / 项目权威 / 人类决策权威。能力不产生治理权。
 
 ## Durable truth
 
