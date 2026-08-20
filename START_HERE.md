@@ -14,6 +14,18 @@ ai-use 是一套围绕 **Human governance + 专职 AI Agent + Git/GitHub durable
 
 它不是运行时、不是数据库、不是 Router。它是规则与协议。
 
+### ai-use 的位置
+
+**ai-use = governance layer template（治理层模板），不是你的项目 workspace。**
+
+clone ai-use ≠ 你的系统已经就绪。它像操作系统镜像：clone 后还需要按本文件初始化你的仓库（governance / control plane / asset）与 workspace。
+
+### Global Architect 的角色
+
+**Global Architect is an AI coordination role, not an organizational authority over human decisions.**
+
+Global Architect 是 AI 协调角色：维护规则、调度 Agent、收敛治理；它不对人类决策拥有组织级权威。Human 拥有最终主权。
+
 ## 2. 第一阅读入口
 
 按顺序读（不要通读全仓）：
@@ -40,17 +52,107 @@ startup_mode: Fresh <Role>
 
 ## 4. 如何初始化自己的 workspace
 
-新组织 / 新用户第一次搭建时，按 [`10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md`](10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md) 初始化：
-
-1. 准备 **governance repo**（规则、协议、Agent Interface）；
-2. 准备 **control plane repo**（任务、Issue、状态流转）；
-3. 准备 **asset repo**（资产事实源）；
-4. 注册 workspace（`workspace registry`）；
-5. 启动 Global Architect，确认 `GLOBAL_ARCHITECT_READY`。
+新组织 / 新用户第一次搭建时，按 [`10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md`](10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md) 初始化。
+推荐仓库结构与完整流程见下文（Recommended Workspace Layout / First Time Setup）。
 
 人类侧清单见 [`50_TEMPLATES/HUMAN_WORKSPACE_BOOTSTRAP.md`](50_TEMPLATES/HUMAN_WORKSPACE_BOOTSTRAP.md)。
 
-> 不要假设仓库名称（如 `youling/ai-use` / `youling/ai-hub`）。仓库角色通过 role registration 确定，与具体名称无关。
+> 不要假设仓库名称。仓库角色通过 role registration 确定，与具体名称无关。
+
+---
+
+## Recommended Workspace Layout
+
+一个标准 AI 工作空间建议包含以下仓库。名称不是强制要求，但建议保持推荐命名。
+
+### 1. Governance Repository
+
+职责：存放
+
+- Constitution
+- Agent Interface
+- Protocol
+- Templates
+
+推荐命名：`ai-use`
+
+说明：名称不是强制要求，但建议保持。
+
+### 2. Control Plane Repository
+
+职责：存放
+
+- Issue lifecycle
+- Task state
+- Dispatch
+- Agent coordination
+
+推荐命名：`ai-hub`
+
+说明：名称不是强制要求。
+
+### 3. Asset Repository
+
+职责：资产事实源，存放
+
+- hardware assets
+- software assets
+- ownership
+- lifecycle evidence
+
+推荐命名：`assets`
+
+说明：不要使用个人语言命名作为公共接口。
+
+---
+
+## First Time Setup
+
+流程：
+
+1. 创建 governance repo
+2. 引入 ai-use
+3. 创建 control plane repo
+4. 创建 asset repo
+5. 注册 workspace
+6. 启动 Global Architect
+
+## Naming Principle
+
+规则：
+
+- **公共基础设施**：优先英文。
+  原因：跨语言、Agent 易理解、开源复用。
+- **个人内部**：可以使用任意语言。
+
+例如：
+
+- 推荐：`ai-use` / `ai-hub` / `assets`
+- 不强制：`my-ai-rule` / `company-assets`
+
+## 缺失环境处理
+
+如果缺少 `control plane repo` 或 `asset repo`，Agent **不应该创建假设**。
+
+应该输出：
+
+```text
+WORKSPACE_NOT_READY
+WAITING_FOR_HUMAN
+```
+
+并请求 Human 提供缺失仓库。
+
+## Agent 首次启动说明
+
+如果 Agent 第一次进入 ai-use，执行：
+
+1. START_HERE
+2. Kernel
+3. Bootstrap Check
+4. Workspace Bootstrap
+
+不要：扫描全部历史。
 
 ## 验证入口
 
