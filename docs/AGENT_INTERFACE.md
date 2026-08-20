@@ -2,6 +2,8 @@
 
 **Classification: L2 Targeted Reference.** Only read when dispatching, executing, or reviewing Agent work orders.
 
+**Protocol Version: 2.0.1**
+
 本文编纂 Human 与 Agent 之间的固定接口契约。所有 ai-hub 映射以本文为准；ai-hub 只做自身映射，不重复全文。
 
 ---
@@ -66,9 +68,10 @@ startup_mode: Fresh <Role>
 
 ### 3.1 Seed 允许的最小扩展
 
-只有当 pointer 无法无歧义启动时，才补最少的精确引用（如 access hint、exact ref）。Seed **不得**复制以下内容：
+只有当 pointer 无法无歧义启动时，才补最少的 bootstrap-critical 精确引用（如 access hint、exact ref）。Seed **不得**复制以下内容：
 
-- scope / acceptance / requirements / reporting / stop；
+- role（当 `startup_mode` 已无歧义表达角色时）、scope / acceptance / requirements / reporting / stop；
+- 启动读取顺序、输入依据/evidence 列表、当前目标、执行步骤、禁止事项或验证清单；
 - 难度、词元/时间估计、模型建议等人类调度信息；
 - 依赖关系、native relationships；
 - Builder 自评、旧 findings、Architect 既往裁决或其他 counted Verifier 输出。
@@ -78,6 +81,20 @@ startup_mode: Fresh <Role>
 ### 3.2 访问路由
 
 `access: github-private | github-public` 描述控制面入口路由，不承载任务合同。优先 authenticated 读取 `github-private` pointer；live repository metadata 与 access hint 冲突时以 live metadata 为准并报告 drift。
+
+### 3.3 Private GitHub 的唯一常规扩展示例
+
+当 private repository 的首次 durable read 必须先知道 authenticated route 时，可在默认三行后**只增加一行**：
+
+```text
+按 `youling/ai-hub#123` 的 `ARCHITECT_BUILD_DISPATCH` comment `456789` 执行。
+
+work: youling/ai-hub#123@step
+startup_mode: Fresh Builder
+access: github-private
+```
+
+除 bootstrap-critical route/exact ref 外，不得把 Work Order、Dispatch 正文或 Agent lifecycle 说明复制进 Seed。若同一任务出现“长 Seed”，默认视为 interface drift，应先修 durable source/派发方，而不是让 Human 搬运第二份任务合同。
 
 ## 4. Human Completion Card
 
@@ -93,8 +110,9 @@ Agent 完成后，Builder/Research/Repair/Verifier 保持详细的持久报告�
 
 ## 5. Versioned Definitions
 
+- `2.0.1`：clarification patch；不增加新的任务知识字段，只强化 Minimal Agent Seed 的唯一职责是 bootstrap addressing，并给出 private GitHub 的最小 `access` 扩展示例。
 - Human Dispatch Card 五字段顺序：任务 → 为什么做 → 你要做什么 → 调度建议 → 本轮终点。
-- Minimal Agent Seed 三行：pointer → work → startup_mode。
+- Minimal Agent Seed 默认三行：pointer → work → startup_mode；只有 bootstrap-critical route/exact ref 才允许最小扩展。
 - Human Completion Card 五语义：结果 → 交付 → 验证 → 剩余风险 → 下一步。
 - Dispatch Comment 携带 task knowledge；Human seed 只携带 addresses。
 
