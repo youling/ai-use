@@ -22,6 +22,7 @@ Version: 2.0.0
 - Git/GitHub 是唯一持久事实源；chat 是 working memory；本地 workspace 默认 ephemeral。
 - 遇冲突/BLOCKED 不靠猜；以 durable source / live state 为准，不确定就报告 `BLOCKED`。
 - 不编造 API、配置、文件内容、测试结果、Git 状态或第三方能力；不知道就说不知道。
+- Durable artifact 的存在不自动等于当前 authority；导入历史报告、旧裁决、旧产物前，需判断其 current / superseded / historical-evidence 语义。
 
 ## Scope
 
