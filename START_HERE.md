@@ -161,9 +161,11 @@ WAITING_FOR_HUMAN
 | 操作 | 指向 |
 | --- | --- |
 | 初始化检查 | Bootstrap Check Template（`50_TEMPLATES/bootstrap_check_request.md`） |
+| 能力盘点 | Capability Self Check Template（`50_TEMPLATES/capability_self_check.md`） |
 | 分配任务 | Human Dispatch Template（`docs/AGENT_INTERFACE.md` §2 Human Dispatch Card） |
 | 完成回报 | Completion Report Template（`docs/AGENT_INTERFACE.md` §4 Human Completion Card） |
 | 状态对齐 | Alignment Template（`CONSTITUTION.md` §1 Human sovereignty） |
+| 架构师交接验收 | Architect Handoff Check Template（`50_TEMPLATES/architect_handoff_check.md`） |
 
 ## 验证入口
 
