@@ -50,21 +50,7 @@ restore_output: <Fast Restore 产物 pointer>
 
 ## 完成后
 
-生成 `ARCHITECT_HANDOFF_ACCEPTED`，并**回写 durable source**（当前 authority issue）。仅存在于聊天的"我接任了"不算数。
-
-```text
-ARCHITECT_HANDOFF_ACCEPTED
----
-incoming: <node_id>/<agent_type>/<session_id>
-handoff_source: <outgoing pointer>
-active_work_orders: <count>
-blocked_items: <count>
-frozen_boundaries_confirmed: <yes | no>
-human_confirmation: <pointer>
-status: ACCEPTED | BLOCKED | WAITING_FOR_HUMAN
-blockers:
-  - <无法确认的检查项 | none>
-```
+验收通过后，由新 Architect 按 [`architect_handoff_transaction.md`](architect_handoff_transaction.md) 的 `ARCHITECT_HANDOFF_ACCEPTED` 规范格式**回写 durable source**（当前 authority issue）；本检查的验收结论填入其 `验证.handoff_check` 字段。仅存在于聊天的"我接任了"不算数。
 
 任一检查项无法确认时报告 `BLOCKED`，保持 STOP：不施工、不改仓库、不派新 Work Order，先把问题交 Human 确认。
 
@@ -74,3 +60,4 @@ blockers:
 - `CONSTITUTION.md` §1（Human sovereignty）/ §4（同一时刻一个 primary）
 - `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`（接任后的启动状态验证仍按其执行）
 - `30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md`（只存在聊天的确认不算数）
+- `architect_handoff_transaction.md`（`ARCHITECT_HANDOFF_ACCEPTED` 规范格式）

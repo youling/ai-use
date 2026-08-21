@@ -154,6 +154,19 @@ WAITING_FOR_HUMAN
 
 不要：扫描全部历史。
 
+## Agent Handoff 流程
+
+总架构师交接（含跨节点 / 跨设备）按序执行：
+
+1. Capability Self Check —— `50_TEMPLATES/capability_self_check.md`
+2. Handoff Request —— `50_TEMPLATES/architect_handoff_transaction.md`（`ARCHITECT_HANDOFF_REQUEST`）
+3. Handoff Check —— `50_TEMPLATES/architect_handoff_check.md`
+4. Handoff Accepted —— `50_TEMPLATES/architect_handoff_transaction.md`（`ARCHITECT_HANDOFF_ACCEPTED`）
+5. Bootstrap Check —— `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`
+6. Resume Work
+
+交接只转移 AI 工作角色调度权，不转移所有权，不赋予 GitHub owner / 人类组织 / 商业决策权限（Capability != Authority）。
+
 ## Common Agent Operations
 
 常用操作的入口（陌生 Human / Agent 无需询问作者）：
