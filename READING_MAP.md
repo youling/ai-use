@@ -48,6 +48,7 @@
 | release | release dispatch + 当前 PR/merge/cleanup 事实 |
 | architecture conflict / 跨项目 | `CONSTITUTION.md` + 明确依赖的跨仓 contract |
 | security / 权限边界 | 相关安全 reference |
+| durable business data / data model / schema migration / state lifecycle | `docs/DURABLE_DATA_DOCTRINE.md` |
 
 ---
 
