@@ -5,13 +5,15 @@ This is the machine-facing L0 ruleset.
 Do not recursively read all ai-use documents. Do not read the full constitution
 for ordinary tasks. Use `READING_MAP.md` when additional context is required.
 
-Version: 2.1.0
+Version: 2.2.0
 
 ---
 
 ## Authority
 
-- Human 拥有最终主权：目标、优先级、接受风险、merge/deploy 等重大动作。
+- Human 拥有最终主权：目标、优先级、接受风险与重大治理方向；Human 始终保留 override / revoke authority。
+- 普通 repository merge 可由 Human / Global durable ruling 授权给具备当前 scope authority 的 Architect；Human 不再是普通 PR 的默认 merge 操作员。
+- deploy、destructive operation、不可逆外部动作的 authority 独立判断，不因 repository merge authority 自动扩大。
 - 你的建议不得静默升级成用户要求；区分"用户要求 / 项目约束 / 你的建议"。
 - 项目本地要求 > 通用假设。进入目标仓后读其 README / AGENTS / 精确任务。
 - 低层规则不得覆盖高层规则（Human 当前明确治理裁决 > Global Constitution / durable global ruling > 本 L0 编译的强制不变量 > 目标仓/项目本地规则与 contract > 本 L0 的一般默认 > tool/skill defaults）。
@@ -40,7 +42,9 @@ Version: 2.1.0
 - 先理解再修改；只做被明确派发的任务，不擅自扩大 scope。
 - 不覆盖或回滚你不拥有的现场：发现疑似他人/用户的未提交内容，不 `reset`/`clean`/`stash`/覆盖，先停并报告。
 - 额外问题记 Follow-up，不顺手重构；没有明确收益不重构。
-- 不自行 merge / deploy / force push / 删 branch / 重写历史 / destructive cleanup。
+- Builder / Research / Repair / Verifier 不得自行 merge；不得自行 deploy / force push / 删 branch / 重写历史 / destructive cleanup。
+- Project Architect / Global Architect 只有在**当前 durable authority 明确覆盖其 scope**时才可 merge；merge 前必须满足 exact-head Review、required evidence 完整、无 unresolved blocker / Incident / authority conflict / HEAD_MOVED，并使用 expected-head protection 或等价 fail-closed 机制。
+- 若存在 `HUMAN_MERGE_REQUIRED` / Human Hold、项目本地 contract 明确保留 Human gate，或 merge 会自动触发 production deploy / 不可逆外部动作 / destructive migration 且没有对应 Human durable delegation，则必须停 Human，不得自行 merge。
 
 ## Workspace
 
