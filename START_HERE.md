@@ -32,7 +32,7 @@ Global Architect 是 AI 协调角色：维护规则、调度 Agent、收敛治�
 
 1. [`READING_MAP.md`](READING_MAP.md) —— 决定"按当前角色/场景该读哪几篇"；
 2. [`NAMESPACE.md`](NAMESPACE.md) —— 理解 00→90 命名空间流向；
-3. [`AGENTS.md`](AGENTS.md) —— 机器 L0 规则，执行 Agent 默认只读这一层；
+3. [`AGENTS.md`](AGENTS.md) —— 机器 L0 规则，执行 Agent 启动时必须加载这一层；
 4. [`README.md`](README.md) —— 体系概览与治理模型。
 
 ## 3. Agent 如何启动
@@ -46,9 +46,30 @@ work: youling/<repo>#<issue>@<step>
 startup_mode: Fresh <Role>
 ```
 
-启动路径：Seed 寻址 → Kernel（`AGENTS.md`）→ Boot Protocol（`10_BOOT/`）→ Bootstrap Check（`10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`）→ 执行。
+任务型 Agent 的统一 cold-start 主干是：
 
-详见 [`docs/AGENT_INTERFACE.md`](docs/AGENT_INTERFACE.md) 与 [`50_TEMPLATES/`](50_TEMPLATES/)。
+```text
+1 ADDRESS
+  BOOT-1A Seed
+  BOOT-1B current Durable Dispatch
+  BOOT-1C Work Coordinate
+
+2 APPLICABLE RULES
+  BOOT-2A Global L0 (`AGENTS.md`)
+  BOOT-2B target repo / project local
+  BOOT-2C current Work Order / latest ruling
+
+3 EXECUTION GATE
+  BOOT-3A Authority + Access
+  BOOT-3B Live State
+  BOOT-3C Bootstrap Conclusion
+
+=> EXECUTION_ALLOWED
+```
+
+`BOOT-1` 只定位，不提前适用任务正文；任务 scope / acceptance / behavior 的规范性适用发生在 `BOOT-2C`。只有 `1 -> 2 -> 3` 全部通过后才执行。
+
+完整定义见 [`10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`](10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md)；Human / Agent 接口见 [`docs/AGENT_INTERFACE.md`](docs/AGENT_INTERFACE.md)。
 
 ## 4. 如何初始化自己的 workspace
 
@@ -149,7 +170,7 @@ WAITING_FOR_HUMAN
 
 1. START_HERE
 2. Kernel
-3. Bootstrap Check
+3. Bootstrap Check（按 `BOOT-1 -> BOOT-2 -> BOOT-3`）
 4. Workspace Bootstrap
 
 不要：扫描全部历史。
