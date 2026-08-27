@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** Only read when dispatching, executing, or reviewing Agent work orders.
 
-**Protocol Version: 2.0.1**
+**Protocol Version: 2.0.2**
 
 本文编纂 Human 与 Agent 之间的固定接口契约。所有 ai-hub 映射以本文为准；ai-hub 只做自身映射，不重复全文。
 
@@ -30,6 +30,22 @@ startup_mode: `<Fresh Builder | Warm Resume | Fresh Verifier | ...>`
 ```
 
 Durable Work Order + dispatch layer 携带任务知识；Human seed 只负责寻址。派发前 Architect 必须确认 durable source 足以让 fresh Agent 执行。
+
+### 1.2 Agent 启动适用顺序
+
+Seed 只提供地址；Agent 执行时必须按 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md` 的统一主干完成：
+
+`BOOT-1 ADDRESS -> BOOT-2 APPLICABLE RULES -> BOOT-3 EXECUTION GATE -> EXECUTION_ALLOWED`。
+
+其中：
+
+- `BOOT-1B/1C` 在 `BOOT-2A` 前只解析 dispatch / coordinate 的地址与 currentness，**不得提前适用任务正文**；
+- `BOOT-2A` 必须先加载 Global L0 `AGENTS.md`；
+- `BOOT-2B` 再加载 target repo / project local context；
+- `BOOT-2C` 才规范性适用 current Work Order / Dispatch / latest ruling；
+- 任一关键 gate 未通过时不得进入 execution。
+
+本节只提供接口 pointer，不复制完整 Bootstrap 协议。
 
 ## 2. Human Dispatch Card
 
@@ -110,6 +126,7 @@ Agent 完成后，Builder/Research/Repair/Verifier 保持详细的持久报告�
 
 ## 5. Versioned Definitions
 
+- `2.0.2`：同步 Bootstrap Ordered Applicability；不改变 Seed 字段，只增加 `BOOT-1 -> BOOT-2 -> BOOT-3` 的启动顺序 pointer，并明确 BOOT-1 不提前适用任务正文。
 - `2.0.1`：clarification patch；不增加新的任务知识字段，只强化 Minimal Agent Seed 的唯一职责是 bootstrap addressing，并给出 private GitHub 的最小 `access` 扩展示例。
 - Human Dispatch Card 五字段顺序：任务 → 为什么做 → 你要做什么 → 调度建议 → 本轮终点。
 - Minimal Agent Seed 默认三行：pointer → work → startup_mode；只有 bootstrap-critical route/exact ref 才允许最小扩展。
@@ -122,3 +139,4 @@ Agent 完成后，Builder/Research/Repair/Verifier 保持详细的持久报告�
 - 本文不改变 Runner/程序行为。
 - `ARCHITECT_*_DISPATCH` comment 在 Human seed 之前；seed 不替代 dispatch comment。
 - 派发前 Architect 必须确认 durable source 足以让 fresh Agent 执行（见 Work Order 完整性要求）。
+- 人类可见叙述的语言遵守 `AGENTS.md` L0 invariant；英文任务/模板本身不构成 language override。

@@ -5,7 +5,7 @@ This is the machine-facing L0 ruleset.
 Do not recursively read all ai-use documents. Do not read the full constitution
 for ordinary tasks. Use `READING_MAP.md` when additional context is required.
 
-Version: 2.0.0
+Version: 2.1.0
 
 ---
 
@@ -13,10 +13,20 @@ Version: 2.0.0
 
 - Human 拥有最终主权：目标、优先级、接受风险、merge/deploy 等重大动作。
 - 你的建议不得静默升级成用户要求；区分"用户要求 / 项目约束 / 你的建议"。
-- 项目本地要求 > 通用假设。进入项目先读其 README / AGENTS / 精确任务。
-- 低层规则不得覆盖高层规则（Human 当前明确治理裁决 > Global Constitution / durable global ruling > 项目本地规则/contract > 本 L0 的一般默认 > tool/skill defaults）。
-- 项目规则可以细化本 L0，但不得覆盖 Human / Global Constitution 的治理边界。
+- 项目本地要求 > 通用假设。进入目标仓后读其 README / AGENTS / 精确任务。
+- 低层规则不得覆盖高层规则（Human 当前明确治理裁决 > Global Constitution / durable global ruling > 本 L0 编译的强制不变量 > 目标仓/项目本地规则与 contract > 本 L0 的一般默认 > tool/skill defaults）。
+- 目标仓/项目本地规则可以细化本 L0，但不得覆盖 Human / Global Constitution / 本 L0 已编译的强制治理不变量。
 - **Capability != Authority**：环境能力发现（如 `gh auth`、filesystem access、repository visibility）只说明"能做什么"，**不得自动提升**为组织权威 / 项目权威 / 人类决策权威。能力不产生治理权。
+
+## Ordered bootstrap
+
+启动必须按 `1 -> 2 -> 3` 顺序完成，详见 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`：
+
+1. **ADDRESS**：只定位 Seed、current Durable Dispatch、Work Coordinate；`BOOT-1B/1C` 在 `BOOT-2A` 前不得把任务正文的 scope / acceptance / language / behavior 当成已适用规则。
+2. **APPLICABLE RULES**：先加载 `BOOT-2A` 本 Global L0，再读 `BOOT-2B` 目标仓/项目本地规则，最后在 `BOOT-2C` 适用 current Work Order / Dispatch / amendment。
+3. **EXECUTION GATE**：核验 authority/access/live state 并形成 Bootstrap Check 结论；任一关键 gate 未通过时不得施工。
+
+只有全部通过并得到 `EXECUTION_ALLOWED` 后才进入 execution。
 
 ## Durable truth
 
@@ -57,12 +67,16 @@ Version: 2.0.0
 ## Secrets & output
 
 - 不打印 secrets，不输出全量环境变量值。
-- 人类可见输出默认简体中文；机器内容（代码/路径/SHA/token）保留原文。
+- **面向 Human 的叙述性输出 MUST 默认使用简体中文**，包括 Issue / Comment / Dispatch / Review / Report / PR 人类说明与会话说明。
+- code / path / command / SHA / machine identifier / protocol constant 等机器内容保留原文。
+- 英文 Issue / Work Order / Dispatch / template / protocol header **本身不构成 language override**。
+- 只有 Human 当前明确指令，或更高 current durable authority 的明确语言裁决，才可覆盖默认中文。
 - 每句话承担信息/证据/风险/行动价值，不输出套话与恭维。
 
 ## Reading
 
-- 你只需常驻本 L0 + 当前精确任务 + 项目本地必要上下文。
+- 你只需常驻本 L0 + 当前精确任务 + 目标仓/项目本地必要上下文。
+- `BOOT-2A` 本 L0 必须先于 `BOOT-2B` 目标仓/项目本地规则和 `BOOT-2C` 当前任务正文的规范性适用。
 - 场景需要时再按 `READING_MAP.md` targeted 读相应 L2 reference。
 
 ## Seed & tools
