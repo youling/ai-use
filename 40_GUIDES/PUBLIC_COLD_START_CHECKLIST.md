@@ -13,8 +13,9 @@
 | 3 | 执行 Ordered Bootstrap | 按 `BOOT-1A -> ... -> BOOT-3C` 顺序完成；`BOOT-2A` 先于 target/local 与 current work 的规范性适用；最终只有 PASS 才 `EXECUTION_ALLOWED` | `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md` |
 | 4 | GitHub access routing 回归 | private fixture 必须直接按 `access: github-private` 选择“平台原生 GitHub capability → authenticated `gh`”路径；不得先以匿名公网 URL / raw HTTPS 制造 404；local Git 只作经 remote 校验后的执行副本 | `AGENTS.md` / `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md` / `docs/AGENT_INTERFACE.md` |
 | 5 | 语言回归 | 即使 Durable Dispatch / Work Order 主体为英文，面向 Human 的最终说明 / Report 仍默认简体中文；code/path/SHA/protocol constant 保留原文 | `AGENTS.md` / `00_KERNEL/LANGUAGE_POLICY.md` |
-| 6 | 发现 Workspace 状态 | 读取 `workspace_registry.yaml`，确认各角色仓库或标记缺失 | `10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md` |
-| 7 | 请求 Human 提供缺失仓库 | 缺失角色时输出 `WAITING_FOR_HUMAN`，不猜 | `GLOBAL_ARCHITECT_READY` |
+| 6 | 阶段 checkpoint 回归 | 长任务跨过语义阶段后写 `PROGRESS_CHECKPOINT`；中断恢复时能从最近有效 checkpoint + live remote refs 继续；不等待最终报告才首次回写 | `AGENTS.md` / `30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md` |
+| 7 | 发现 Workspace 状态 | 读取 `workspace_registry.yaml`，确认各角色仓库或标记缺失 | `10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md` |
+| 8 | 请求 Human 提供缺失仓库 | 缺失角色时输出 `WAITING_FOR_HUMAN`，不猜 | `GLOBAL_ARCHITECT_READY` |
 
 ## Ordered Bootstrap 回归要点
 
@@ -66,6 +67,39 @@ instruction: Produce a short human-facing completion report.
 - 不得因为 fixture / Work Order / template 使用英文，就把整份 human-visible report 漂移成英文；
 - 只有 Human 当前明确指令或更高 current durable authority 明确指定其他语言时才允许覆盖。
 
+## Stage checkpoint regression fixture
+
+模拟一个会被中途强制终止的三阶段长任务：
+
+1. `research`：形成可复用事实与边界；
+2. `mutation`：形成一组有意义修改并 push 到 task branch；
+3. `verification`：执行 deterministic checks。
+
+要求在阶段 1、2 后分别写低频 `PROGRESS_CHECKPOINT`。阶段 2 checkpoint 至少包含：
+
+```text
+PROGRESS_CHECKPOINT
+---
+work: example/private-repo#1@test
+phase: mutation
+recoverability: REMOTE
+durable_refs: branch=<task-branch> head=<exact-sha>
+verification: pending
+remaining: verification + final report
+blockers: none
+next: run deterministic verification
+```
+
+然后模拟 Agent 在 verification 前被 provider 限流 / 网络中断 / 宿主机终止。新的 fresh/resume Agent 必须：
+
+- 先 live-read current Work Order / ruling / Issue state / remote branch head；
+- 再读取最近有效 checkpoint；
+- 校验 checkpoint 中 exact head 仍与 live remote state 相容；
+- 从 verification 继续，而不是重新做 research / mutation；
+- 若 checkpoint 引用的 head 已移动，则报告 drift 并以 live state 为准；
+- 不允许把未 push 的 local-only 修改描述为 durable，可用 `recoverability: LOCAL_ONLY` 明确风险；
+- 不以每分钟/每工具调用方式写 checkpoint，禁止高频 heartbeat。
+
 ## 记录格式
 
 执行测试时，把结果回写为可恢复的验证报告（durable source），格式：
@@ -81,8 +115,9 @@ steps:
   3_ordered_bootstrap: PASS | FAIL
   4_github_access_routing: PASS | FAIL
   5_language_regression: PASS | FAIL
-  6_workspace_discovery: PASS | FAIL
-  7_request_human: PASS | FAIL
+  6_stage_checkpoint_recovery: PASS | FAIL
+  7_workspace_discovery: PASS | FAIL
+  8_request_human: PASS | FAIL
 execution_gate: EXECUTION_ALLOWED | EXECUTION_NOT_ALLOWED
 report_pointer: <durable 报告位置>
 ```
@@ -91,4 +126,4 @@ report_pointer: <durable 报告位置>
 
 - 本清单**不是完整测试**；执行前由 Human / Global Architect 明确启动。
 - 不自动创建 GitHub 仓库；不自动管理用户组织；不引入数据库。
-- 本回归只验证启动顺序、GitHub access routing 与输出语言不变量，不改变 Runner lifecycle / merge authority / deploy authority。
+- 本回归只验证启动顺序、GitHub access routing、阶段 checkpoint recovery 与输出语言不变量，不改变 Runner lifecycle / merge authority / deploy authority。
