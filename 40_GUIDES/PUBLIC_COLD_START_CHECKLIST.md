@@ -15,8 +15,9 @@
 | 5 | 语言回归 | 即使 Durable Dispatch / Work Order 主体为英文，面向 Human 的最终说明 / Report 仍默认简体中文；code/path/SHA/protocol constant 保留原文 | `AGENTS.md` / `00_KERNEL/LANGUAGE_POLICY.md` |
 | 6 | 阶段 checkpoint 回归 | 长任务跨过语义阶段后写 `PROGRESS_CHECKPOINT`；中断恢复时能从最近有效 checkpoint + live remote refs 继续；不等待最终报告才首次回写 | `AGENTS.md` / `30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md` |
 | 7 | Architect Direct Lane 回归 | 能按 pre-existing durable acceptance + risk/currentness 判断 `DIRECT | DELEGATE`；不得把 capability 当 authority，也不得由 Architect 先发明验收再自证；高风险/显式职责分离必须 fail closed/DELEGATE | `AGENTS.md` / `CONSTITUTION.md` / `docs/AGENT_INTERFACE.md` |
-| 8 | 发现 Workspace 状态 | 读取 `workspace_registry.yaml`，确认各角色仓库或标记缺失 | `10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md` |
-| 9 | 请求 Human 提供缺失仓库 | 缺失角色时输出 `WAITING_FOR_HUMAN`，不猜 | `GLOBAL_ARCHITECT_READY` |
+| 8 | Fresh Architect Reconnaissance 回归 | Fresh/takeover Architect 在 material architecture 前证明 current external alignment；先 external frame，再 repo reconciliation；只凭模型旧知识或只读 repo 直接开架构不充分 | `AGENTS.md` / `READING_MAP.md` / `docs/ARCHITECT_RECONNAISSANCE.md` |
+| 9 | 发现 Workspace 状态 | 读取 `workspace_registry.yaml`，确认各角色仓库或标记缺失 | `10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md` |
+| 10 | 请求 Human 提供缺失仓库 | 缺失角色时输出 `WAITING_FOR_HUMAN`，不猜 | `GLOBAL_ARCHITECT_READY` |
 
 ## Ordered Bootstrap 回归要点
 
@@ -139,6 +140,29 @@ verification: self-authored acceptance only
 - Human Dispatch Card 只在 Human 手工启动 delegated executor 时需要，不应被误读成所有执行的治理必经层；
 - Minimal Agent Seed 不增加 model/provider/routing 字段。
 
+## Fresh Architect Reconnaissance regression fixture
+
+模拟一个 Fresh Project Architect 接管快速变化技术域，需要决定“继续现有自研 / 复用 upstream / 薄适配 / 改路线”。repo 内已经存在一套历史实现与旧 architecture note。
+
+通过路径：
+
+1. 先完成普通 `BOOT-1/2/3 -> EXECUTION_ALLOWED`；这只证明 authority/current durable context 合格；
+2. 在写第一轮 material architecture / Work Graph / BUILD-vs-REUSE 决策前，进入 `ARCH-0A`，用 current official docs/API/protocol、upstream/maintained repo 或其它 primary technical source 建立外部 current frame；
+3. 再进入 `ARCH-0B` 回看 repo/current durable graph，分类 `KEEP/REUSE | ADAPT | SUPERSEDED/DEPRECATE | BUILD | UNKNOWN`；
+4. `ARCH-0C` 写简洁 durable `ARCHITECT_RECONNAISSANCE_REPORT`，至少包含 `as_of/scope/external_current_state/reuse_candidates/architecture_delta/decisions/do_not_build/open_questions/targeted_research_needed/first_architecture_direction`；
+5. 完成后才进入 `ARCHITECT_READY` 并 materialize 第一轮实质架构。
+
+必须判失败的反例：
+
+- 只凭模型记忆声称某 API/OSS“现在就是这样”，没有 current evidence；
+- 只读 repo 和历史 issue，就直接把旧方案扩展成新架构；
+- 先决定沿用旧路线，再只搜索支持该路线的资料；
+- 把 web/search output 当 authority；
+- 把 reconnaissance 扩成无边界全网爬取、文献综述或 fixed-TTL heartbeat；
+- 因看到 OSS 就机械禁止 BUILD，而不考虑 project-local constraints / license / risk / maintainability。
+
+复用/负向回归：若是 ordinary Hot Resume、小 bug、确定性维护，或已有覆盖同 scope 且关键来源 live-revalidate 仍 current 的 reconnaissance，则不得机械要求重新全量研究；可引用已有报告并补最小 delta。
+
 ## 记录格式
 
 执行测试时，把结果回写为可恢复的验证报告（durable source），格式：
@@ -156,9 +180,11 @@ steps:
   5_language_regression: PASS | FAIL
   6_stage_checkpoint_recovery: PASS | FAIL
   7_architect_direct_lane: PASS | FAIL
-  8_workspace_discovery: PASS | FAIL
-  9_request_human: PASS | FAIL
+  8_architect_reconnaissance: PASS | FAIL
+  9_workspace_discovery: PASS | FAIL
+  10_request_human: PASS | FAIL
 execution_gate: EXECUTION_ALLOWED | EXECUTION_NOT_ALLOWED
+architect_readiness: NOT_APPLICABLE | ARCHITECT_READY | ARCHITECT_NOT_READY
 report_pointer: <durable 报告位置>
 ```
 
@@ -166,4 +192,4 @@ report_pointer: <durable 报告位置>
 
 - 本清单**不是完整测试**；执行前由 Human / Global Architect 明确启动。
 - 不自动创建 GitHub 仓库；不自动管理用户组织；不引入数据库。
-- 本回归验证启动顺序、GitHub access routing、阶段 checkpoint recovery、输出语言与 Architect Direct Lane 决策边界；不改变 Runner lifecycle / merge authority / deploy authority，也不定义 provider routing。
+- 本回归验证启动顺序、GitHub access routing、阶段 checkpoint recovery、输出语言、Architect Direct Lane 与 Architect Reconnaissance；不改变 Runner lifecycle / merge authority / deploy authority，也不定义 provider routing。
