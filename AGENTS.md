@@ -5,7 +5,7 @@ This is the machine-facing L0 ruleset.
 Do not recursively read all ai-use documents. Do not read the full constitution
 for ordinary tasks. Use `READING_MAP.md` when additional context is required.
 
-Version: 2.2.2
+Version: 2.3.0
 
 ---
 
@@ -48,6 +48,24 @@ Version: 2.2.2
 - Project Architect / Global Architect 只有在**当前 durable authority 明确覆盖其 scope**时才可 merge；merge 前必须满足 exact-head Review、required evidence 完整、无 unresolved blocker / Incident / authority conflict / HEAD_MOVED，并使用 expected-head protection 或等价 fail-closed 机制。
 - 若存在 `HUMAN_MERGE_REQUIRED` / Human Hold、项目本地 contract 明确保留 Human gate，或 merge 会自动触发 production deploy / 不可逆外部动作 / destructive migration 且没有对应 Human durable delegation，则必须停 Human，不得自行 merge。
 
+## Architect execution mode
+
+Project Architect / Global Architect 在 current durable authority 覆盖的 scope 内，可按事实选择 `DIRECT | DELEGATE`；选择本身不产生新的 authority。
+
+进入 `DIRECT` 必须同时满足：
+
+- 需求、scope 与 acceptance 在施工前已由 Human、更高/current durable authority、Work Order 或稳定 contract 给定；Architect 不得施工后自行发明验收标准再自证完成；
+- 改动低风险、局部、可逆，且没有未授权的高影响外部副作用；
+- 有确定性验证路径；
+- live currentness / ownership / workspace 无冲突；
+- 不存在 `DELEGATE_REQUIRED`、Human Hold、Incident、security/permission conflict 或其它 fail-closed gate。
+
+`DIRECT` 允许 Architect 自己实现、验证、提交 durable report/PR，并在 current required Review / merge gate 满足后继续；它**不自动增加 Builder/Verifier 仪式，也不自动免除已经明确要求的 independent review / Human gate**。
+
+大量或长时间施工、探索性实现/acceptance 未冻结、需要独立实现者降低 confirmation bias、并发/专门工具/长运行 executor 更适合，或 risk/contract 明确要求职责分离时，优先或必须 `DELEGATE`。
+
+无论 `DIRECT` 还是 `DELEGATE`，deploy / destructive / production / irreversible external action authority 都独立判断，不得由执行模式推导。
+
 ## Workspace
 
 - 写任务使用**物理隔离**的可变工作区（worktree / 独立 clone / 容器 / 独立目录）。
@@ -62,13 +80,15 @@ Version: 2.2.2
 ## Minimal workflow
 
 - 采用与真实风险相称的最低足够复杂度；不为治理而治理；收敛优先。
-- 是否拆任务/并行/启用 Subagent/独立 Reviewer/Worktree 由问题结构与风险决定。
+- Architect 不得为了角色仪式机械派 Builder；也不得为了省事把不满足 DIRECT eligibility 的工作强行直接施工。
+- 是否 `DIRECT | DELEGATE`、是否拆任务/并行/启用 Subagent/独立 Reviewer/Worktree，由 current durable authority、问题结构、acceptance 成熟度与真实风险决定。
 
 ## Verification
 
-- 低风险、边界清晰：Architect 可直接验收。
+- 低风险、范围清晰：Architect 可直接验收。
 - 普通复杂/高风险：默认最多 1 个 fresh independent Verifier。
 - 双验证/多验证**仅 Incident Mode**；"复杂/重要/想更保险"不是理由。
+- `DIRECT` 不改变本节：current contract 已要求独立证据时必须保留；没有要求时不因 Architect 亲自施工而自动增加 Verifier。
 
 ## Secrets & output
 
@@ -91,7 +111,8 @@ Version: 2.2.2
 - **最小 Seed = 最少无歧义启动信息，不等于最少行。** private repo 必须显式携带 `access: github-private`；public repo 在 pointer/live metadata 已无歧义时可省略 access。
 - `access` 只决定 BOOT-1A 访问路由，不授予 authority：原生 GitHub 能力优先，authenticated `gh` 回退，本地 Git workspace 仅作经 remote exact-ref 校验后的执行副本。
 - Durable Dispatch 负责任务上下文；Bootstrap Check 负责启动状态验证（见 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`）。
-- 不要把完整任务知识塞入 Seed。
+- 不要把完整任务知识塞入 Seed；`DIRECT | DELEGATE` 也不得把 provider/model 固化进 Minimal Seed。
+- Human Dispatch Card 是 Human 手工启动 delegated executor 时的 UX，不是所有 execution transport 的治理必经层；无论 transport 如何变化，durable Work Order/Dispatch/authority gate 仍必须成立。
 - Runner 是确定性执行/安全工具，不是架构师，也不是所有修改的必经层。
 
 ## Durable trace
