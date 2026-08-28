@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** Only read when dispatching, executing, or reviewing Agent work orders.
 
-**Protocol Version: 2.0.3**
+**Protocol Version: 2.0.4**
 
 本文编纂 Human 与 Agent 之间的固定接口契约。所有 ai-hub 映射以本文为准；ai-hub 只做自身映射，不重复全文。
 
@@ -10,14 +10,21 @@
 
 ## 1. Dispatch Structure
 
-每次 Agent 派发由两层组成：
+执行先区分 `DIRECT | DELEGATE`：
+
+- `DIRECT`：满足 `AGENTS.md` L0 的 Architect Direct Implementation Lane eligibility 时，Architect 自己施工，不需要为了角色仪式创建 Builder dispatch / Agent Seed；仍须遵守 current durable scope/acceptance、deterministic evidence、required Review / merge / Human/high-risk gates。
+- `DELEGATE`：由 durable Work Order + Architect dispatch 启动可替换 executor。Human 可以手工 transport Seed，也可以由 current durable authority 允许的执行 transport 传递；Human 不再是普通 executor copy/paste 的治理必经节点。
+
+`DIRECT | DELEGATE` 是执行方式，不产生 authority，也不得携带 provider/model routing 语义到本公共契约或 Minimal Seed。
+
+对 `DELEGATE`，接口由两层组成：
 
 1. **Durable Dispatch Comment** — Architect 在 Work Order 发布的 `ARCHITECT_*_DISPATCH` 评论，携带角色/启动元数据。scope/base/owns/forbidden/acceptance 已在 Work Order 中，dispatch comment 不重复。
-2. **Human Dispatch Card** + **Minimal Agent Seed** — Human Card 给用户决策；Seed 给 Agent 寻址。
+2. **Human Dispatch Card** + **Minimal Agent Seed** — 当 Human 负责手工启动 executor 时，Human Card 给用户决策；Seed 给 Agent 寻址。若由授权的 execution transport 启动，仍使用同一 durable dispatch / addressing 语义，但不要求 Human 充当搬运中继。
 
 ### 1.1 Durable Dispatch Comment
 
-每次 Agent-facing 执行派发**必须**有一个 `ARCHITECT_*_DISPATCH` comment，位于 Human seed 之前。Durable dispatch 携带 task knowledge；Human seed 只寻址。
+每次 Agent-facing delegated execution **必须**有一个 current `ARCHITECT_*_DISPATCH` comment。Durable dispatch 携带 task knowledge；Minimal Seed / transport payload 只寻址。
 
 Dispatch comment 的字段由 Architect 按任务需要填写，不强制统一字段集。以下为常见字段参考（非必须全集）：
 
@@ -49,9 +56,24 @@ Seed 只提供地址；Agent 执行时必须按 `10_BOOT/BOOTSTRAP_CHECK_PROTOCO
 
 本节只提供接口 pointer，不复制完整 Bootstrap 协议。
 
+### 1.3 DIRECT / DELEGATE boundary
+
+Architect 选择 `DIRECT | DELEGATE` 前必须以 current durable authority 与 pre-existing acceptance 为准。
+
+`DIRECT` 不得用于：
+
+- acceptance 尚未冻结、需要边做边定义需求的探索性施工；
+- current contract 明确 `DELEGATE_REQUIRED` / separation-of-duties；
+- Human Hold / Incident / security or permission conflict；
+- 未授权 production/deploy/destructive/irreversible external action。
+
+`DELEGATE` 仍是一等路径，适合长时间/大量施工、并发、专门工具/环境、需要独立实现者降低 confirmation bias 等工作。
+
+无论采用哪条路径，都不得把 provider/model 名称、价格、quota 等执行路由事实写进 Minimal Seed 或把它们升级为 Work Order truth。
+
 ## 2. Human Dispatch Card
 
-Human Dispatch Card **恰好五个字段**，按以下顺序：
+Human Dispatch Card 用于**Human 手工启动 delegated executor** 的场景，**恰好五个字段**，按以下顺序：
 
 | # | 字段 | 内容 |
 |---|------|------|
@@ -61,7 +83,7 @@ Human Dispatch Card **恰好五个字段**，按以下顺序：
 | 4 | 调度建议 | 只给 Human：难度、上下文规模、模型建议、词元/时间粗估、并行策略、本轮重点 |
 | 5 | 本轮终点 | 完成边界 / stop condition |
 
-调度建议**只属于 Human 调度层**，不进入 Agent seed。Human Card 是用户决策提示，不是 Agent 指令或状态源。
+调度建议**只属于 Human 调度层**，不进入 Agent seed。Human Card 是用户决策提示 / 手工 transport UX，不是 Agent 指令、状态源，也不是所有 delegated execution 的必经治理节点。
 
 ### 示例
 
@@ -75,7 +97,7 @@ Human Dispatch Card **恰好五个字段**，按以下顺序：
 
 ## 3. Default Minimal Agent Seed
 
-Minimal Agent Seed 的目标是**最少无歧义启动信息**，不是固定追求最少行。
+Minimal Agent Seed 的目标是**最少无歧义启动信息**，不是固定追求最少行。它只用于 Agent-facing delegated execution；Architect `DIRECT` 自己施工时不制造虚假的 Agent Seed。
 
 ### 3.1 Public / access 已无歧义
 
@@ -110,7 +132,8 @@ access: github-private
 - 启动读取顺序、输入依据/evidence 列表、当前目标、执行步骤、禁止事项或验证清单；
 - 难度、词元/时间估计、模型建议等人类调度信息；
 - 依赖关系、native relationships；
-- Builder 自评、旧 findings、Architect 既往裁决或其他 counted Verifier 输出。
+- Builder 自评、旧 findings、Architect 既往裁决或其他 counted Verifier 输出；
+- provider/model/routing/pricing/quota metadata。
 
 若 fresh Agent 仅凭 exact dispatch pointer + 必要 access metadata 无法从 durable source 取得这些事实，说明 Work Order/dispatch 不完整：先修 durable source，再派发。
 
@@ -143,6 +166,7 @@ Agent 完成后，Builder/Research/Repair/Verifier 保持详细的持久报告�
 
 ## 5. Versioned Definitions
 
+- `2.0.4`：编译 Architect `DIRECT | DELEGATE` 接口边界；Human Dispatch Card 明确为 Human 手工启动 delegated executor 的 UX，不再是所有 execution transport 的必经层；Minimal Seed 不因 Direct Lane 或自动化 transport 增加 provider/model/routing 字段。
 - `2.0.3`：把 Minimal Seed 从“最少行”收敛为“最少无歧义启动信息”；private repo 固定携带 `access: github-private`；BOOT-1A 统一访问顺序为平台原生 GitHub capability → authenticated `gh` → 经 remote 校验后的 local Git workspace，private repo 禁止匿名公网 404 探路。
 - `2.0.2`：同步 Bootstrap Ordered Applicability；不改变 Seed 字段，只增加 `BOOT-1 -> BOOT-2 -> BOOT-3` 的启动顺序 pointer，并明确 BOOT-1 不提前适用任务正文。
 - `2.0.1`：clarification patch；不增加新的任务知识字段，只强化 Minimal Agent Seed 的唯一职责是 bootstrap addressing，并给出 private GitHub 的最小 `access` 扩展示例。
@@ -154,7 +178,7 @@ Agent 完成后，Builder/Research/Repair/Verifier 保持详细的持久报告�
 ## 6. Boundary Conditions
 
 - 本文只定义公开/通用方法论。不包含 ai-hub 私有状态/拓扑/heads/endpoints/secrets。
-- 本文不改变 Runner/程序行为。
-- `ARCHITECT_*_DISPATCH` comment 在 Human seed 之前；seed 不替代 dispatch comment。
+- 本文不改变 Runner/程序行为，也不定义 provider/backend routing contract。
+- `ARCHITECT_*_DISPATCH` comment 在 Human seed / delegated transport 之前；seed 不替代 dispatch comment。
 - 派发前 Architect 必须确认 durable source 足以让 fresh Agent 执行（见 Work Order 完整性要求）。
 - 人类可见叙述的语言遵守 `AGENTS.md` L0 invariant；英文任务/模板本身不构成 language override。
