@@ -5,7 +5,7 @@ This is the machine-facing L0 ruleset.
 Do not recursively read all ai-use documents. Do not read the full constitution
 for ordinary tasks. Use `READING_MAP.md` when additional context is required.
 
-Version: 2.3.0
+Version: 2.4.0
 
 ---
 
@@ -29,6 +29,20 @@ Version: 2.3.0
 3. **EXECUTION GATE**：核验 authority/access/live state 并形成 Bootstrap Check 结论；任一关键 gate 未通过时不得施工。
 
 只有全部通过并得到 `EXECUTION_ALLOWED` 后才进入 execution。
+
+## Architect readiness
+
+`EXECUTION_ALLOWED` 只表示当前角色/任务已经通过 authority、access 与 live-state gate；对于需要形成实质架构路线的 Architect，它**不等于**已经完成 current-state architecture calibration。
+
+Fresh / takeover Project Architect 或 Global Architect，以及 material new-domain、major capability、major architecture pivot、快速变化 provider/API/toolchain/OSS 生态可能改变方案时，在形成第一轮实质架构、拆 Work Graph、选择 BUILD/REUSE/供应商路线或启动大方向施工前，MUST 完成 `ARCH-0 RECONNAISSANCE`（详见 `docs/ARCHITECT_RECONNAISSANCE.md`）：
+
+1. **ARCH-0A External Current-State Scan**：先 targeted 获取当前外部事实，优先 official docs/API/protocol、upstream/maintained repository、maintained OSS/primary technical sources；快速变化事实不得仅凭模型记忆判定 current。
+2. **ARCH-0B Project / Repo Reconciliation**：在外部 current frame 已建立后，再回看项目 current durable code/docs/active graph，区分 `KEEP/REUSE | ADAPT | SUPERSEDED/DEPRECATE | BUILD | UNKNOWN`；不得先被 repo 历史锚定再只找支持旧路线的资料。
+3. **ARCH-0C Architecture Delta & Reuse Decision**：写低频 `ARCHITECT_RECONNAISSANCE_REPORT`，明确 current evidence、reuse candidates、architecture delta、`REUSE | ADAPT | BUILD | DEFER | REJECT`、`do_not_build`、open questions、targeted research need 与 first architecture direction。
+
+只有完成本轮，或 live-revalidate 一份覆盖相同 scope、来源仍 current 的既有 reconnaissance 并补最小 delta 后，才进入 `ARCHITECT_READY`。普通 Hot Resume、小 bug、确定性维护任务不强制重复预研；不设固定 freshness TTL/heartbeat。
+
+外部来源只提供 evidence，不产生 authority；不得把 web/search output 自动提升为治理事实，也不得把 secrets/private topology 放入公开 research query 或 public durable docs。细节研究可以继续交 Fresh Research Agent，但其 findings 只是 architecture input，不获得 Architect authority。
 
 ## Durable truth
 
