@@ -60,3 +60,34 @@
 - [ ] 列表类数据：分页拉取，避免截断。
 - [ ] 写入前先确认有写权限（读成功 ≠ 写成功）。
 - [ ] 长内容落盘，不在聊天里刷长报告。
+
+## 6. 已实测验证（2026-08-29，youlingfu token）
+
+以下为本次实机验证记录，覆盖核心读写路径。
+
+| 工具 | 目标 | 结果 | 备注 |
+|---|---|---|---|
+| `get_me` | - | ✅ | 身份 `youlingfu` |
+| `list_issues` | `youling/re` | ✅ | 返回 14 个 open issues |
+| `get_file_contents` | `youling/ai-use` | ✅ | 返回正文 + blob sha |
+| `list_branches` | `youling/ai-use` | ✅ | `main` + 21 个功能分支 |
+| `create_or_update_file` | `youling/ai-use` | ✅ | 带 sha 更新本文件成功 |
+| `search_code` | `youling/ai-use` | ❌ | 返回空，`incomplete_results: true` |
+
+**关键结论：`search_code` 对私有仓库无效。**
+
+GitHub 的 code search API 只索引公开仓库。即使 token 具备私有仓库读权限，`search_code` 对私有仓库仍返回 `total_count: 0` 且 `incomplete_results: true`，不能作为私有仓代码检索手段。
+
+私有仓库代码定位的替代方案：
+1. 已知文件路径 → `get_file_contents` 精确读文件。
+2. 追溯变更历史 → `list_commits`（可按 `path` 过滤）→ `get_commit` 看 diff。
+3. 粗粒度目录浏览 → `get_file_contents` 传目录 path + `fields` 减小体积。
+4. 需要本地全文检索 → 在本地 clone 后用 `git grep`，不要指望远端 code search。
+
+## 7. DeepSeek++ MCP 配置回执
+
+- 传输：`Streamable HTTP`
+- 服务 URL：`https://api.githubcopilot.com/mcp/`
+- 认证：Secrets 区类型选 `Bearer`，填 PAT 本体（不要加 `Bearer ` 前缀；扩展自动组装 `Authorization` 头）
+- 结果字节建议调到 256000+，默认 64000 易截断大 JSON
+- 三个开关（默认执行 / 允许注入 / 自动执行）全开，否则工具调用需手动确认
