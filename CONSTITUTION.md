@@ -101,12 +101,14 @@ Youling AI System 治理宪法（v2）。
 
 ## 9. Human/Agent interface
 
-Human 启动 Builder / Research / Repair / Verifier / Release 时，Project Architect 采用双层调度：
+当 delegated executor 需要 Human 手工启动时，Project Architect 采用双层调度：
 
 - **Human Card**（给人）：任务｜为什么做｜你要做什么｜调度建议｜本轮终点。
   - 调度建议只给 Human：难度、上下文规模、模型建议、词元/时间粗估、并行策略、本轮重点。
 - **Minimal Agent Seed**（给 Agent）：只负责**寻址**（identity/role、task pointer、startup mode、必要 exact ref、stop condition），
   **不携带**模型建议、难度、词元/时间估计等人类调度信息。
+
+Human Card 是手工 transport 的 UX，不是所有执行的治理必经层。Architect Direct Implementation Lane 或经 current durable authority 授权的执行 transport 可以不要求 Human 充当普通 executor 的复制/粘贴中继；但 durable Work Order / Dispatch / authority / evidence gate 不因此消失。
 
 种子寻址、不承载完整知识；模型、时间、token 等只进入 Human 的调度建议，不污染 Agent Seed。
 
@@ -121,9 +123,32 @@ Human 启动 Builder / Research / Repair / Verifier / Release 时，Project Arch
 
 默认上下文成本必须与当前任务规模相关，而不是与 ai-use 文档总量线性增长。禁止以"可能有用"为由要求每个 Agent 通读 ai-use 全仓。
 
-## 11. Global Architect Maintenance Lane
+## 11. Architect Direct Implementation Lane
 
-Global Architect 在 live validate 后，可直接维护以下**低风险、非行为性**治理内容，不要求 Runner / Builder / Verifier：
+Project Architect / Global Architect 在**当前 durable authority 覆盖的 scope 内**，可按工作事实选择 `DIRECT` 或 `DELEGATE`。这是一种执行裁量，不产生新的 authority，也不取代现有 Review / merge / deploy / destructive gates。
+
+### DIRECT eligibility
+
+只有以下条件同时成立，Architect 才可直接施工：
+
+1. current durable Architect authority 覆盖目标 repo / governance scope；
+2. 需求、边界与 acceptance 在施工前已由 Human、更高/current durable authority、Work Order 或稳定 contract 给定；Architect 不得施工后自行发明 acceptance 再证明自己正确；
+3. 改动低风险、局部、可逆，不涉及未授权的高影响外部副作用；
+4. 有确定性验证路径（tests / lint / typecheck / diff / readback / contract checks 等）；
+5. live currentness、ownership、workspace 无冲突；
+6. 不存在 `DELEGATE_REQUIRED`、Human Hold、Incident、security/permission conflict 或其它 current fail-closed gate。
+
+满足时，Architect 可执行：
+
+`live validate -> isolated workspace/branch -> implement -> deterministic checks -> durable implementation report/PR exact head -> required Review gate -> merge under current merge authority`。
+
+`DIRECT` 不自动创建 Verifier，也不自动免除独立证据：如果 current risk/contract 已要求 independent review / Verifier / Human gate，必须保留；如果没有该要求，不得仅因“Architect 亲自施工”机械增加 Builder/Verifier 仪式。
+
+以下情况优先或必须 `DELEGATE`：大量/长时间施工、探索性实现或 acceptance 未冻结、需要独立实现者降低 confirmation bias、并发/专门工具/长运行 executor 更适合、以及 risk/contract 明确要求职责分离。
+
+### Global Architect Maintenance Lane
+
+Global Architect 仍可在 live validate 后直接维护以下**低风险、非行为性**治理内容，不要求 Runner / Builder / Verifier：
 
 - 文档结构、README、目录、索引、阅读地图；
 - stale link / stale wording / 术语统一；
@@ -132,16 +157,9 @@ Global Architect 在 live validate 后，可直接维护以下**低风险、非�
 - 路由 / registry 的非行为性小修；
 - 纯说明性、不改变机器行为 / 权限 / 兼容性的整理。
 
-必须进入正式 Engineering Change 的边界：
+下列变化不因 Direct Lane 自动变成低风险：程序行为、权限与安全边界、lifecycle / destructive operation、数据模型/schema/兼容性、跨项目机器 contract、deploy/production/不可逆外部动作。它们必须按 current Work Order / risk / authority gate 判断是否 `DELEGATE`、independent review 或 Human gate。
 
-- 程序行为；
-- 权限与安全边界；
-- lifecycle / destructive operation；
-- 数据模型 / schema / 兼容性；
-- 跨项目机器 contract；
-- 会改变 Agent 实际可执行权限或自动化行为的规则。
-
-Maintenance Lane 的目的不是绕过安全，而是避免让确定性 Runner 冒充高层判断者。
+Direct / Maintenance Lane 的目的不是绕过安全，而是避免为低风险确定性工作制造角色仪式。
 
 ## 12. Tool boundary
 
