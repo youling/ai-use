@@ -5,7 +5,7 @@ This is the machine-facing L0 ruleset.
 Do not recursively read all ai-use documents. Do not read the full constitution
 for ordinary tasks. Use `READING_MAP.md` when additional context is required.
 
-Version: 2.2.1
+Version: 2.2.2
 
 ---
 
@@ -97,4 +97,8 @@ Version: 2.2.1
 ## Durable trace
 
 - 任何具有事实价值的 Agent 行为（决策/修改/验证/状态变化/风险判断）必须留下 durable artifact，并返回可恢复 pointer。
-- 聊天输出不是事实源。只存在于聊天的结论不算留痕。见 `30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md`。
+- **长任务 MUST 阶段性回写 `PROGRESS_CHECKPOINT`；不得把所有事实价值积压到最终报告。** checkpoint 按语义里程碑触发，不按分钟 heartbeat：研究结论可复用、方案/边界冻结、可恢复 mutation tranche、关键验证完成、进入外部等待/限流/长耗时步骤前、handoff / role switch / context reset 前都属于典型 checkpoint。
+- checkpoint 至少让 fresh/resume Agent 知道：`work`、当前 `phase`、已完成事实、durable refs、验证状态、剩余工作、blocker/风险与 `next`。有 mutation 时应尽量绑定已 push 的 branch/commit/PR exact head；仅本机未 push 状态必须标记 `recoverability: LOCAL_ONLY`，不得伪装为 durable 成果。
+- checkpoint 不产生 authority、不迁移 task state；恢复时必须先 live-read current Issue/ruling/remote refs，再用最近 checkpoint 辅助续接。checkpoint 与 live state 冲突时以 live state 为准。
+- 禁止高频 heartbeat、逐命令日志与 chain-of-thought；最终 Report / Completion artifact 仍保留，但只是最后一个 checkpoint，不再是唯一 durable write 时点。
+- 聊天输出不是事实源。只存在于聊天的结论不算留痕。详见 `30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md`。
