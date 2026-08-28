@@ -84,10 +84,83 @@ GitHub 的 code search API 只索引公开仓库。即使 token 具备私有仓�
 3. 粗粒度目录浏览 → `get_file_contents` 传目录 path + `fields` 减小体积。
 4. 需要本地全文检索 → 在本地 clone 后用 `git grep`，不要指望远端 code search。
 
-## 7. DeepSeek++ MCP 配置回执
+## 7. DeepSeek++ 接入 GitHub MCP 完整配置指南
 
-- 传输：`Streamable HTTP`
-- 服务 URL：`https://api.githubcopilot.com/mcp/`
-- 认证：Secrets 区类型选 `Bearer`，填 PAT 本体（不要加 `Bearer ` 前缀；扩展自动组装 `Authorization` 头）
-- 结果字节建议调到 256000+，默认 64000 易截断大 JSON
-- 三个开关（默认执行 / 允许注入 / 自动执行）全开，否则工具调用需手动确认
+### 7.1 配置入口
+
+1. 打开 DeepSeek 网页（https://chat.deepseek.com/），确保已安装并启用 DeepSeek++ 扩展。
+2. 打开 DeepSeek++ 侧边栏。
+3. 进入「工具 / MCP」页面。
+4. 点击「新增 MCP 服务」。
+
+### 7.2 推荐配置（GitHub 官方 Remote MCP）
+
+| 字段 | 值 |
+|---|---|
+| 名称 | `GitHub MCP`（随意） |
+| 传输 | `Streamable HTTP` |
+| 服务 URL | `https://api.githubcopilot.com/mcp/` |
+| Headers | 留空（用 Secrets 代替） |
+| Secrets | 类型 `Bearer`，值 = PAT 本体 |
+
+> 为什么选 Streamable HTTP：GitHub 官方 remote MCP 是托管在 GitHub 服务器上的 HTTP 服务，无需本地 npx / shell-host / Stdio Bridge，是浏览器扩展环境下最顺的接入方式。
+
+### 7.3 认证填法：Headers 与 Secrets 二选一
+
+**方式 A（推荐）：用 Secrets**
+- Secrets 区「类型」选 `Bearer`
+- 「值」填 **PAT 本体**（形如 `ghp_xxxxxxxx`），**不要**加 `Bearer ` 前缀
+- 扩展会自动组装成 `Authorization: Bearer <token>` 请求头
+- Headers 区留空
+
+**方式 B：用 Headers**
+- Headers 区新增一行，两个输入框分别填：
+  - header 输入框：`Authorization`
+  - Value 输入框：`Bearer ghp_xxxxxxxx`（带前缀带空格）
+- Secrets 区留空
+
+> ⚠️ 两者只填一个，同时填会重复或冲突。
+> ⚠️ PAT 生成时只显示一次，建议存好；不确定完整性就重新生成。
+
+### 7.4 参数详解
+
+| 参数 | 默认 | 推荐 | 说明 |
+|---|---|---|---|
+| 连接 ms | 10000 | 10000 | 建立连接超时，远程 HTTP 够用 |
+| 请求 ms | 60000 | 60000 | 单次请求超时，读大文件/长列表够用 |
+| 发现 ms | 20000 | 20000 | 拉取工具列表超时，够用 |
+| 结果字节 | 64000 | **512000** | 关键参数。默认 64KB 易截断大 JSON（issue 列表、文件内容），必须调大 |
+| 工具上限 | 128 | 128 | GitHub MCP 工具数远不到 128，无需改 |
+
+### 7.5 三个开关
+
+| 开关 | 状态 | 作用 |
+|---|---|---|
+| 默认执行 | **开** | 服务级默认策略：工具默认自动跑 |
+| 允许注入 | **开** | 工具描述注入 prompt，模型才能感知工具并调用 |
+| 自动执行 | **开** | 模型输出工具调用即自动执行，无需手动确认 |
+
+> 三个开关必须全开，否则工具要么不注入、要么每次调用都要手动点确认。
+
+### 7.6 保存后验证流程
+
+1. 点「保存」。
+2. 点「测试」验证 initialize/list 行为与延迟。
+   - 通 → 继续下一步。
+   - 401 → PAT 错误或前缀问题。
+   - 连接失败 → URL 或网络问题。
+3. 点「刷新工具」填充工具缓存。
+4. **新开一个 DeepSeek 对话**（MCP 工具只注入新会话）。
+5. 发一句「列出 youling/re 的 issue」验证工具已注入并能跑通。
+
+### 7.7 传输方式选择参考
+
+| 传输 | 适用场景 | 备注 |
+|---|---|---|
+| Streamable HTTP | 远程 HTTP MCP 服务（GitHub 官方推荐） | ✅ 首选 |
+| HTTP | JSON-RPC POST 端点 | 旧式 |
+| SSE | 旧式 SSE 端点 | 遗留 |
+| Stdio Bridge | 本地 stdio 服务 | 需本地 bridge 进程，浏览器沙箱不能直接跑 stdio |
+| Native | 本机 Native Messaging host | 需额外安装 host（如 shell-host） |
+
+> 浏览器扩展沙箱无法直接启动 stdio 进程或读任意本地文件。本地 MCP 必须经 Stdio Bridge 或 Native host 中转。
