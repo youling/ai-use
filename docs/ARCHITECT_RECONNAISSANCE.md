@@ -109,7 +109,7 @@ first_architecture_direction: <first material architecture/work direction>
 可复用旧 reconnaissance 的条件：
 
 - scope 实质相同；
--关键 source 仍 current；
+- 关键 source 仍 current；
 - live revalidation 没发现 material external change；
 - repo/current architecture 没出现会推翻旧结论的新 drift。
 
