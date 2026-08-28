@@ -5,7 +5,7 @@ This is the machine-facing L0 ruleset.
 Do not recursively read all ai-use documents. Do not read the full constitution
 for ordinary tasks. Use `READING_MAP.md` when additional context is required.
 
-Version: 2.2.0
+Version: 2.2.1
 
 ---
 
@@ -24,7 +24,7 @@ Version: 2.2.0
 
 启动必须按 `1 -> 2 -> 3` 顺序完成，详见 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`：
 
-1. **ADDRESS**：只定位 Seed、current Durable Dispatch、Work Coordinate；`BOOT-1B/1C` 在 `BOOT-2A` 前不得把任务正文的 scope / acceptance / language / behavior 当成已适用规则。
+1. **ADDRESS**：只定位 Seed、current Durable Dispatch、Work Coordinate，并在 `BOOT-1A` 解析最小 access route；`github-private` 优先使用当前 Agent/宿主的已授权原生 GitHub 能力，实测不可用时才回退本机已认证 `gh`，不得先用匿名公网 URL 探路。`BOOT-1B/1C` 在 `BOOT-2A` 前不得把任务正文的 scope / acceptance / language / behavior 当成已适用规则。
 2. **APPLICABLE RULES**：先加载 `BOOT-2A` 本 Global L0，再读 `BOOT-2B` 目标仓/项目本地规则，最后在 `BOOT-2C` 适用 current Work Order / Dispatch / amendment。
 3. **EXECUTION GATE**：核验 authority/access/live state 并形成 Bootstrap Check 结论；任一关键 gate 未通过时不得施工。
 
@@ -33,6 +33,8 @@ Version: 2.2.0
 ## Durable truth
 
 - Git/GitHub 是唯一持久事实源；chat 是 working memory；本地 workspace 默认 ephemeral。
+- GitHub 高频读取优先走当前 Agent/宿主已授权的原生 GitHub integration / connector / tool；若该能力不存在或实测不可用，再回退本机已认证 `gh`。本地 clone/worktree 是执行副本，不替代 remote durable truth。
+- 对 `github-private`，匿名公网 `404` 不构成 repo 不存在或无权限的 durable 证据；native GitHub 与 authenticated `gh` 都不可用时，报告 `ACCESS_BLOCKED` / `ACCESS_DRIFT`，不得靠公网探路或陈旧 checkout 猜测继续。
 - 遇冲突/BLOCKED 不靠猜；以 durable source / live state 为准，不确定就报告 `BLOCKED`。
 - 不编造 API、配置、文件内容、测试结果、Git 状态或第三方能力；不知道就说不知道。
 - Durable artifact 的存在不自动等于当前 authority；导入历史报告、旧裁决、旧产物前，需判断其 current / superseded / historical-evidence 语义。
@@ -86,6 +88,8 @@ Version: 2.2.0
 ## Seed & tools
 
 - Seed 负责寻址，不承载完整知识；模型/时间/token 建议只进 Human 调度，不进你的 seed。
+- **最小 Seed = 最少无歧义启动信息，不等于最少行。** private repo 必须显式携带 `access: github-private`；public repo 在 pointer/live metadata 已无歧义时可省略 access。
+- `access` 只决定 BOOT-1A 访问路由，不授予 authority：原生 GitHub 能力优先，authenticated `gh` 回退，本地 Git workspace 仅作经 remote exact-ref 校验后的执行副本。
 - Durable Dispatch 负责任务上下文；Bootstrap Check 负责启动状态验证（见 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`）。
 - 不要把完整任务知识塞入 Seed。
 - Runner 是确定性执行/安全工具，不是架构师，也不是所有修改的必经层。
