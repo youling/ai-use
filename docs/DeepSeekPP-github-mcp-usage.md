@@ -26,35 +26,33 @@
 
 **铁律：私有仓库一律走 GitHub MCP 工具；`web_fetch` 与裸浏览器对 GitHub 私有内容不可用。**
 
-## 2. 防止工具结果被 `[truncated]` 截断 —— 两个维度，先判断再对症
+## 2. 防止工具结果被 `[truncated]` 截断 —— 两层预算，别只会分页
 
-截断有**两种根因**，处理手段完全不同，不要盲目分页：
+截断有两个**独立预算层**，根因不同，手段不同：
 
-### 维度 A：集合截断（一次返回 N 条，总和超限）
+### 层①：MCP 传输层（可配置）
 
-- 典型：`issue_read(get_comments)` 一次拉全量 12 条评论，总 payload 超过单次回传字节预算，**列表尾部整体被截**。
-- 目标评论若在列表末尾（最新一条），会恰好落在截断点之后，表现为「读不到」。
-- ✅ 对策：**分页** —— `issue_read` 传 `page` + `perPage`（如 `perPage: 3`，`page` 定位到尾部），只拉最后一页。
+- 对应 DeepSeek++ MCP 的「结果字节」，管 **MCP 服务器 → 插件** 这段传输。
+- 默认 64000，调大到 512000 可解决「大 JSON 列表 / 大文件在传输层被砍」的问题。
 
-### 维度 B：单条截断（单条超长，分页无效）
+### 层②：模型上下文注入层（当前无 UI 直接配置项）
 
-- 典型：某条 comment / durable dispatch / 大文件**本身**就超过单次回传字节预算。即使 `perPage=1`，这条 body 依然完整返回、依然超限。
-- 例如 `issue_read perPage=3, page=4` 后，最后一页里最后一条超长 dispatch 的 body 末尾仍被截 —— 分页只能拆「条数」，拆不掉「单条长度」。
-- ⚠️ Agent 侧**无法根治**，只有 Human 在 DeepSeek++ MCP 配置里调大「结果字节」才能解决（见 §7.4）。
-- 过渡补救：`perPage=1` + 精确 `page` 定位，减少同页邻居体积；治标不治本。
+- 插件把工具结果注入模型可见上下文时，存在一个**更小**的预算。
+- **硬实测**：`结果字节=512000` 时，6425 字节的 `AGENTS.md` 仍 `[truncated]`，而 4397 字节的 `README.md` 完整 → 预算阈值约在 **4.4KB ~ 6.4KB 之间**，远小于 512000。
+- 结论：**瓶颈在层②而非层①**。「调大结果字节根治一切截断」「新会话生效」都是错误归因——对层②无效。
 
-### 判别顺序
+### 可操作对策
 
-1. 看 `[truncated]` 出现位置：列表尾部整体断 = 维度 A；末尾单条 body 断 = 维度 B。
-2. 维度 A → 分页；维度 B → 提示调大结果字节，同时 `perPage=1` 精确定位尽量读完。
-3. 大文件同理：`get_file_contents` 精确到单文件路径；列目录用 `fields` 只取必要字段（如 `["name","type","path"]`）减小体积。
+1. **单次读尽量小**：`get_file_contents` 精确到单文件路径；列目录用 `fields` 只取必要字段；`issue_read(get_comments)` 用 `page + perPage` 分页。
+2. **单条超长且无法拆**（如超长 dispatch comment）：MCP 侧读不到全文，改走本地 clone 后 `cat`/`git grep`。
+3. **根治层②需改插件注入层代码**（`core/tool/` 或 `core/mcp/transports/` 中的截断逻辑），属 Builder 工作，Agent 不自行改动。
 
 ## 3. 防自己单轮输出触顶（与 MCP 无关，但常混淆）
 
 1. 长报告不要刷在聊天里——直接 `add_issue_comment` 或写文件落盘，聊天只给一句话摘要。
 2. 一个回复只带 1~2 个工具调用，别「大段文字 + 多个工具 XML」挤爆单轮。
 3. 现象区分：
-   - 工具结果里出现 `[truncated]` → 读入 payload 超限（维度 A 或 B）。
+   - 工具结果里出现 `[truncated]` → 读入 payload 超限（层①或层②）。
    - 聊天文字在某个字符处戛然而止（可能断在反引号中间）→ 模型单轮 max output tokens 触顶。
 
 ## 4. 写文件的规范流程（有写权限时）
@@ -71,25 +69,24 @@
 - [ ] `list_branches` 确认目标仓库 + 默认分支。
 - [ ] 读 `AGENTS.md`（若存在）作为项目规则入口。
 - [ ] 私有仓：只用 GitHub MCP，不碰 web_fetch / browser。
-- [ ] 列表类数据：先判断截断维度 A/B，再决定分页或调结果字节。
+- [ ] 列表类数据：先分页/过滤控制单次体积；超大单条改本地 clone 读。
 - [ ] 写入前先确认有写权限（读成功 ≠ 写成功）。
 - [ ] 长内容落盘，不在聊天里刷长报告。
 
 ## 6. 已实测验证（2026-08-29，youlingfu token）
 
-以下为本次实机验证记录，覆盖核心读写路径。
-
 | 工具 | 目标 | 结果 | 备注 |
 |---|---|---|---|
 | `get_me` | - | ✅ | 身份 `youlingfu` |
 | `list_issues` | `youling/re` | ✅ | 返回 14 个 open issues |
-| `get_file_contents` | `youling/ai-use` | ✅ | 返回正文 + blob sha |
-| `list_branches` | `youling/ai-use` | ✅ | `main` + 21 个功能分支 |
+| `get_file_contents` | `.gitignore` (429B) | ✅ | 完整 |
+| `get_file_contents` | `re/README.md` (4397B) | ✅ | 完整 |
+| `get_file_contents` | `re/AGENTS.md` (6425B) | ❌ | `[truncated]`；结果字节 512000 仍截 → 瓶颈在注入层 |
 | `create_or_update_file` | `youling/ai-use` | ✅ | 带 sha 更新本文件成功 |
 | `search_code` | `youling/ai-use` | ❌ | 返回空，`incomplete_results: true` |
-| `issue_read get_comments` | `youling/re#1` | ⚠️ | 全量 12 条截断（维度 A）；`perPage=3,page=4` 后末尾超长 dispatch 仍截断（维度 B） |
+| `issue_read get_comments` | `youling/re#1` | ⚠️ | 全量 12 条截断；分页到末页后末尾超长 dispatch 仍截 |
 
-**关键结论：`search_code` 对私有仓库无效。**
+**关键结论 1：`search_code` 对私有仓库无效。**
 
 GitHub 的 code search API 只索引公开仓库。即使 token 具备私有仓库读权限，`search_code` 对私有仓库仍返回 `total_count: 0` 且 `incomplete_results: true`，不能作为私有仓代码检索手段。
 
@@ -98,6 +95,8 @@ GitHub 的 code search API 只索引公开仓库。即使 token 具备私有仓�
 2. 追溯变更历史 → `list_commits`（可按 `path` 过滤）→ `get_commit` 看 diff。
 3. 粗粒度目录浏览 → `get_file_contents` 传目录 path + `fields` 减小体积。
 4. 需要本地全文检索 → 在本地 clone 后用 `git grep`，不要指望远端 code search。
+
+**关键结论 2：截断瓶颈在注入层，不在「结果字节」。** 见 §2。
 
 ## 7. DeepSeek++ 接入 GitHub MCP 完整配置指南
 
@@ -137,17 +136,17 @@ GitHub 的 code search API 只索引公开仓库。即使 token 具备私有仓�
 > ⚠️ 两者只填一个，同时填会重复或冲突。
 > ⚠️ PAT 生成时只显示一次，建议存好；不确定完整性就重新生成。
 
-### 7.4 参数详解（结果字节是截断的配置级根治点）
+### 7.4 参数详解（结果字节只管传输层，注入层另有预算）
 
 | 参数 | 默认 | 推荐 | 说明 |
 |---|---|---|---|
 | 连接 ms | 10000 | 10000 | 建立连接超时，远程 HTTP 够用 |
 | 请求 ms | 60000 | 60000 | 单次请求超时，读大文件/长列表够用 |
 | 发现 ms | 20000 | 20000 | 拉取工具列表超时，够用 |
-| **结果字节** | 64000 | **512000** | **截断的唯一根治点。** 默认 64KB 既会截断大 JSON 列表（维度 A），也会截断单条超长 comment/dispatch/文件（维度 B）。Agent 侧任何分页都治不了维度 B，只能由 Human 在此调大。改完保存后需**新开对话**才对新会话生效 |
+| 结果字节 | 64000 | 512000 | 只管 MCP 服务器→插件传输段。**不是截断的唯一根治点**：注入模型上下文时的更小预算（实测约 4.4~6.4KB）不受它控制 |
 | 工具上限 | 128 | 128 | GitHub MCP 工具数远不到 128，无需改 |
 
-> ⚠️ 实测教训：即使文档已写明「结果字节要 512000」，只要 DeepSeek++ 插件 MCP 设置里没实际改，`AGENTS.md` 这类几百行文件、超长 dispatch comment 依然会 `[truncated]`。遇到反复截断，先回插件 UI 核对「结果字节」是否已生效，再考虑 Agent 侧分页补救。
+> ⚠️ 实测教训：`结果字节=512000` 已生效时，6425 字节的 `AGENTS.md` 仍 `[truncated]`。说明瓶颈在工具结果→模型上下文的注入层，而非传输层。注入层当前无 UI 直接配置项；Agent 侧只能用「单次读更小 + 本地 clone 兜底」绕过，根治需改插件源码（Builder 职责）。
 
 ### 7.5 三个开关
 
@@ -167,7 +166,7 @@ GitHub 的 code search API 只索引公开仓库。即使 token 具备私有仓�
    - 401 → PAT 错误或前缀问题。
    - 连接失败 → URL 或网络问题。
 3. 点「刷新工具」填充工具缓存。
-4. **新开一个 DeepSeek 对话**（MCP 工具只注入新会话；结果字节等参数改动也需新会话生效）。
+4. 新开一个 DeepSeek 对话（MCP 工具描述注入新会话）。
 5. 发一句「列出 youling/re 的 issue」验证工具已注入并能跑通。
 
 ### 7.7 传输方式选择参考
