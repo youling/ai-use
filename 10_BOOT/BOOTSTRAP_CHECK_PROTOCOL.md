@@ -8,7 +8,7 @@
 
 ```text
 1 ADDRESS
-  A Seed
+  A Seed + Access Route
   B Durable Dispatch
   C Work Coordinate
 
@@ -33,15 +33,25 @@ Seed 只负责寻址，不承载完整任务知识；Durable Dispatch / Work Ord
 
 ## 1. ADDRESS — 定位
 
-### BOOT-1A Seed
+### BOOT-1A Seed + Access Route
 
 解析最小启动地址：dispatch pointer、`work`、`startup_mode`，以及必要的 `access` / exact ref。
 
-这里只做寻址，不把 Seed 扩展成任务合同。
+**最小 Seed 的目标是“最少无歧义启动信息”，不是机械追求最少行。** 对 private repository，`access: github-private` 属于 bootstrap-critical addressing metadata，必须显式携带；public repository 在 pointer / live metadata 已无歧义时可省略 access。
+
+`access` 只决定首次 durable/live read 的访问路由，不产生 authority。路由选择在本槽位完成：
+
+1. **平台原生 GitHub 能力优先**：若当前 Agent / 宿主提供已授权 GitHub connector、integration 或 native GitHub tool，并能读取目标 repo，则优先用它完成首次 GitHub durable/live read。
+2. **本机已认证 `gh` 回退**：原生 GitHub 能力不存在、未连接或实测不可用时，才回退到本机已认证 GitHub CLI / API 路径（`gh`）。
+3. **本地 Git workspace 最后进入**：local clone / worktree 只是执行副本，不是首次 SSOT 发现入口；使用其 branch/head/文件作为执行依据前，必须先与 remote exact ref / live metadata 校验。
+4. 对 `github-private`，**禁止先用匿名公网 URL / raw HTTPS 探路**；匿名 `404` 不构成 repo 不存在或无权限的 durable 证据。只有已知 `github-public` 时，公开 HTTPS 才可作为后续读取回退。
+5. native GitHub 与 authenticated `gh` 都不可用时，报告 `ACCESS_BLOCKED` / `ACCESS_DRIFT`；不得靠匿名公网 404、陈旧 checkout 或猜测继续。
+
+这里只做寻址与访问路径解析，不把 Seed 扩展成任务合同，也不把 access capability 当成治理 authority。
 
 ### BOOT-1B Durable Dispatch
 
-定位当前有效的 `ARCHITECT_*_DISPATCH` / resume dispatch，确认 pointer 可解析，并判断其 current / superseded / historical 状态。
+使用 BOOT-1A 已选定的 GitHub route 定位当前有效的 `ARCHITECT_*_DISPATCH` / resume dispatch，确认 pointer 可解析，并判断其 current / superseded / historical 状态。
 
 **在 `BOOT-2A` 之前，1B 只能确认地址与 currentness。不得把 Dispatch 正文中的 scope、acceptance、language、behavior 指令作为已适用规则执行。**
 
@@ -51,7 +61,7 @@ Seed 只负责寻址，不承载完整任务知识；Durable Dispatch / Work Ord
 
 **在 `BOOT-2A` 之前，1C 同样只做 coordinate / authority-pointer 解析，不提前适用任务正文。**
 
-本阶段只回答：**“我在哪、谁派我来的、当前任务坐标是什么。”**
+本阶段只回答：**“我在哪、用哪条可信 GitHub 路径读 durable state、谁派我来的、当前任务坐标是什么。”**
 
 ---
 
@@ -95,8 +105,10 @@ Seed 只负责寻址，不承载完整任务知识；Durable Dispatch / Work Ord
 - 当前 identity / role 无歧义；
 - 当前角色拥有本轮所需 authority；
 - dispatch author / authority pointer 合法（任务契约要求时）；
-- `github-private` / `github-public` 等访问路径与 live metadata 一致；
-- Capability 不被误当成 Authority。
+- BOOT-1A 选择的 `github-private` / `github-public` 访问路径与 live metadata 一致且实测可用；
+- 原生 GitHub / `gh` / filesystem capability 不被误当成 Authority。
+
+BOOT-1A 决定“先走哪条访问路径”；BOOT-3A 决定“该访问能力是否真的可用，以及当前角色是否有权执行”。两者不得混为一谈。
 
 ### BOOT-3B Live State
 
@@ -108,7 +120,7 @@ live-read 当前执行状态，至少覆盖与任务相关的：
 - currentness / superseded state；
 - HEAD_MOVED / relationship drift / authority conflict 等阻断条件。
 
-与 Seed、自述或旧报告冲突时，以 current durable/live state 为准并 fail closed。
+与 Seed、自述、旧报告或本地 checkout 冲突时，以 current GitHub durable/live state 为准并 fail closed。
 
 ### BOOT-3C Bootstrap Conclusion
 
@@ -133,7 +145,7 @@ EXECUTION_ALLOWED
 任一项失败时，例如：
 
 ```text
-BOOT-3B BLOCKED_HEAD_MOVED
+BOOT-1A ACCESS_BLOCKED
 BOOT-3C BLOCKED
 
 EXECUTION_NOT_ALLOWED
@@ -147,7 +159,7 @@ EXECUTION_NOT_ALLOWED
 
 旧检查没有消失，只被收敛到稳定顺序：
 
-- Identity / Authority / Access -> `BOOT-3A`
+- Identity / Authority / Access -> `BOOT-1A` 路由选择 + `BOOT-3A` capability/authority 核验
 - Entry Point -> `BOOT-1A/1B/1C`
 - Active Mission / Boundary -> `BOOT-2C`
 - State -> `BOOT-3B`
