@@ -28,16 +28,21 @@ Global Architect 是 AI 协调角色：维护规则、调度 Agent、收敛治�
 
 ## 2. 第一阅读入口
 
-按顺序读（不要通读全仓）：
+`START_HERE.md` 是 **public navigation**，不是执行型 Agent 的 normative rules layer。
 
-1. [`READING_MAP.md`](READING_MAP.md) —— 决定"按当前角色/场景该读哪几篇"；
-2. [`NAMESPACE.md`](NAMESPACE.md) —— 理解 00→90 命名空间流向；
-3. [`AGENTS.md`](AGENTS.md) —— 机器 L0 规则，执行 Agent 启动时必须加载这一层；
-4. [`README.md`](README.md) —— 体系概览与治理模型。
+准备执行任务、恢复任务或接管 Architect 角色时：
+
+1. **第一份 normative rules read 必须是 [`AGENTS.md`](AGENTS.md)（Global L0）**；
+2. L0 加载后，再用 [`READING_MAP.md`](READING_MAP.md) 判断当前角色/场景需要哪些 targeted L1/L2；
+3. [`NAMESPACE.md`](NAMESPACE.md) 只用于命名空间导航，[`README.md`](README.md) 只用于体系概览；二者都不是普通 Agent 获得 `EXECUTION_ALLOWED` 的前置。
+
+`BOOT-1 ADDRESS` 的自然语言寻址可以发生在 L0 前，但此时只允许提取地址事实；不得提前适用 target repo / current work 的 scope、acceptance、priority、authority 或 behavior。完整顺序见 [`10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`](10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md)。
 
 ## 3. Agent 如何启动
 
-Agent 通过**最小 seed**（只寻址）启动，不复制任务知识：
+Agent 可以由 **Minimal Agent Seed** 或 Human 已经明确表达的 **natural-language addressing** 启动；Human 不需要为了模板仪式再次复制同一组寻址事实。
+
+标准 delegated executor 的最小 seed 仍只寻址，不复制任务知识：
 
 ```text
 按 `youling/<repo>#<issue>` 的 <DISPATCH_TYPE> comment `<id>` 执行。
@@ -46,28 +51,38 @@ work: youling/<repo>#<issue>@<step>
 startup_mode: Fresh <Role>
 ```
 
+对 Fresh / takeover Architect，如果 Human 当前消息已经无歧义明确了 target project/repository、Architect role、governance handbook pointer 与 access route，例如：
+
+```text
+你是 <repo> 的项目架构师；工作手册是 <ai-use>；private GitHub 使用已授权 connector/MCP。
+```
+
+Agent MAY 把这些**明确表达的事实**规范化为 `BOOT-1A` addressing facts。不得从 README、open Issue、repo owner、GitHub/MCP capability 或模型记忆自行补造 Durable Dispatch、Work Coordinate、authority、acceptance 或 priority。
+
+`NATURAL_LANGUAGE_SEED_NORMALIZATION != AUTHORITY_INFERENCE`。
+
 任务型 Agent 的统一 cold-start 主干是：
 
 ```text
 1 ADDRESS
-  BOOT-1A Seed
-  BOOT-1B current Durable Dispatch
-  BOOT-1C Work Coordinate
+  BOOT-1A Seed / natural-language addressing + Access Route
+  BOOT-1B current Durable Dispatch（若适用）
+  BOOT-1C Work Coordinate / role-bootstrap coordinate
 
 2 APPLICABLE RULES
   BOOT-2A Global L0 (`AGENTS.md`)
   BOOT-2B target repo / project local
-  BOOT-2C current Work Order / latest ruling
+  BOOT-2C current Work Order / latest ruling（若适用）
 
 3 EXECUTION GATE
   BOOT-3A Authority + Access
   BOOT-3B Live State
-  BOOT-3C Bootstrap Conclusion
+  BOOT-3C Bootstrap Conclusion + required durable writeback
 
 => EXECUTION_ALLOWED
 ```
 
-`BOOT-1` 只定位，不提前适用任务正文；任务 scope / acceptance / behavior 的规范性适用发生在 `BOOT-2C`。只有 `1 -> 2 -> 3` 全部通过后才执行。
+`BOOT-1` 只定位，不提前适用任务正文；任务 scope / acceptance / behavior 的规范性适用发生在 `BOOT-2C`。只有 `1 -> 2 -> 3` 全部通过，且 Fresh/takeover Architect 的 required Bootstrap Report 已写回可写 durable anchor，才可声称 durable cold-start complete / `EXECUTION_ALLOWED`。
 
 完整定义见 [`10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`](10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md)；Human / Agent 接口见 [`docs/AGENT_INTERFACE.md`](docs/AGENT_INTERFACE.md)。
 
@@ -166,14 +181,15 @@ WAITING_FOR_HUMAN
 
 ## Agent 首次启动说明
 
-如果 Agent 第一次进入 ai-use，执行：
+如果 Agent 第一次进入 ai-use：
 
-1. START_HERE
-2. Kernel
-3. Bootstrap Check（按 `BOOT-1 -> BOOT-2 -> BOOT-3`）
-4. Workspace Bootstrap
+1. 用 `START_HERE` 只做 public navigation / address discovery；
+2. 第一份 normative rules read 加载 `AGENTS.md` L0；
+3. L0 后再按 `READING_MAP.md` targeted expansion；
+4. 执行 Bootstrap Check（`BOOT-1 -> BOOT-2 -> BOOT-3`）；
+5. 只有 workspace 初始化场景才进入 Workspace Bootstrap。
 
-不要：扫描全部历史。
+`NAMESPACE.md / README.md` 不是普通任务 cold-start 的强制前置。不要扫描全部历史。
 
 ## Agent Handoff 流程
 
