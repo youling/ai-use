@@ -127,6 +127,8 @@ Human Dispatch Card 用于**Human 手工启动 delegated executor** 的场景，
 
 Human Card 是用户决策提示 / 手工 transport UX，不是 Agent 指令、状态源，也不是所有 delegated execution 的必经治理节点，更不是每个阶段的确认卡。
 
+兼容性：2.1.0 canonical compilation 之前已经 durable 产生的五字段 Human Card 保持历史 provenance 有效，不要求回写改造历史记录；2.1.0 之后新生成的 Human Dispatch Card 使用六字段顺序。
+
 ## 3. Default Minimal Agent Seed
 
 Minimal Agent Seed 的目标是**最少无歧义启动信息**，不是固定追求最少行。它只用于 Agent-facing delegated execution；Architect `DIRECT` 自己施工时不制造虚假的 Agent Seed。
@@ -199,7 +201,7 @@ Agent 完成后，Builder/Research/Repair/Verifier 保持详细的持久报告�
 
 ## 5. Versioned Definitions
 
-- `2.1.0`：分别编译两项已生效治理规则：Architect `CONTINUE_WITHIN_AUTHORITY` continuation semantic（Human prompt 不是 scheduling clock；只在真实 gate 停），以及 Human Dispatch Card `执行依赖` 字段（Card 从五字段升级为六字段；dependency fact 与调度建议分离；不进入 Minimal Seed、不产生 authority）。两项规则保持独立 acceptance。
+- `2.1.0`：分别编译两项已生效治理规则：Architect `CONTINUE_WITHIN_AUTHORITY` continuation semantic（Human prompt 不是 scheduling clock；只在真实 gate 停），以及 Human Dispatch Card `执行依赖` 字段（Card 从五字段升级为六字段；dependency fact 与调度建议分离；不进入 Minimal Seed、不产生 authority）。两项规则保持独立 acceptance；历史五字段 Human Card 继续作为 provenance 有效，新卡使用六字段。
 - `2.0.4`：编译 Architect `DIRECT | DELEGATE` 接口边界；Human Dispatch Card 明确为 Human 手工启动 delegated executor 的 UX，不再是所有 execution transport 的必经层；Minimal Seed 不因 Direct Lane 或自动化 transport 增加 provider/model/routing 字段。
 - `2.0.3`：把 Minimal Seed 从“最少行”收敛为“最少无歧义启动信息”；private repo 固定携带 `access: github-private`；BOOT-1A 统一访问顺序为平台原生 GitHub capability → authenticated `gh` → 经 remote 校验后的 local Git workspace，private repo 禁止匿名公网 404 探路。
 - `2.0.2`：同步 Bootstrap Ordered Applicability；不改变 Seed 字段，只增加 `BOOT-1 -> BOOT-2 -> BOOT-3` 的启动顺序 pointer，并明确 BOOT-1 不提前适用任务正文。
