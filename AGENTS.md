@@ -5,7 +5,7 @@ This is the machine-facing L0 ruleset.
 Do not recursively read all ai-use documents. Do not read the full constitution
 for ordinary tasks. Use `READING_MAP.md` when additional context is required.
 
-Version: 2.4.0
+Version: 2.5.0
 
 ---
 
@@ -80,6 +80,16 @@ Project Architect / Global Architect 在 current durable authority 覆盖的 sco
 
 无论 `DIRECT` 还是 `DELEGATE`，deploy / destructive / production / irreversible external action authority 都独立判断，不得由执行模式推导。
 
+## Architect continuation
+
+Project Architect / Global Architect 的默认 continuation semantic 是 `CONTINUE_WITHIN_AUTHORITY`。Human message / 追问**不是 scheduling clock**；没有新的 Human prompt 本身不构成 blocker。
+
+当下一步仍属于 current Human goal / current authorized program，scope / acceptance / dependency 足够明确，current authority 覆盖，且没有真实 Human gate / blocker / authority drift 时，Architect MUST 持续推进普通项目行政与施工编排，而不是在每个阶段边界机械停下询问“是否继续”。这包括：live reconcile、必要的 `ARCH-0`、Work Graph、`DIRECT | DELEGATE`、Work Order/dispatch、收到 delegated delivery 后主动 Review、Repair/re-dispatch、普通 exact-head merge、已授权 dependency activation、lifecycle convergence 与 next READY work。
+
+持续推进**不产生新增 authority**，也不允许 Architect 自己扩大 Human goal、优先级、产品取舍或 acceptance。每一步仍须 live-revalidate current state / authority / gates。
+
+出现以下任一真实 gate 时必须停 Human / higher authority，而不是为了“持续推进”绕过：新增或改变 Human 目标/acceptance/优先级；material scope expansion / 未覆盖的跨项目 authority；Human Hold / `HUMAN_REQUIRED` / secret input / physical device action；未获独立授权的 production deploy / destructive / irreversible action；unresolved BLOCKER / Incident / security/permission conflict / `HEAD_MOVED` / authority ambiguity；必须由 Human 决定的互斥产品路线；无 READY work 或 program explicit stop condition 已达。
+
 ## Workspace
 
 - 写任务使用**物理隔离**的可变工作区（worktree / 独立 clone / 容器 / 独立目录）。
@@ -96,6 +106,7 @@ Project Architect / Global Architect 在 current durable authority 覆盖的 sco
 - 采用与真实风险相称的最低足够复杂度；不为治理而治理；收敛优先。
 - Architect 不得为了角色仪式机械派 Builder；也不得为了省事把不满足 DIRECT eligibility 的工作强行直接施工。
 - 是否 `DIRECT | DELEGATE`、是否拆任务/并行/启用 Subagent/独立 Reviewer/Worktree，由 current durable authority、问题结构、acceptance 成熟度与真实风险决定。
+- 已有 current authorized next 时，Architect 不得把“等待 Human 再说继续”作为默认状态；只有真实 gate 才停。
 
 ## Verification
 
@@ -126,7 +137,8 @@ Project Architect / Global Architect 在 current durable authority 覆盖的 sco
 - `access` 只决定 BOOT-1A 访问路由，不授予 authority：原生 GitHub 能力优先，authenticated `gh` 回退，本地 Git workspace 仅作经 remote exact-ref 校验后的执行副本。
 - Durable Dispatch 负责任务上下文；Bootstrap Check 负责启动状态验证（见 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`）。
 - 不要把完整任务知识塞入 Seed；`DIRECT | DELEGATE` 也不得把 provider/model 固化进 Minimal Seed。
-- Human Dispatch Card 是 Human 手工启动 delegated executor 时的 UX，不是所有 execution transport 的治理必经层；无论 transport 如何变化，durable Work Order/Dispatch/authority gate 仍必须成立。
+- Human Dispatch Card 是 Human 手工启动 delegated executor 时的 UX，不是所有 execution transport 的治理必经层；new canonical card 恰好六个语义字段：`任务 -> 为什么做 -> 你要做什么 -> 执行依赖 -> 调度建议 -> 本轮终点`。
+- `执行依赖` 是 objective environment dependency fact，必须以 `CLOUD_ONLY | LOCAL_REQUIRED | NODE_REQUIRED | DEVICE_REQUIRED | MIXED | UNKNOWN` 之一开头；它不是 provider/model recommendation，不授予 capability/authority，也**不得复制进 Minimal Agent Seed**。真实 capability 与 authority 仍在 startup / execution gate 独立验证。
 - Runner 是确定性执行/安全工具，不是架构师，也不是所有修改的必经层。
 
 ## Durable trace
