@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** Only read when dispatching, executing, or reviewing Agent work orders.
 
-**Protocol Version: 2.0.4**
+**Protocol Version: 2.1.0**
 
 本文编纂 Human 与 Agent 之间的固定接口契约。所有 ai-hub 映射以本文为准；ai-hub 只做自身映射，不重复全文。
 
@@ -71,29 +71,61 @@ Architect 选择 `DIRECT | DELEGATE` 前必须以 current durable authority 与 
 
 无论采用哪条路径，都不得把 provider/model 名称、价格、quota 等执行路由事实写进 Minimal Seed 或把它们升级为 Work Order truth。
 
+### 1.4 Architect continuous advancement
+
+Project Architect / Global Architect 的默认 continuation semantic 是 `CONTINUE_WITHIN_AUTHORITY`。Human message / 追问不是 scheduling clock；没有新的 Human prompt 本身不构成 blocker，也不把普通阶段边界自动变成 Human approval gate。
+
+在同一 current authorized objective/program 内，只要 next step 仍被 current authority、scope/acceptance、dependency 与 risk gates 覆盖，Architect 应继续完成普通行政与施工编排，包括：materialize Work Order/dispatch、收到 Builder/Research/Repair delivery 后主动 Review、Review PASS 后按 current merge authority 做 ordinary exact-head merge、dependency gate 解开后 activate 已授权 next READY work、以及 lifecycle/state convergence。
+
+Continuous advancement **不是 authority expansion**。出现需要新增/改变 Human goal、产品取舍、优先级、acceptance、material scope/cross-project authority，或 Human Hold / Human-required input / secret / physical-device / production-destructive-irreversible authority gap / unresolved BLOCKER、Incident、security/permission conflict、`HEAD_MOVED`、authority ambiguity 时，必须停 Human / higher authority。没有 READY work 或 program explicit stop condition 已达也应停止，不虚构下一项工作。
+
+Human-facing ordinary stage report 应优先说明“已推进到哪里 / durable pointer / 现在被什么真实 gate 卡住”，而不是默认以“是否继续？”结尾。
+
 ## 2. Human Dispatch Card
 
-Human Dispatch Card 用于**Human 手工启动 delegated executor** 的场景，**恰好五个字段**，按以下顺序：
+Human Dispatch Card 用于**Human 手工启动 delegated executor** 的场景，**恰好六个语义字段**，按以下顺序：
 
 | # | 字段 | 内容 |
 |---|------|------|
 | 1 | 任务 | 一句话任务标题 |
 | 2 | 为什么做 | 背景 / 理由 |
 | 3 | 你要做什么 | 本轮工作内容 |
-| 4 | 调度建议 | 只给 Human：难度、上下文规模、模型建议、词元/时间粗估、并行策略、本轮重点 |
-| 5 | 本轮终点 | 完成边界 / stop condition |
+| 4 | 执行依赖 | objective execution-environment dependency；以 canonical class 开头 |
+| 5 | 调度建议 | 只给 Human：难度、上下文规模、模型建议、词元/时间粗估、并行策略、本轮重点 |
+| 6 | 本轮终点 | 完成边界 / stop condition |
 
-调度建议**只属于 Human 调度层**，不进入 Agent seed。Human Card 是用户决策提示 / 手工 transport UX，不是 Agent 指令、状态源，也不是所有 delegated execution 的必经治理节点。
+`执行依赖` 与 `调度建议` 必须分离：前者描述任务客观需要什么环境，后者描述 Human 应如何调度。`执行依赖` 不授予 capability / authority，也不得编码 provider/model/price/quota。
 
-### 示例
+### 2.1 Canonical execution dependency classes
+
+`执行依赖` MUST 以以下六类之一开头，并 MAY 在破折号后附最小 capability facts：
+
+- `CLOUD_ONLY` — 完成任务不需要 local checkout/toolchain、private node/network、real device、local daemon/long-running process 或 physical/secret interaction；例如 authenticated GitHub R/W、Web、已授权 connector/MCP 即可满足客观依赖。
+- `LOCAL_REQUIRED` — 必须使用本地 filesystem/workspace/toolchain/process/runtime，但不要求特定 Fleet/execution node。
+- `NODE_REQUIRED` — 必须进入指定 managed/execution node 或 private-network path。
+- `DEVICE_REQUIRED` — 必须访问真实 phone/tablet/其它 device 或 device-control path。
+- `MIXED` — 存在有意义的 cloud tranche，但最终 acceptance 还依赖 local/node/device evidence；Architect 应优先拆出 cloud tranche，避免整单长期占用稀缺本地资源。
+- `UNKNOWN` — current evidence 不足以真实分类；不得因为任务“看起来只是文字”就默认 `CLOUD_ONLY`。
+
+关键边界：
+
+- `CLOUD_ONLY` 只说明任务**不依赖 local/node/device state**，不保证任意 web Agent 已连接所需 connector/tool；实际 capability 仍须启动时验证。
+- `CLOUD_ONLY != CAPABILITY_OR_AUTHORITY_GRANT`；GitHub write / review / merge authority 仍按 current durable authority 独立判断。
+- Secret/Human/physical confirmation gate 独立存在；不能为了方便调度把此类任务伪装成 autonomous `CLOUD_ONLY`。
+- dependency taxonomy 是公开通用语义，不写具体 provider/model/价格/quota。
+
+### 2.2 示例
 
 ```text
 任务: ai-hub#50 / routing + docs 收敛
-为什么做: #40/#46/#47/ai-use#4 已退场，文档仍残留旧 Gate / 双验证 / 全量 Bootstrap 语义
-你要做什么: ACTIVE_PROJECTS routing、registry 补齐、Bootstrap/协议对齐 ai-use 2.0、验证政策收敛
-调度建议: 难度 2/5；上下文 Medium；文档编辑 + targeted GitHub 核验；可单 Builder 完成
+为什么做: 旧治理文档仍残留已经退场的路由/Gate 语义
+你要做什么: targeted GitHub 核验、治理文档同步、exact diff readback
+执行依赖: CLOUD_ONLY — authenticated GitHub R/W + Web
+调度建议: 上下文 Medium；文档编辑 + targeted GitHub 核验；可单 delegated executor 完成
 本轮终点: 提交 PR，报告 exact head + 验证结果后停止，等 Architect Review
 ```
+
+Human Card 是用户决策提示 / 手工 transport UX，不是 Agent 指令、状态源，也不是所有 delegated execution 的必经治理节点，更不是每个阶段的确认卡。
 
 ## 3. Default Minimal Agent Seed
 
@@ -129,6 +161,7 @@ access: github-private
 只有当 pointer 无法无歧义启动时，才补最少的 bootstrap-critical 精确引用（如 private/public access hint、exact ref）。Seed **不得**复制以下内容：
 
 - role（当 `startup_mode` 已无歧义表达角色时）、scope / acceptance / requirements / reporting / stop；
+- Human Card 的 `执行依赖` 或调度建议；
 - 启动读取顺序、输入依据/evidence 列表、当前目标、执行步骤、禁止事项或验证清单；
 - 难度、词元/时间估计、模型建议等人类调度信息；
 - 依赖关系、native relationships；
@@ -166,11 +199,13 @@ Agent 完成后，Builder/Research/Repair/Verifier 保持详细的持久报告�
 
 ## 5. Versioned Definitions
 
+- `2.1.0`：分别编译两项已生效治理规则：Architect `CONTINUE_WITHIN_AUTHORITY` continuation semantic（Human prompt 不是 scheduling clock；只在真实 gate 停），以及 Human Dispatch Card `执行依赖` 字段（Card 从五字段升级为六字段；dependency fact 与调度建议分离；不进入 Minimal Seed、不产生 authority）。两项规则保持独立 acceptance。
 - `2.0.4`：编译 Architect `DIRECT | DELEGATE` 接口边界；Human Dispatch Card 明确为 Human 手工启动 delegated executor 的 UX，不再是所有 execution transport 的必经层；Minimal Seed 不因 Direct Lane 或自动化 transport 增加 provider/model/routing 字段。
 - `2.0.3`：把 Minimal Seed 从“最少行”收敛为“最少无歧义启动信息”；private repo 固定携带 `access: github-private`；BOOT-1A 统一访问顺序为平台原生 GitHub capability → authenticated `gh` → 经 remote 校验后的 local Git workspace，private repo 禁止匿名公网 404 探路。
 - `2.0.2`：同步 Bootstrap Ordered Applicability；不改变 Seed 字段，只增加 `BOOT-1 -> BOOT-2 -> BOOT-3` 的启动顺序 pointer，并明确 BOOT-1 不提前适用任务正文。
 - `2.0.1`：clarification patch；不增加新的任务知识字段，只强化 Minimal Agent Seed 的唯一职责是 bootstrap addressing，并给出 private GitHub 的最小 `access` 扩展示例。
-- Human Dispatch Card 五字段顺序：任务 → 为什么做 → 你要做什么 → 调度建议 → 本轮终点。
+- Human Dispatch Card 六字段顺序：任务 → 为什么做 → 你要做什么 → 执行依赖 → 调度建议 → 本轮终点。
+- `执行依赖` class：`CLOUD_ONLY | LOCAL_REQUIRED | NODE_REQUIRED | DEVICE_REQUIRED | MIXED | UNKNOWN`；dependency fact ≠ scheduling recommendation ≠ capability/authority grant。
 - Minimal Agent Seed：public / access 已无歧义时三行；private repo canonical 四行（pointer → work → startup_mode → `access: github-private`）。
 - Human Completion Card 五语义：结果 → 交付 → 验证 → 剩余风险 → 下一步。
 - Dispatch Comment 携带 task knowledge；Human seed 只携带 addresses / bootstrap-critical access metadata。
@@ -181,4 +216,6 @@ Agent 完成后，Builder/Research/Repair/Verifier 保持详细的持久报告�
 - 本文不改变 Runner/程序行为，也不定义 provider/backend routing contract。
 - `ARCHITECT_*_DISPATCH` comment 在 Human seed / delegated transport 之前；seed 不替代 dispatch comment。
 - 派发前 Architect 必须确认 durable source 足以让 fresh Agent 执行（见 Work Order 完整性要求）。
+- Human Dispatch Card 只属于 Human 手工 transport / scheduling UX；authorized automated transport 不需要先生成 Human Card 才能运行。
+- Architect continuous advancement 只适用于 Project/Global Architect current durable authority 内；不得扩展为 Builder/Research/Repair/Verifier 的长期自治或 merge authority。
 - 人类可见叙述的语言遵守 `AGENTS.md` L0 invariant；英文任务/模板本身不构成 language override。
