@@ -248,7 +248,7 @@ fresh Agent 仅凭 exact dispatch pointer + 必要 access metadata 无法从 dur
 Agent 完成后，Builder / Research / Repair / Verifier 保持详细 durable report。Human Completion Card 恰好五个语义：
 
 | # | 字段 | 内容 |
-|---|---|---|
+|---|---|
 | 1 | 结果 | 完成情况 |
 | 2 | 交付 | 交付物 + 精确可恢复 pointer（PR / commit / exact head / durable report） |
 | 3 | 验证 | 验证方法与结果 |
@@ -275,12 +275,12 @@ Human-facing language 只引用 `00_KERNEL/LANGUAGE_POLICY.md`；本接口不复
 ## 6. Versioned Definitions
 
 - `2.2.0`：Kernel residency canonicalization；本文件正式成为 common mutation workspace/scope hygiene、`DIRECT | DELEGATE`、Architect continuous advancement、Global Architect Maintenance Lane 与 Human/Agent dispatch interface 的 canonical home；Bootstrap access routing 与 language override 只保留 pointer，不再复制 downstream policy。**Behavior preserved; residency changed.**
-- `2.1.1`：public portability hardening；移除 maintainer-specific repo coordinate，明确 current governance repo / deployment-local control-plane role indirection。
+- `2.1.1`：public portability hardening；移除 maintainer-specific repo coordinate，明确 current governance repo / deployment-local control-plane role indirection；不改变 `DIRECT | DELEGATE`、authority、dependency taxonomy 或 Completion Card 语义。
 - `2.1.0`：编译 Architect `CONTINUE_WITHIN_AUTHORITY` 与 Human Dispatch Card `执行依赖` 六字段语义；历史五字段 Human Card 保持 provenance 有效。
-- `2.0.4`：编译 Architect `DIRECT | DELEGATE` interface boundary；Human Dispatch Card 明确为 Human 手工启动 delegated executor 的 UX。
-- `2.0.3`：Minimal Seed 收敛为“最少无歧义启动信息”；private repo 携带 `access: github-private`。
+- `2.0.4`：编译 Architect `DIRECT | DELEGATE` 接口边界；Human Dispatch Card 明确为 Human 手工启动 delegated executor 的 UX；Minimal Seed 不增加 provider/model/routing 字段。
+- `2.0.3`：Minimal Seed 从“最少行”收敛为“最少无歧义启动信息”；private repo 固定携带 `access: github-private`；访问优先级为 native authenticated GitHub -> authenticated `gh` -> remote 校验后的 local Git。
 - `2.0.2`：同步 Bootstrap Ordered Applicability；Seed 不提前适用任务正文。
-- `2.0.1`：clarification；强化 Seed 只做 addressing。
+- `2.0.1`：clarification；强化 Seed 只做 addressing，并保留 private GitHub 最小 access 扩展。
 
 ---
 
