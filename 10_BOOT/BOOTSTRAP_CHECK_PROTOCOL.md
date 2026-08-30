@@ -229,5 +229,5 @@ Bootstrap report MAY 列 current active graph / blockers，但不得仅凭 repo/
 3. governance L0 从 current governance repo 解析；control-plane 从 `workspace_registry.control_plane.repo` 或等价 deployment registration 解析。
 4. private repo 首次 durable read 使用 authenticated route；匿名 404 不是权限/存在性证据。
 5. missing optional `asset` / `project` role 不阻塞最小 workspace；只有必需 role 或真实 authority/access/currentness 缺口才 fail closed。
-6. `NAMESPACE.md` 是分类导航，不是执行顺序。
+6. `NAMESPACE.md` 定义 L0 后的 zero-prompt next-hop routing chain；它不是 mandatory full-read order，也不产生 authority / scope / acceptance / priority。
 7. Human-facing narrative 默认简体中文；英文 template/header 不构成 language override。
