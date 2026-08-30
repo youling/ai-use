@@ -2,9 +2,9 @@
 
 Youling AI System 治理宪法（v2）。
 
-本文是公开的**最高治理原则**，不是执行手册。它编纂自已生效的裁决
-（canonical source：`youling/ai-hub#50` comment `5285291606` `GLOBAL_CONSTITUTION_V2_EFFECTIVE`），
-本文件本身不重新发明规则。
+本文是公开的**最高治理原则**，不是执行手册。它编纂自部署实例中已生效的 durable governance ruling。
+（canonical source：部署实例自己的 `../hub`（或等价 control-plane repo）中的 Global Constitution / Global Architect durable ruling；`../hub` 是 deployment-local logical relative coordinate，实际 repo 由部署方 bootstrap / configuration 解析，不指向上游维护者的 private hub。）
+本文件本身不重新发明规则，也不要求公共 `ai-use` 的使用者具备任何上游私有 control-plane 仓库的读取权限。
 
 发生冲突时的优先级（从高到低）：
 
@@ -60,7 +60,7 @@ Youling AI System 治理宪法（v2）。
 
 ## 4. Project autonomy
 
-- 项目实时业务事实留在项目仓；`ai-use` / `ai-hub` 不集中复制业务项目状态。
+- 项目实时业务事实留在项目仓；`ai-use` / 部署实例自己的 `../hub`（或等价 control-plane repo）不集中复制业务项目状态。
 - Global 层只管跨项目规则与依赖，不替代 Project Architect 的日常产品/领域设计。
 - 只有跨项目依赖、共享契约、治理冲突、资源优先级或 Project Architect 请求升级时，Global Architect 才介入。
 - 同一项目同一时刻保持一个 primary Project Architect；其他 Architect 可提供咨询，但不得形成并行双主责。
@@ -180,4 +180,4 @@ Direct / Maintenance Lane 的目的不是绕过安全，而是避免为低风险
 
 ---
 
-> 本宪法不做如下事情：记录当前项目运行态、私有仓拓扑、临时 Work Order、token/模型价格、当前哪个 Agent 在线。这些属于 ai-hub / 各项目仓。
+> 本宪法不做如下事情：记录当前项目运行态、私有仓拓扑、临时 Work Order、token/模型价格、当前哪个 Agent 在线。这些属于部署实例自己的 `../hub`（或等价 control-plane repo）/ 各项目仓。
