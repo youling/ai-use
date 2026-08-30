@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** 新组织 / 新 Global Architect 初始化 workspace 时触发读取。
 
-**Protocol Version: 1.0.0 (clarified, backward-compatible)**
+**Protocol Version: 1.1.0**
 
 ## 目的
 
@@ -28,7 +28,7 @@
 
 ## Workspace Registry（最小结构）
 
-workspace 的仓库拓扑以 YAML 声明，**机器可读 + 人类可读**，不引入数据库。本轮只澄清 1.0.0 字段的 optionality / resolution 语义，**不引入新 schema generation**；已有合法 1.0.0 registry 不需要迁移。
+workspace 的仓库拓扑以 YAML 声明，**机器可读 + 人类可读**，不引入数据库。Protocol 1.1.0 只澄清 registry schema `1.0.0` 字段的 optionality / resolution 语义，**不引入新 schema generation**；已有合法 1.0.0 registry 不需要迁移。
 
 ```yaml
 workspace_registry:
