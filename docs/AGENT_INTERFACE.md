@@ -17,6 +17,18 @@
 
 `DIRECT | DELEGATE` 是执行方式，不产生 authority，也不改变 merge / deploy / destructive / production / irreversible authority。
 
+### 1.0 Common execution hygiene
+
+以下规则适用于 **所有 mutation executor**，不只 DIRECT Architect：
+
+- 先理解再修改，只处理 current authorized scope；发现额外问题时记录 Follow-up / debt，不顺手扩大 task 或做无明确收益的重构。
+- 写任务使用**物理隔离的 mutable workspace**：worktree、independent clone、container 或独立目录均可；不同 branch 共享同一 working tree **不算隔离**。
+- task-private temporary files 保持在 task workspace 内；形成 remote-recoverable durable state 后可按 current authority 清理该 task workspace。
+- 发现疑似他人/用户未提交现场，不 `reset` / `clean` / `stash` / overwrite / delete；ownership 不清楚时停止并报告。
+- workspace isolation 只是 execution safety，不产生 repository/governance authority。
+
+L0 只保留“不越 scope、不破坏不明确 ownership”的 root invariant；上述 mechanics 只在本接口维护。
+
 ### 1.1 Durable Dispatch
 
 每次 Agent-facing delegated execution **必须**有 current `ARCHITECT_*_DISPATCH`（或等价 current durable dispatch）。Durable Work Order + dispatch 携带任务知识；Minimal Seed / transport payload 只寻址。
@@ -58,7 +70,7 @@ Architect 选择执行模式前必须以 current durable authority 与 **施工�
 2. requirement / scope / acceptance 在施工前已由 Human、更高/current durable authority、Work Order 或稳定 contract 给定，Architect 不得施工后自造 acceptance 再自证；
 3. 改动低风险、局部、可逆，不含未授权高影响外部副作用；
 4. 有确定性验证路径（tests / lint / typecheck / diff / readback / contract checks 等）；
-5. live currentness、ownership 与 writable workspace 无冲突；写任务使用适当隔离的 mutable workspace，不覆盖他人/用户现场；
+5. live currentness、ownership 与 writable workspace 无冲突，并满足 §1.0 common execution hygiene；
 6. 不存在 `DELEGATE_REQUIRED`、Human Hold、Incident、security/permission conflict 或其它 current fail-closed gate。
 
 Eligible 时可按：
@@ -262,7 +274,7 @@ Human-facing language 只引用 `00_KERNEL/LANGUAGE_POLICY.md`；本接口不复
 
 ## 6. Versioned Definitions
 
-- `2.2.0`：Kernel residency canonicalization；本文件正式成为 `DIRECT | DELEGATE`、Architect continuous advancement、Global Architect Maintenance Lane 与 Human/Agent dispatch interface 的 canonical home；Bootstrap access routing 与 language override 只保留 pointer，不再复制 downstream policy。**Behavior preserved; residency changed.**
+- `2.2.0`：Kernel residency canonicalization；本文件正式成为 common mutation workspace/scope hygiene、`DIRECT | DELEGATE`、Architect continuous advancement、Global Architect Maintenance Lane 与 Human/Agent dispatch interface 的 canonical home；Bootstrap access routing 与 language override 只保留 pointer，不再复制 downstream policy。**Behavior preserved; residency changed.**
 - `2.1.1`：public portability hardening；移除 maintainer-specific repo coordinate，明确 current governance repo / deployment-local control-plane role indirection。
 - `2.1.0`：编译 Architect `CONTINUE_WITHIN_AUTHORITY` 与 Human Dispatch Card `执行依赖` 六字段语义；历史五字段 Human Card 保持 provenance 有效。
 - `2.0.4`：编译 Architect `DIRECT | DELEGATE` interface boundary；Human Dispatch Card 明确为 Human 手工启动 delegated executor 的 UX。
