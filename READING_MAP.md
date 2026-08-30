@@ -3,7 +3,7 @@
 **DO NOT READ EVERYTHING.**
 
 本仓是治理/方法论文档库，文档会持续增长。默认冷启动成本必须与当前任务规模相关，
-**不随 ai-use 文档总量线性增长**。准备执行/恢复/接管时先加载 `AGENTS.md` L0；L0 后再按你的角色/场景查本表，决定读哪几篇。
+**不随 ai-use 文档总量线性增长**。准备执行/恢复/接管时先加载 `AGENTS.md` L0；L0 后由 `NAMESPACE.md` 的 zero-prompt chain + 本表的场景触发自主决定下一跳。
 
 ---
 
@@ -14,9 +14,24 @@
 - **L2 Targeted Reference** —— 仅在场景触发后按需读取。
 - **L3 Rationale / Case / Archive** —— 理念、案例、历史；默认不进入 Agent 上下文。
 
-启动时的适用顺序不是“按需任选”：必须按 `BOOT-1 -> BOOT-2 -> BOOT-3`，其中 `BOOT-2A` 先加载**current governance repo 的 `AGENTS.md` Global L0**，再进入 `BOOT-2B` 目标仓/项目本地规则和 `BOOT-2C` 当前任务。完整顺序见 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`。
+启动时的规范适用顺序不是“按需任选”：必须按 `BOOT-1 -> BOOT-2 -> BOOT-3`，其中 `BOOT-2A` 先加载**current governance repo 的 `AGENTS.md` Global L0**，再进入 `BOOT-2B` 目标仓/项目本地规则和 `BOOT-2C` 当前任务。完整顺序见 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`。
 
 `00_KERNEL/LANGUAGE_POLICY.md` 仍是 L2 解释与示例；其关键行为已经编译进 `AGENTS.md` L0。**L2 不要求每个 Agent 额外读取，不等于其 L0 invariant 可不遵守。**
+
+---
+
+## Zero-prompt 链式路由
+
+`NAMESPACE.md` 保留 `00 -> 10 -> 20 -> 30 -> 40 -> 50 -> 90` 的默认导航链。本表负责决定每一跳是否真的需要读取内容：
+
+- `NEXT` —— 当前角色/场景命中本表；只读取命中的 targeted 文档，然后继续链。
+- `SKIP` —— 当前层没有命中；不读该层正文，直接下一跳。
+- `STOP_READY` —— 已有最小充分上下文，且 current Bootstrap / authority / live-state gate 已通过；退出文档链进入执行。
+- `STOP_BLOCKED` —— 存在真实 blocker；停止并报告精确 gate。
+
+因此 **zero-prompt != full-read**：Agent 不依赖 Human 提示“下一份读什么”，但也不因 00→90 编号存在就递归通读全部文档。
+
+如果唯一缺口只是“接下来去哪找上下文”，这不是 Human blocker；继续按 `NAMESPACE.md` + 本表自主路由。
 
 ---
 
@@ -26,7 +41,7 @@
 | --- | --- | --- | --- |
 | **Generic Executor** | `AGENTS.md` | 当前目标仓/项目本地规则、精确 Work Order、当前 owns 范围；启动/恢复时按需读 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`（L2） | 完整 Constitution、Session Lifecycle、其他项目、治理 rationale |
 | **Project Architect** | `AGENTS.md` | 本项目 Bootstrap、项目 README/architecture index、**当前 target project/program 的 targeted active graph**；Fresh/takeover 或 material new-domain/architecture pivot 时读 `docs/ARCHITECT_RECONNAISSANCE.md`（L2）；GitHub identity-sensitive review/merge/privileged mutation 或多 principal access 模式下，读项目本地 GitHub execution identity/access mapping（若提供）；治理冲突/重大裁决时读 `CONSTITUTION.md`；恢复/交接先读 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`，再将 `docs/SESSION_LIFECYCLE.md` 作为兼容 playbook；派发/完成时读 `docs/AGENT_INTERFACE.md`；仅明确依赖时读跨仓 contract | 其他项目代码、全量 ai-use、整个 workspace 全部 open work |
-| **Global Architect** | `AGENTS.md` | `CONSTITUTION.md`、current governance canonical source、targeted 项目摘要；需要导航时再读 `READING_MAP.md` / `NAMESPACE.md`；Fresh/takeover 或 material new-domain/architecture pivot 时读 `docs/ARCHITECT_RECONNAISSANCE.md`；GitHub identity-sensitive review/merge/privileged mutation 或 authority-registry identity 对齐时，读目标项目本地 GitHub execution identity/access mapping；新组织初始化 / workspace 发现时读 `10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md` | 为普通项目决策扫描所有项目代码/全部 open work |
+| **Global Architect** | `AGENTS.md` | `CONSTITUTION.md`、current governance canonical source、targeted 项目摘要；L0 后由 `NAMESPACE.md` + 本表自主路由；Fresh/takeover 或 material new-domain/architecture pivot 时读 `docs/ARCHITECT_RECONNAISSANCE.md`；GitHub identity-sensitive review/merge/privileged mutation 或 authority-registry identity 对齐时，读目标项目本地 GitHub execution identity/access mapping；新组织初始化 / workspace 发现时读 `10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md` | 为普通项目决策扫描所有项目代码/全部 open work |
 | **Builder** | `AGENTS.md` | 精确任务、目标仓/项目本地规则、owns 代码；派发/完成时按需读 `docs/AGENT_INTERFACE.md`；启动状态验证时读 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md` | 完整 Constitution、Session Lifecycle、治理 rationale |
 | **Verifier** | `AGENTS.md` | 原始要求、exact-head diff/code/tests、任务引用的 verification contract；派发/完成时按需读 `docs/AGENT_INTERFACE.md` | Builder 自评、无关文档 |
 | **Release** | `AGENTS.md` | exact release dispatch、当前 PR/merge/cleanup 事实 | 为 cleanup 重建整个项目历史 |
@@ -39,6 +54,7 @@
 | 场景 | 读什么 |
 | --- | --- |
 | 公共入口 / 第一次不知道从哪开始 | `START_HERE.md`；它只做 navigation |
+| zero-prompt 下一跳选择 | `NAMESPACE.md` 给出 00→90 routing chain；本表决定 `NEXT | SKIP | STOP_*` |
 | workspace 初始化 / 角色发现 | `10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md` + `50_TEMPLATES/HUMAN_WORKSPACE_BOOTSTRAP.md` |
 | 冷启动冒烟测试准备 | `40_GUIDES/PUBLIC_COLD_START_CHECKLIST.md` |
 | Fresh/takeover Architect 实质架构启动；material new-domain / major capability / major pivot | `docs/ARCHITECT_RECONNAISSANCE.md`；在 Bootstrap `EXECUTION_ALLOWED` 后完成 `ARCH-0` 或 live-revalidate 可复用报告，进入 `ARCHITECT_READY` 后再 materialize 第一轮架构 |
@@ -48,7 +64,6 @@
 | dispatch / completion / interface contract | `docs/AGENT_INTERFACE.md` |
 | 启动状态验证 | `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md` |
 | durable trace / 事实留痕 | `30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md` |
-| 命名空间导航 | `NAMESPACE.md`；**不是 cold-start 执行顺序** |
 | 人类可见输出语言（详细解释/例子） | `00_KERNEL/LANGUAGE_POLICY.md`；关键 MUST 已在 `AGENTS.md` L0 |
 | verification | 任务引用的 verification contract |
 | incident | 相关 L2 reference；**只有事故才扩大验证范围** |
