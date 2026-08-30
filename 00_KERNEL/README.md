@@ -1,33 +1,52 @@
 # 00_KERNEL
 
-Kernel 层：zero-prompt cold-start chain 的第一个逻辑阶段，承载稳定规则与核心治理不变量，也是后续层发生错误时的**容错基座**。
+Kernel 层是 zero-prompt cold-start chain 的第一个逻辑阶段，也是 lower-layer fault 出现时仍可依赖的**最小判断基座**。
 
-准备执行/恢复/接管时，`00_KERNEL` 的**必经入口**是 governance repo 根目录的 `../AGENTS.md`（机器 L0）。加载 L0 后，Agent 不需要等待 Human 再提示下一份文档；按 `../NAMESPACE.md` 的链式路由和 `../READING_MAP.md` 的场景触发继续。
+准备执行 / 恢复 / 接管时，`00_KERNEL` 的必经入口是 current governance repo 根目录的 `../AGENTS.md`。L0 current-load 后，Agent 不等待 Human 逐跳提示；按 `../NAMESPACE.md` + `../READING_MAP.md` targeted 扩展。
 
-这不表示必须通读本目录：除 `../AGENTS.md` 外，其它 Kernel 文档仍只在场景命中时 targeted 读取。
+这不表示通读本目录：除 `../AGENTS.md` 外，其它文档仍按 scene trigger 读取。
 
-Kernel-first 的目的不是形式上的“先读一篇”，而是先建立最小可信判断框架：Human sovereignty、identity/authority hierarchy、durable truth、scope/fail-closed、语言与 continuation 等 invariant。一旦这些 invariant current-load 成功，后续 role/protocol/guide/template/history 输入只能细化，不能反向覆盖它们。
+## Kernel ABI freeze
 
-## Kernel 设计约束
+`AGENTS.md 3.0.0` 起，L0 按 microkernel residency 管理。Kernel ABI 只要求 Agent 在 lower layer 缺失、陈旧、冲突或错误时仍保有以下判断能力：
 
-**内核必须精妙、短小、直接。** L0 只保留“即使后层出错，Agent 仍必须拥有”的最小判断原语，以及进入后续层所需的稳定 pointer；详细流程、枚举、provider/tool 适配、角色专用机制、长示例与可替换 policy 应优先下沉到 L2/L3，并由 L0 用短 invariant + pointer 引用。
+1. Human sovereignty + authority hierarchy；
+2. `Capability != Authority`；
+3. durable truth + currentness；
+4. scope + no silent authority expansion；
+5. fail closed；
+6. zero-prompt continuation；
+7. evidence-bound mutation。
 
-判断一条规则是否应进入 L0，可用反事实测试：**如果删掉它，而后层随后给出错误/陈旧输入，Agent 是否会失去识别该错误所必需的身份、authority、truth、scope 或 fail-closed 能力？** 只有答案为“会”的内容才默认属于 Kernel。`重要`、`常用`、`方便` 本身不是进入 L0 的理由。
+详细流程、枚举、provider/tool 适配、role-specific mechanics、long examples 与 replaceable policy 不因“重要”就进入 L0；它们进入自己的 canonical driver/protocol/reference，由 L0 只保留 invariant + stable pointer。
 
-因此：
+## Kernel residency test
 
-- 后层文档陈旧、缺失、冲突或错误时，Agent 应用 Kernel 判断其 currentness / authority / applicability，再选择吸收、`SKIP`、隔离或 `STOP_BLOCKED`；
-- 后层故障可以阻塞当前任务，但不应让 Agent 丢失已经建立的身份/authority/durable-truth 判断；
-- 只有 Kernel 本身无法 current-load / 校验时，才属于 cold-start root failure，必须 fail closed；
-- 这种“先最小内核、后可替换上下文”的顺序是 zero-prompt cold-start 的主要容差来源；
-- 新增治理语义时，默认先问“能否作为 L2 机制 + L0 一句 invariant/pointer 表达”，避免 Kernel 随系统功能线性膨胀。
+新增或回迁 L0 前必须做反事实测试：
 
-包含：
+> 如果删掉这条，而 lower layer 随后给出 stale / conflicting / hostile input，Agent 是否会失去识别错误所必需的 identity / authority / truth / scope / fail-closed 判断能力？
 
-- 机器 L0 规则（`../AGENTS.md`）
-- 治理宪法（`../CONSTITUTION.md`）
-- zero-prompt 链式路由（`../NAMESPACE.md`）
-- 阅读/触发索引（`../READING_MAP.md`）
-- 人类可见输出规范（`LANGUAGE_POLICY.md`）
+只有答案为“会”，才默认允许 Kernel residency。
 
-本层不替代 `AGENTS.md`；`AGENTS.md` 仍是机器 L0 唯一规范源。Namespace 定义下一跳，Reading Map 决定当前层是 `NEXT | SKIP | STOP_*`。
+`importance != kernel residency`。
+
+## One semantic, one canonical home
+
+- Kernel primitive -> `../AGENTS.md`；
+- governance hierarchy / merge principle / verification / Incident -> `../CONSTITUTION.md`；
+- Bootstrap / access mechanics -> `../10_BOOT/`；
+- execution / dispatch / continuation -> `../docs/AGENT_INTERFACE.md`；
+- Architect reconnaissance -> `../docs/ARCHITECT_RECONNAISSANCE.md`；
+- durable trace mechanics -> `../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md`；
+- language details -> `LANGUAGE_POLICY.md`；
+- routing -> `../NAMESPACE.md` + `../READING_MAP.md`。
+
+其它文档引用这些 semantics 时只写必要 invariant / summary / pointer，不复制完整 mechanics。
+
+## Fault containment
+
+- lower-layer fault 可阻塞当前 task，但不得反向改写已建立的 Kernel identity / authority / durable-truth / scope / fail-closed model；
+- lower layer 与 L0 冲突时，先判 currentness/authority/applicability，再 `SKIP | isolate | supersede | STOP_BLOCKED`；
+- 只有 Kernel 本身无法 current-load / 校验时，才属于 cold-start root failure。
+
+本目录不替代 `AGENTS.md`。Namespace 决定默认下一跳，Reading Map 决定当前层 `NEXT | SKIP | STOP_*`。
