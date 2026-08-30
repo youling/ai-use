@@ -1,23 +1,23 @@
 # Agent Interface — Canonical L2 Reference
 
-**Classification: L2 Targeted Reference.** Only read when dispatching, executing, or reviewing Agent work orders.
+**Classification: L2 Targeted Reference.** Read when dispatching/executing Agent work, choosing Architect execution mode, advancing an authorized program, or producing/reviewing Human/Agent interface artifacts.
 
-**Protocol Version: 2.1.1**
+**Protocol Version: 2.2.0**
 
-本文编纂 Human 与 Agent 之间的固定接口契约。部署实例的 control-plane repo 可以按自身需要映射本文，但公共 `ai-use` **不绑定任何特定 owner/repo、私有控制面名称或上游维护者账号**。
+本文是 **execution / dispatch / continuation interface** 的 canonical home。公共 `ai-use` 不绑定任何特定 owner/repo、私有 control-plane 名称或上游维护者账号。
 
 ---
 
-## 1. Dispatch Structure
+## 1. Execution & Dispatch
 
 执行先区分 `DIRECT | DELEGATE`：
 
-- `DIRECT`：满足 `AGENTS.md` L0 eligibility 时，Project/Global Architect 在 current durable authority / scope / acceptance 内自己施工；不为了角色仪式创建 Builder dispatch / Agent Seed。required Review / merge / Human/high-risk gate 仍保留。
-- `DELEGATE`：由 durable Work Order + current Architect dispatch 启动可替换 executor。Human 可以手工 transport Seed，也可以由 current durable authority 允许的 execution transport 传递；Human copy/paste 不是普通 executor 的治理必经节点。
+- `DIRECT`：Project/Global Architect 在 current durable authority、pre-existing scope/acceptance 与本节 eligibility 同时满足时自己施工；不为了角色仪式制造 Builder dispatch / Agent Seed。
+- `DELEGATE`：由 durable Work Order + current Architect dispatch 启动可替换 executor。Human 可以手工 transport Seed，也可以使用 current durable authority 允许的 execution transport；Human copy/paste 不是普通 executor 的治理必经节点。
 
-`DIRECT | DELEGATE` 是执行方式，不产生 authority，也不改变 deploy/destructive/production/irreversible authority。
+`DIRECT | DELEGATE` 是执行方式，不产生 authority，也不改变 merge / deploy / destructive / production / irreversible authority。
 
-### 1.1 Durable Dispatch Comment
+### 1.1 Durable Dispatch
 
 每次 Agent-facing delegated execution **必须**有 current `ARCHITECT_*_DISPATCH`（或等价 current durable dispatch）。Durable Work Order + dispatch 携带任务知识；Minimal Seed / transport payload 只寻址。
 
@@ -33,45 +33,99 @@ access: `github-private | github-public`
 status: `DISPATCHED`
 ```
 
-具体机器 gate 由部署实例自己的 control-plane contract 定义。公共 contract 不假设 control plane 一定叫 `ai-hub`，也不指向任何上游维护者的 private repo。
+具体机器 gate 由 deployment-local control-plane contract 定义。公共 contract 不假设 control plane 一定叫 `ai-hub`，也不指向上游维护者 private repo。
 
-### 1.2 Agent 启动适用顺序
+### 1.2 Bootstrap relationship
 
-Seed 只提供地址；执行时按 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`：
+Seed 只提供 address。执行前按 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md` 的 canonical Ordered Bootstrap：
 
 `BOOT-1 ADDRESS -> BOOT-2 APPLICABLE RULES -> BOOT-3 EXECUTION GATE -> EXECUTION_ALLOWED`。
 
-关键顺序：
+本文件**不复制** Bootstrap 的 access fallback、anonymous-404、role-bootstrap、durable bootstrap writeback 等 mechanics。需要这些行为时以 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md` 为唯一 canonical home。
 
-- `BOOT-1A` 解析 generic `<owner>/<repo>` pointer 与 access route；private 首读优先已授权 native GitHub，失败再 authenticated `gh`，禁止匿名公网 404 探路；
-- `BOOT-1B/1C` 在 `BOOT-2A` 前只做 address/currentness，不提前适用任务正文；
-- `BOOT-2A` 加载**current governance repo 的 `AGENTS.md`**；fork/clone/自建 deployment 不返回固定上游 owner/repo；
-- `BOOT-2B` 再加载 target repo/project local context；
-- `BOOT-2C` 才规范性适用 current Work Order / Dispatch / latest ruling；
-- 任一关键 gate 未通过时不得 execution。
+关键接口边界只有两条：
+
+- BOOT-1 address / access metadata 不产生 authority，也不提前适用任务正文；
+- `BOOT-2A` 的第一份 normative rules read 是 current governance repo `AGENTS.md`，之后才适用 target-local/current-work rules。
 
 ### 1.3 DIRECT / DELEGATE boundary
 
-Architect 选择执行模式前必须以 current durable authority 与 pre-existing acceptance 为准。
+Architect 选择执行模式前必须以 current durable authority 与 **施工前已存在**的 scope/acceptance 为准。
 
-`DIRECT` 不得用于：
+`DIRECT` 只有在以下条件同时成立时才 eligible：
 
-- acceptance 尚未冻结、需要边做边定义需求的探索性施工；
-- current contract 明确 `DELEGATE_REQUIRED` / separation-of-duties；
-- Human Hold / Incident / security / permission conflict；
-- 未授权 production/deploy/destructive/irreversible external action。
+1. current durable Architect authority 覆盖目标 repo / governance scope；
+2. requirement / scope / acceptance 在施工前已由 Human、更高/current durable authority、Work Order 或稳定 contract 给定，Architect 不得施工后自造 acceptance 再自证；
+3. 改动低风险、局部、可逆，不含未授权高影响外部副作用；
+4. 有确定性验证路径（tests / lint / typecheck / diff / readback / contract checks 等）；
+5. live currentness、ownership 与 writable workspace 无冲突；写任务使用适当隔离的 mutable workspace，不覆盖他人/用户现场；
+6. 不存在 `DELEGATE_REQUIRED`、Human Hold、Incident、security/permission conflict 或其它 current fail-closed gate。
 
-`DELEGATE` 适合长时间/大量施工、并发、专门工具/环境、需要独立实现者降低 confirmation bias 等工作。
+Eligible 时可按：
+
+`live validate -> isolated mutation -> deterministic checks -> durable implementation report / PR exact head -> required Review gate -> merge under current merge authority`
+
+`DIRECT` 不自动创建 Verifier，也不自动免除 independent evidence / Human gate。current risk/contract 已要求独立 Review/Verifier/Human gate 时必须保留；没有要求时不因 Architect 亲自施工而机械增加仪式。
+
+以下情况优先或必须 `DELEGATE`：
+
+- 大量/长时间施工；
+- 探索性实现或 acceptance 未冻结；
+- 需要独立实现者降低 confirmation bias；
+- 并发、专门工具/环境、长运行 executor 更合适；
+- current risk/contract 明确要求 separation of duties。
 
 ### 1.4 Architect continuous advancement
 
-Project Architect / Global Architect 默认 `CONTINUE_WITHIN_AUTHORITY`。Human message 不是 scheduling clock；没有新 prompt 本身不构成 blocker。
+Project Architect / Global Architect 默认 `CONTINUE_WITHIN_AUTHORITY`。**Human message is not the scheduling clock**；没有新 prompt 本身不构成 blocker。
 
-同一 current authorized objective/program 内，只要 next step 仍被 authority、scope/acceptance、dependency 与 risk gates 覆盖，Architect 应继续普通行政与施工编排：materialize Work Order/dispatch、收到 delivery 后 Review、Repair/re-dispatch、ordinary exact-head merge、dependency activation、lifecycle convergence。
+同一 current authorized objective/program 内，只要 next step 仍被 authority、scope/acceptance、dependency 与 risk gates 覆盖，Architect 应继续普通行政与施工编排，包括：
 
-Continuous advancement 不产生 authority。新增/改变 Human goal、产品取舍、priority、acceptance、material scope/cross-project authority，或 Human Hold / secret / physical-device / production-destructive-irreversible authority gap / BLOCKER / Incident / security-permission conflict / `HEAD_MOVED` / authority ambiguity 时必须停 Human / higher authority。no READY work 或 explicit stop condition 也应停止。
+- live reconcile；
+- 必要时完成 Architect Reconnaissance；
+- materialize Work Graph / Work Order / dispatch；
+- 收到 delegated delivery 后主动 Review；
+- Repair / re-dispatch；
+- ordinary exact-head merge（仅在 current merge authority/gates 满足时）；
+- dependency activation；
+- lifecycle convergence / next READY work。
 
-Fresh/takeover Architect 不得因为历史 playbook 写着“先给 Human 确认”就机械等待；以 current L0 + current Bootstrap continuation classification 为准。
+Continuous advancement **不产生 authority**。以下情况必须停 Human / higher authority / exact blocker，而不是为了“持续推进”绕过：
+
+- 新增/改变 Human goal、产品取舍、priority、acceptance；
+- material scope expansion 或未覆盖 cross-project authority；
+- Human Hold / required Human input / secret / physical-device action；
+- production / destructive / irreversible authority gap；
+- unresolved BLOCKER / Incident / security-permission conflict / `HEAD_MOVED` / authority ambiguity；
+- multiple mutually exclusive READY choices 且 durable priority 不足；
+- no READY work 或 explicit program stop condition 已达。
+
+Fresh/takeover Architect 不得因为 historical playbook 写着“先给 Human 确认”就机械等待；以 current L0 + Bootstrap + 本节 continuation 为准。
+
+### 1.5 Global Architect Maintenance Lane
+
+Global Architect 在 live validate 后，可以 `DIRECT` 维护以下**低风险、非行为性**治理内容，不要求为了角色仪式启动 Runner / Builder / Verifier：
+
+- 文档结构、README、目录、索引、Reading Map；
+- stale link / stale wording / 术语统一；
+- 已明确 durable ruling 的规则同步；
+- Bootstrap 阅读顺序 / targeted pointer；
+- route / registry 的非行为性小修；
+- 纯说明性、不改变机器行为 / 权限 / compatibility 的整理。
+
+以下变化**不会**因为 Maintenance Lane 自动变成低风险：
+
+- program/runtime behavior；
+- permission / security boundary；
+- lifecycle / destructive operation；
+- data model / schema / compatibility；
+- cross-project machine contract；
+- deploy / production / irreversible external action；
+- material governance semantics 尚未由 current authority 冻结的变化。
+
+这些必须按 current Work Order / authority / risk / Review gate 决定 `DIRECT | DELEGATE | HUMAN_REQUIRED`。
+
+Maintenance Lane 的目的只是消除低风险治理仪式，不是绕过 safety/authority。
 
 ---
 
@@ -94,8 +148,8 @@ Human Dispatch Card 只用于 **Human 手工启动 delegated executor**，恰好
 
 `执行依赖` MUST 以以下六类之一开头：
 
-- `CLOUD_ONLY` — 不依赖 local checkout/toolchain、private node/network、real device、local daemon/long-running process 或 physical interaction；实际 connector/tool capability 仍须启动验证。
-- `LOCAL_REQUIRED` — 必须使用本地 filesystem/workspace/toolchain/process/runtime，但不要求特定 node。
+- `CLOUD_ONLY` — 不依赖 local checkout/toolchain、private node/network、real device、local daemon/long-running process 或 physical interaction；实际 connector/tool capability 仍须 startup 验证。
+- `LOCAL_REQUIRED` — 必须使用 local filesystem/workspace/toolchain/process/runtime，但不要求特定 node。
 - `NODE_REQUIRED` — 必须进入指定 managed/execution node 或 private-network path。
 - `DEVICE_REQUIRED` — 必须访问真实 phone/tablet/其它 device 或 device-control path。
 - `MIXED` — 有有意义的 cloud tranche，但最终 acceptance 依赖 local/node/device evidence；应优先拆 cloud tranche。
@@ -105,7 +159,7 @@ Human Dispatch Card 只用于 **Human 手工启动 delegated executor**，恰好
 
 - `CLOUD_ONLY != CAPABILITY_OR_AUTHORITY_GRANT`；
 - secret/Human/physical confirmation gate 独立存在；
-- dependency taxonomy 是公开通用语义，不写具体 provider/model/价格/quota。
+- dependency taxonomy 不写具体 provider/model/价格/quota。
 
 ### 2.2 Generic 示例
 
@@ -118,9 +172,9 @@ Human Dispatch Card 只用于 **Human 手工启动 delegated executor**，恰好
 本轮终点: 提交 PR，报告 exact head + 验证结果后停止，等 Architect Review
 ```
 
-Human Card 是用户决策提示 / 手工 transport UX，不是 Agent 指令或状态源，也不是所有 delegated execution 的必经治理节点。
+Human Card 是手工 transport / scheduling UX，不是 Agent 指令或状态源，也不是所有 delegated execution 的治理必经节点。
 
-兼容性：2.1.0 canonical compilation 之前 durable 产生的五字段 Human Card 保持历史 provenance 有效；之后的新 Card 使用六字段顺序。
+兼容性：2.1.0 canonical compilation 之前 durable 产生的五字段 Human Card 保持 historical provenance 有效；之后的新 Card 使用六字段顺序。
 
 ---
 
@@ -151,7 +205,7 @@ startup_mode: Fresh Builder
 access: github-private
 ```
 
-如果 target 是 deployment-local control plane，repo coordinate 应从 `workspace_registry.control_plane.repo`（或等价 deployment registration）取得；**不得把示例中的 `ai-hub`、`../hub` 或某个上游维护者账号当 fixed address。**
+如果 target 是 deployment-local control plane，repo coordinate 从 `workspace_registry.control_plane.repo`（或等价 deployment registration）取得；不得把示例中的 `ai-hub`、`../hub` 或上游维护者账号当 fixed address。
 
 ### 3.3 Seed 允许的最小扩展
 
@@ -167,20 +221,13 @@ access: github-private
 
 fresh Agent 仅凭 exact dispatch pointer + 必要 access metadata 无法从 durable source 取得任务事实时，说明 Work Order/dispatch 不完整：先修 durable source，再派发。
 
-### 3.4 访问路由
+### 3.4 Access metadata boundary
 
-`access: github-private | github-public` 只描述 BOOT-1A 的访问类别，不承载任务合同，也不授予 authority。
+`access: github-private | github-public` 只描述 BOOT-1A 的 access class，不承载任务合同，也不授予 authority。
 
-访问优先级：
+**Canonical access route 与 fallback 只定义在 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`。** 本文件不再复制 native connector / authenticated `gh` / local Git / public HTTPS 的优先级与错误语义，避免两份 route policy 漂移。
 
-1. 当前 Agent / 宿主已授权 native GitHub capability；
-2. authenticated `gh`；
-3. remote exact-ref 校验后的 local Git workspace；
-4. 仅 `github-public` 必要时可回退公开 HTTPS。
-
-`github-private` 的匿名 `404` 不是 repo/permission durable evidence。native GitHub 与 authenticated `gh` 都不可用时，报告 `ACCESS_BLOCKED` / `ACCESS_DRIFT`。
-
-`Capability != Authority`。
+`Capability != Authority` 仍是 L0 invariant。
 
 ---
 
@@ -191,12 +238,12 @@ Agent 完成后，Builder / Research / Repair / Verifier 保持详细 durable re
 | # | 字段 | 内容 |
 |---|---|---|
 | 1 | 结果 | 完成情况 |
-| 2 | 交付 | 交付物 + 精确可恢复指针（PR / commit / exact head / durable report pointer） |
+| 2 | 交付 | 交付物 + 精确可恢复 pointer（PR / commit / exact head / durable report） |
 | 3 | 验证 | 验证方法与结果 |
 | 4 | 剩余风险 | 已知风险 / 未覆盖区域 |
 | 5 | 下一步 | 建议的后续动作 |
 
-面向 Human 的叙述默认简体中文；code/path/SHA/protocol constant 保留原文。英文 Work Order / template / header 本身不构成 language override。
+Human-facing language 只引用 `00_KERNEL/LANGUAGE_POLICY.md`；本接口不复制 language override 细节。
 
 ---
 
@@ -215,22 +262,23 @@ Agent 完成后，Builder / Research / Repair / Verifier 保持详细 durable re
 
 ## 6. Versioned Definitions
 
-- `2.1.1`：public portability hardening；移除 maintainer-specific repo coordinate，明确 current governance repo / deployment-local control-plane role indirection；不改变 `DIRECT | DELEGATE`、authority、dependency taxonomy 或 Completion Card 语义。
+- `2.2.0`：Kernel residency canonicalization；本文件正式成为 `DIRECT | DELEGATE`、Architect continuous advancement、Global Architect Maintenance Lane 与 Human/Agent dispatch interface 的 canonical home；Bootstrap access routing 与 language override 只保留 pointer，不再复制 downstream policy。**Behavior preserved; residency changed.**
+- `2.1.1`：public portability hardening；移除 maintainer-specific repo coordinate，明确 current governance repo / deployment-local control-plane role indirection。
 - `2.1.0`：编译 Architect `CONTINUE_WITHIN_AUTHORITY` 与 Human Dispatch Card `执行依赖` 六字段语义；历史五字段 Human Card 保持 provenance 有效。
-- `2.0.4`：编译 Architect `DIRECT | DELEGATE` 接口边界；Human Dispatch Card 明确为 Human 手工启动 delegated executor 的 UX；Minimal Seed 不增加 provider/model/routing 字段。
-- `2.0.3`：Minimal Seed 从“最少行”收敛为“最少无歧义启动信息”；private repo 固定携带 `access: github-private`；访问优先级为 native authenticated GitHub -> authenticated `gh` -> remote 校验后的 local Git。
+- `2.0.4`：编译 Architect `DIRECT | DELEGATE` interface boundary；Human Dispatch Card 明确为 Human 手工启动 delegated executor 的 UX。
+- `2.0.3`：Minimal Seed 收敛为“最少无歧义启动信息”；private repo 携带 `access: github-private`。
 - `2.0.2`：同步 Bootstrap Ordered Applicability；Seed 不提前适用任务正文。
-- `2.0.1`：clarification；强化 Seed 只做 addressing，并保留 private GitHub 最小 access 扩展。
+- `2.0.1`：clarification；强化 Seed 只做 addressing。
 
 ---
 
 ## 7. Boundary Conditions
 
-- 本文只定义公开/通用方法论，不承载部署实例 private topology / heads / endpoints / secrets。
+- 本文只定义公开/通用 interface，不承载 deployment private topology / heads / endpoints / secrets。
 - 本文不改变 Runner/program behavior，也不定义 provider/backend routing contract。
 - current durable dispatch / Work Order 在 Minimal Seed / transport 之前；Seed 不替代 dispatch。
 - 派发前 Architect 必须确认 durable source 足以让 fresh Agent 执行；否则先修 Work Order/dispatch。
-- Human Dispatch Card 只属于 Human 手工 transport / scheduling UX；authorized automated transport 不需要先生成 Human Card。
+- Human Dispatch Card 只属于 Human manual transport / scheduling UX；authorized automated transport 不需要先生成 Human Card。
 - Architect continuous advancement 只适用于 Project/Global Architect current durable authority 内；不得扩展为 Builder/Research/Repair/Verifier 的长期自治或 merge authority。
-- Human-facing narrative 遵守 `AGENTS.md` L0；英文任务/模板本身不构成 language override。
+- Human-facing narrative 遵守 `00_KERNEL/LANGUAGE_POLICY.md`；本文件不再维护第二份语言规则。
 - public portability 不产生任何新的 repo permission / governance authority / deploy authority。
