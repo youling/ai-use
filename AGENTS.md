@@ -5,7 +5,7 @@ This is the machine-facing L0 ruleset.
 Do not recursively read all ai-use documents. Do not read the full constitution
 for ordinary tasks. Use `READING_MAP.md` when additional context is required.
 
-Version: 2.5.0
+Version: 2.6.0
 
 ---
 
@@ -24,11 +24,11 @@ Version: 2.5.0
 
 启动必须按 `1 -> 2 -> 3` 顺序完成，详见 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`：
 
-1. **ADDRESS**：只定位 Seed、current Durable Dispatch、Work Coordinate，并在 `BOOT-1A` 解析最小 access route；`github-private` 优先使用当前 Agent/宿主的已授权原生 GitHub 能力，实测不可用时才回退本机已认证 `gh`，不得先用匿名公网 URL 探路。`BOOT-1B/1C` 在 `BOOT-2A` 前不得把任务正文的 scope / acceptance / language / behavior 当成已适用规则。
+1. **ADDRESS**：只定位 Seed / Human 已明确表达的 natural-language addressing、current Durable Dispatch（若适用）、Work Coordinate / role-bootstrap coordinate，并在 `BOOT-1A` 解析最小 access route；natural-language normalization 只能提取 Human 明说的 target repo、Architect role、governance pointer、access 等寻址事实，**不得推导 authority / Durable Dispatch / Work Coordinate / acceptance / priority**。`github-private` 优先使用当前 Agent/宿主的已授权原生 GitHub 能力，实测不可用时才回退本机已认证 `gh`，不得先用匿名公网 URL 探路。`BOOT-1B/1C` 在 `BOOT-2A` 前不得把任务正文的 scope / acceptance / language / behavior 当成已适用规则。
 2. **APPLICABLE RULES**：先加载 `BOOT-2A` 本 Global L0，再读 `BOOT-2B` 目标仓/项目本地规则，最后在 `BOOT-2C` 适用 current Work Order / Dispatch / amendment。
 3. **EXECUTION GATE**：核验 authority/access/live state 并形成 Bootstrap Check 结论；任一关键 gate 未通过时不得施工。
 
-只有全部通过并得到 `EXECUTION_ALLOWED` 后才进入 execution。
+只有全部通过并得到 `EXECUTION_ALLOWED` 后才进入 execution。Fresh / takeover Architect 在声称 durable cold-start complete / `EXECUTION_ALLOWED` 前，还必须把 `ARCHITECT_BOOTSTRAP_REPORT` / Bootstrap Check Report 写回 current 可写 durable authority/bootstrap anchor/dispatch source；若没有可写 durable target，只能报告 session-local bootstrap，不能把聊天声明当成 durable completion。
 
 ## Architect readiness
 
@@ -47,6 +47,7 @@ Fresh / takeover Project Architect 或 Global Architect，以及 material new-do
 ## Durable truth
 
 - Git/GitHub 是唯一持久事实源；chat 是 working memory；本地 workspace 默认 ephemeral。
+- provider-side memory / cross-session memory 只能作为 convenience cache，**不是 project truth**；不得长期依赖其中的 authority snapshot、active graph、current head 或 lifecycle 状态。使用这些事实前必须 live-revalidate Git/GitHub durable state。
 - GitHub 高频读取优先走当前 Agent/宿主已授权的原生 GitHub integration / connector / tool；若该能力不存在或实测不可用，再回退本机已认证 `gh`。本地 clone/worktree 是执行副本，不替代 remote durable truth。
 - 对 `github-private`，匿名公网 `404` 不构成 repo 不存在或无权限的 durable 证据；native GitHub 与 authenticated `gh` 都不可用时，报告 `ACCESS_BLOCKED` / `ACCESS_DRIFT`，不得靠公网探路或陈旧 checkout 猜测继续。
 - 遇冲突/BLOCKED 不靠猜；以 durable source / live state 为准，不确定就报告 `BLOCKED`。
@@ -87,6 +88,8 @@ Project Architect / Global Architect 的默认 continuation semantic 是 `CONTIN
 当下一步仍属于 current Human goal / current authorized program，scope / acceptance / dependency 足够明确，current authority 覆盖，且没有真实 Human gate / blocker / authority drift 时，Architect MUST 持续推进普通项目行政与施工编排，而不是在每个阶段边界机械停下询问“是否继续”。这包括：live reconcile、必要的 `ARCH-0`、Work Graph、`DIRECT | DELEGATE`、Work Order/dispatch、收到 delegated delivery 后主动 Review、Repair/re-dispatch、普通 exact-head merge、已授权 dependency activation、lifecycle convergence 与 next READY work。
 
 持续推进**不产生新增 authority**，也不允许 Architect 自己扩大 Human goal、优先级、产品取舍或 acceptance。每一步仍须 live-revalidate current state / authority / gates。
+
+Cold-start 后必须按真实状态分类：唯一 current authorized READY next -> `CONTINUE_WITHIN_AUTHORITY`；Human 明确 cold-start-only stop 或无 READY work -> 停；多个互斥 READY work 且 durable priority 无法裁决 -> `HUMAN_PRIORITY_REQUIRED`；其它情况报告精确的 Human/authority/high-risk/blocker gate。不得用泛化的“要继续哪个，等你一句话”代替分类。
 
 出现以下任一真实 gate 时必须停 Human / higher authority，而不是为了“持续推进”绕过：新增或改变 Human 目标/acceptance/优先级；material scope expansion / 未覆盖的跨项目 authority；Human Hold / `HUMAN_REQUIRED` / secret input / physical device action；未获独立授权的 production deploy / destructive / irreversible action；unresolved BLOCKER / Incident / security/permission conflict / `HEAD_MOVED` / authority ambiguity；必须由 Human 决定的互斥产品路线；无 READY work 或 program explicit stop condition 已达。
 
@@ -133,12 +136,13 @@ Project Architect / Global Architect 的默认 continuation semantic 是 `CONTIN
 ## Seed & tools
 
 - Seed 负责寻址，不承载完整知识；模型/时间/token 建议只进 Human 调度，不进你的 seed。
-- **最小 Seed = 最少无歧义启动信息，不等于最少行。** private repo 必须显式携带 `access: github-private`；public repo 在 pointer/live metadata 已无歧义时可省略 access。
+- **最小 Seed = 最少无歧义启动信息，不等于最少行。** private repo 必须显式携带 `access: github-private`；public repo 在 pointer/live metadata 已无歧义时可省略 access。Fresh/takeover Architect 的 Human natural-language addressing 可替代模板复述，但只能规范化 Human 明确给出的寻址事实。
 - `access` 只决定 BOOT-1A 访问路由，不授予 authority：原生 GitHub 能力优先，authenticated `gh` 回退，本地 Git workspace 仅作经 remote exact-ref 校验后的执行副本。
 - Durable Dispatch 负责任务上下文；Bootstrap Check 负责启动状态验证（见 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`）。
 - 不要把完整任务知识塞入 Seed；`DIRECT | DELEGATE` 也不得把 provider/model 固化进 Minimal Seed。
 - Human Dispatch Card 是 Human 手工启动 delegated executor 时的 UX，不是所有 execution transport 的治理必经层；new canonical card 恰好六个语义字段：`任务 -> 为什么做 -> 你要做什么 -> 执行依赖 -> 调度建议 -> 本轮终点`。
 - `执行依赖` 是 objective environment dependency fact，必须以 `CLOUD_ONLY | LOCAL_REQUIRED | NODE_REQUIRED | DEVICE_REQUIRED | MIXED | UNKNOWN` 之一开头；它不是 provider/model recommendation，不授予 capability/authority，也**不得复制进 Minimal Agent Seed**。真实 capability 与 authority 仍在 startup / execution gate 独立验证。
+- 明确标记为 non-retryable 的 tool error 不得以相同 route / 相同 request shape 原样机械重试；只有存在事实依据、且合法改变 access route 或 request shape 时才再次尝试。不要为此发明新错误状态机。
 - Runner 是确定性执行/安全工具，不是架构师，也不是所有修改的必经层。
 
 ## Durable trace
