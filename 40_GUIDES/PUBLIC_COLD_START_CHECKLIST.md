@@ -41,7 +41,7 @@ governance_repo: example-org/governance
 
 ```yaml
 workspace_registry:
-  version: 1.1.0
+  version: 1.0.0
   governance:
     repo: example-org/governance
   control_plane:
@@ -118,7 +118,7 @@ Fresh/takeover Architect 声称 durable cold-start complete 前必须 durable �
 
 ```yaml
 workspace_registry:
-  version: 1.1.0
+  version: 1.0.0
   governance:
     repo: example-org/governance
   control_plane:
