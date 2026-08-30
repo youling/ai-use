@@ -2,9 +2,7 @@
 
 一套围绕 **Human governance + 专职 AI Agent + Git/GitHub durable state** 形成的人机协作方法论。
 
-版本：2.0.0
-
-> 第一次进入？先读 [`START_HERE.md`](START_HERE.md)。
+> 第一次进入？先读 [`START_HERE.md`](START_HERE.md)。准备执行/接管角色时，第一份 normative rules read 是 current [`AGENTS.md`](AGENTS.md) L0。
 
 ---
 
@@ -38,7 +36,8 @@ Human
        └─ ...
 ```
 
-- **Human** 拥有最终主权：决定目标、优先级、接受风险，以及 merge/deploy 等重大动作。
+- **Human** 拥有最终主权：决定目标、优先级、接受标准、接受风险与重大治理方向，并可 override / revoke delegated authority。
+- 普通 repository merge 可以按 current durable authority 委托给 Architect；production deploy、destructive / irreversible external action 的 authority 独立判断。
 - **Human + Global Architect** 共同维护跨项目的"现行法"（宪法、阅读索引、跨项目边界、冲突裁决）。
 - **Project Architect** 负责自己项目的架构自治，只背负本项目及必要跨仓契约的上下文。
 - **Builder / Research / Repair / Verifier** 是临时、可替换的专业执行角色，不拥有长期治理权。
@@ -67,30 +66,32 @@ Human
 | --- | --- | --- |
 | [`START_HERE.md`](START_HERE.md) | 全角色（首次进入者） | 第一次进入 ai-use、需要知道从哪开始 / 如何初始化 workspace 时 |
 | [`CONSTITUTION.md`](CONSTITUTION.md) | 全角色（尤其 Architect） | 治理冲突、重大裁决、理解体系时；普通任务不必通读 |
-| [`READING_MAP.md`](READING_MAP.md) | 全角色（机器/人类导航） | 需要知道"我该读什么"时 |
-| [`NAMESPACE.md`](NAMESPACE.md) | 全角色（冷启动入口） | 需要理解 00→90 命名空间流向、定位各层文档时 |
-| [`AGENTS.md`](AGENTS.md) | 所有执行 Agent（机器 L0） | 每个 Agent 启动时默认只读这一层 |
+| [`READING_MAP.md`](READING_MAP.md) | 全角色（机器/人类导航） | L0 已加载后，需要知道当前角色/场景该 targeted 读什么时 |
+| [`NAMESPACE.md`](NAMESPACE.md) | 全角色（zero-prompt 路由） | L0 后理解 `00→10→20→30→40→50→90` 的默认 next-hop chain；可 `SKIP` / `STOP_*`，不是 mandatory full-read order |
+| [`AGENTS.md`](AGENTS.md) | 所有执行 Agent（机器 L0） | 每个执行/恢复/接管角色进入 normative rules 时首先读取 |
 | [`docs/SESSION_LIFECYCLE.md`](docs/SESSION_LIFECYCLE.md) | Architect / 需要恢复或交接的人 | L2 按需参考，仅在 session/handoff/recovery 场景触发 |
 | [`10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`](10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md) | 所有执行 Agent | 启动状态验证（L2 按需） |
 | [`10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md`](10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md) | 新组织 / Global Architect | 初始化 workspace、发现仓库角色、确认 Global Architect Ready（L2 按需） |
 | [`30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md`](30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) | 所有执行 Agent | 需要留痕/返回 pointer 时（L2 按需） |
 | [`00_KERNEL/LANGUAGE_POLICY.md`](00_KERNEL/LANGUAGE_POLICY.md) | 所有执行 Agent | 人类可见输出默认简体中文（L2 按需） |
 
-一句话版：**不要通读整个仓库。** 先看 `READING_MAP.md` 决定你按当前角色/场景该读哪几篇；普通执行者默认只需要 `AGENTS.md`(机器 L0) + 自己的精确任务 + 项目本地上下文。
+一句话版：**不要通读整个仓库。** `START_HERE` 只做导航；执行/恢复/接管时先加载 `AGENTS.md` L0，随后由 `NAMESPACE.md` 给出 zero-prompt 下一跳、由 `READING_MAP.md` 判断当前层 `NEXT | SKIP | STOP_*` 并 targeted expansion。普通执行者通常只需要 L0 + 自己的精确任务 + 项目本地上下文。
 
 ---
 
-## ai-use vs ai-hub
+## governance repo vs control-plane role
 
-| | `ai-use` | `ai-hub` |
+| | governance repo（通常是 `ai-use` fork/clone） | `control_plane` role（仓库名由部署方自定） |
 | --- | --- | --- |
-| 性质 | 公开的方法论 / 治理体系 / 协作模式 | 私有控制台 / runtime |
-| 内容 | 原则、角色、模式、案例、rationale、阅读索引 | Runner、项目路由、执行现场、安全核验、少量机器契约 |
-| 增长 | 允许长期增长（L2/L3 按需读） | 只承载少量已冻结的机器规则 |
+| 性质 | 公开/可复用的方法论、治理体系、协作模式 | 部署实例自己的控制面 / runtime |
+| 内容 | 原则、角色、模式、案例、rationale、阅读索引 | Work Order、项目路由、执行现场、安全核验、少量机器契约 |
+| 定位 | 当前 governance repo 本身 | 由 `workspace_registry.control_plane.repo` 或等价 deployment registration 解析 |
 
-ai-use **不负责**私有项目实时状态、active project topology、Runner runtime、本地 workspace 状态、私有 registry、当前谁在跑什么任务。这些属于 ai-hub 或各项目仓。
+`ai-hub` 只是一个常见的 control-plane 仓库命名示例，**不是公共 ai-use 指向上游维护者某个私有仓库的固定地址**。
 
-本仓不保存具体私有项目的实时拓扑与状态，也不引用任何活跃项目代号。
+ai-use **不负责**私有项目实时状态、active project topology、Runner runtime、本地 workspace 状态、私有 registry、当前谁在跑什么任务。这些属于部署实例自己的 `control_plane` role 或各项目仓。
+
+本仓不保存具体私有项目的实时拓扑与状态，也不要求公共使用者读取任何上游维护者的私有控制面。
 
 ---
 

@@ -18,11 +18,9 @@ ai-use 是一套围绕 **Human governance + 专职 AI Agent + Git/GitHub durable
 
 **ai-use = governance layer template（治理层模板），不是你的项目 workspace。**
 
-clone ai-use ≠ 你的系统已经就绪。它像操作系统镜像：clone 后还需要按本文件初始化你的仓库（governance / control plane / asset）与 workspace。
+clone ai-use ≠ 你的系统已经就绪。它像操作系统镜像：clone 后还需要按本文件初始化自己的 governance / control-plane role 与 workspace；asset / project role 按实际业务需要注册，不要求为了模板完整而创建空仓库。
 
 ### Global Architect 的角色
-
-**Global Architect is an AI coordination role, not an organizational authority over human decisions.**
 
 Global Architect 是 AI 协调角色：维护规则、调度 Agent、收敛治理；它不对人类决策拥有组织级权威。Human 拥有最终主权。
 
@@ -33,8 +31,9 @@ Global Architect 是 AI 协调角色：维护规则、调度 Agent、收敛治�
 准备执行任务、恢复任务或接管 Architect 角色时：
 
 1. **第一份 normative rules read 必须是 [`AGENTS.md`](AGENTS.md)（Global L0）**；
-2. L0 加载后，再用 [`READING_MAP.md`](READING_MAP.md) 判断当前角色/场景需要哪些 targeted L1/L2；
-3. [`NAMESPACE.md`](NAMESPACE.md) 只用于命名空间导航，[`README.md`](README.md) 只用于体系概览；二者都不是普通 Agent 获得 `EXECUTION_ALLOWED` 的前置。
+2. L0 加载后，由 [`NAMESPACE.md`](NAMESPACE.md) 提供 `00 -> 10 -> 20 -> 30 -> 40 -> 50 -> 90` 的 zero-prompt 默认下一跳；
+3. [`READING_MAP.md`](READING_MAP.md) 在每一跳判断当前角色/场景是 `NEXT | SKIP | STOP_READY | STOP_BLOCKED`，只 targeted 读取命中的 L1/L2；
+4. [`README.md`](README.md) 只用于体系概览；Namespace/Reading Map 负责自主找下一份上下文，但它们本身不产生 authority、scope、acceptance 或 priority，也不是 `EXECUTION_ALLOWED` 的替代 gate。
 
 `BOOT-1 ADDRESS` 的自然语言寻址可以发生在 L0 前，但此时只允许提取地址事实；不得提前适用 target repo / current work 的 scope、acceptance、priority、authority 或 behavior。完整顺序见 [`10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`](10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md)。
 
@@ -42,19 +41,27 @@ Global Architect 是 AI 协调角色：维护规则、调度 Agent、收敛治�
 
 Agent 可以由 **Minimal Agent Seed** 或 Human 已经明确表达的 **natural-language addressing** 启动；Human 不需要为了模板仪式再次复制同一组寻址事实。
 
-标准 delegated executor 的最小 seed 仍只寻址，不复制任务知识：
+标准 delegated executor 的最小 seed 仍只寻址，不复制任务知识。public / access 已无歧义时使用 generic coordinate：
 
 ```text
-按 `youling/<repo>#<issue>` 的 <DISPATCH_TYPE> comment `<id>` 执行。
+按 `<owner>/<repo>#<issue>` 的 <DISPATCH_TYPE> comment `<id>` 执行。
 
-work: youling/<repo>#<issue>@<step>
+work: <owner>/<repo>#<issue>@<step>
 startup_mode: Fresh <Role>
 ```
+
+private GitHub 首次 durable read 需要 authenticated route，因此还必须加：
+
+```text
+access: github-private
+```
+
+这里的 `<owner>/<repo>` 始终解析为**使用者自己的 target/control-plane/project repo**，不是上游维护者账号或私有仓库。
 
 对 Fresh / takeover Architect，如果 Human 当前消息已经无歧义明确了 target project/repository、Architect role、governance handbook pointer 与 access route，例如：
 
 ```text
-你是 <repo> 的项目架构师；工作手册是 <ai-use>；private GitHub 使用已授权 connector/MCP。
+你是 <owner>/<repo> 的项目架构师；工作手册是当前 governance repo；private GitHub 使用已授权 connector/MCP。
 ```
 
 Agent MAY 把这些**明确表达的事实**规范化为 `BOOT-1A` addressing facts。不得从 README、open Issue、repo owner、GitHub/MCP capability 或模型记忆自行补造 Durable Dispatch、Work Coordinate、authority、acceptance 或 priority。
@@ -70,7 +77,7 @@ Agent MAY 把这些**明确表达的事实**规范化为 `BOOT-1A` addressing fa
   BOOT-1C Work Coordinate / role-bootstrap coordinate
 
 2 APPLICABLE RULES
-  BOOT-2A Global L0 (`AGENTS.md`)
+  BOOT-2A Global L0 (`AGENTS.md` in current governance repo)
   BOOT-2B target repo / project local
   BOOT-2C current Work Order / latest ruling（若适用）
 
@@ -93,13 +100,13 @@ Agent MAY 把这些**明确表达的事实**规范化为 `BOOT-1A` addressing fa
 
 人类侧清单见 [`50_TEMPLATES/HUMAN_WORKSPACE_BOOTSTRAP.md`](50_TEMPLATES/HUMAN_WORKSPACE_BOOTSTRAP.md)。
 
-> 不要假设仓库名称。仓库角色通过 role registration 确定，与具体名称无关。
+> 不要假设仓库名称。仓库角色通过 role registration 确定，与具体名称无关。control-plane 的 canonical repo 位置由 `workspace_registry.control_plane.repo`（或部署方等价 registration）解析。
 
 ---
 
 ## Recommended Workspace Layout
 
-一个标准 AI 工作空间建议包含以下仓库。名称不是强制要求，但建议保持推荐命名。
+一个标准 AI 工作空间至少需要 governance + control-plane 两个角色；asset / project role 按实际业务需要注册。名称不是强制要求。
 
 ### 1. Governance Repository
 
@@ -110,9 +117,9 @@ Agent MAY 把这些**明确表达的事实**规范化为 `BOOT-1A` addressing fa
 - Protocol
 - Templates
 
-推荐命名：`ai-use`
+常见命名：`ai-use`
 
-说明：名称不是强制要求，但建议保持。
+说明：名称不是强制要求。
 
 ### 2. Control Plane Repository
 
@@ -123,22 +130,26 @@ Agent MAY 把这些**明确表达的事实**规范化为 `BOOT-1A` addressing fa
 - Dispatch
 - Agent coordination
 
-推荐命名：`ai-hub`
+常见命名：`ai-hub`
 
-说明：名称不是强制要求。
+说明：名称不是强制要求；公共 ai-use 不把这个名字解释为某个固定上游仓库。
 
-### 3. Asset Repository
+### 3. Asset Repository（可选）
 
-职责：资产事实源，存放
+职责：当你的系统确实需要独立资产事实源时存放
 
 - hardware assets
 - software assets
 - ownership
 - lifecycle evidence
 
-推荐命名：`assets`
+常见命名：`assets`
 
-说明：不要使用个人语言命名作为公共接口。
+说明：没有独立资产管理需求时可以不注册，不因此阻塞 Global Architect Ready。
+
+### 4. Project Repositories（可选，可多个）
+
+具体项目代码/文档仓。workspace 可以先以空 `projects.repos: []` 启动，后续再注册项目。
 
 ---
 
@@ -146,11 +157,11 @@ Agent MAY 把这些**明确表达的事实**规范化为 `BOOT-1A` addressing fa
 
 流程：
 
-1. 创建 governance repo
+1. 创建/准备 governance repo
 2. 引入 ai-use
-3. 创建 control plane repo
-4. 创建 asset repo
-5. 注册 workspace
+3. 创建/准备 control-plane repo
+4. 按业务需要准备 asset / project repo
+5. 在 governance repo 注册 `workspace_registry.yaml`
 6. 启动 Global Architect
 
 ## Naming Principle
@@ -163,33 +174,35 @@ Agent MAY 把这些**明确表达的事实**规范化为 `BOOT-1A` addressing fa
 
 例如：
 
-- 推荐：`ai-use` / `ai-hub` / `assets`
-- 不强制：`my-ai-rule` / `company-assets`
+- 常见：`ai-use` / `ai-hub` / `assets`
+- 也可以：`my-ai-rule` / `control-center` / `company-assets`
+
+名称只是部署选择；role registration 才是机器语义。
 
 ## 缺失环境处理
 
-如果缺少 `control plane repo` 或 `asset repo`，Agent **不应该创建假设**。
-
-应该输出：
+在**workspace 初始化场景**中，如果缺少必需的 `governance` 或 `control_plane` role，Agent 不应该猜测仓库位置，应该报告：
 
 ```text
 WORKSPACE_NOT_READY
 WAITING_FOR_HUMAN
 ```
 
-并请求 Human 提供缺失仓库。
+并请求 Human 提供/注册缺失的必需 role。
+
+`asset` 或 `project` role 缺失不构成最小 workspace blocker；按业务需要保持 `none` / 空数组即可。
 
 ## Agent 首次启动说明
 
 如果 Agent 第一次进入 ai-use：
 
 1. 用 `START_HERE` 只做 public navigation / address discovery；
-2. 第一份 normative rules read 加载 `AGENTS.md` L0；
-3. L0 后再按 `READING_MAP.md` targeted expansion；
+2. 第一份 normative rules read 加载 current governance repo 的 `AGENTS.md` L0；
+3. L0 后由 `NAMESPACE.md` 给出 zero-prompt 下一跳，并由 `READING_MAP.md` 对当前层做 `NEXT | SKIP | STOP_*` 判定；
 4. 执行 Bootstrap Check（`BOOT-1 -> BOOT-2 -> BOOT-3`）；
 5. 只有 workspace 初始化场景才进入 Workspace Bootstrap。
 
-`NAMESPACE.md / README.md` 不是普通任务 cold-start 的强制前置。不要扫描全部历史。
+`NAMESPACE.md` 是自主路由层，不是 authority/execution gate；`README.md` 不是普通任务 cold-start 的强制前置。不要扫描全部历史。
 
 ## Agent Handoff 流程
 
