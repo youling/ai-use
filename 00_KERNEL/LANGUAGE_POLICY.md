@@ -13,7 +13,7 @@
 - Dispatch / Human Card；
 - Review；
 - Report / Completion；
-- PR 标题之外的人类说明与描述；
+- PR 标题、描述与人类说明；
 - 会话内面向人的解释、风险与下一步。
 
 默认中文是行为默认，不是 authority。它可以被更高 current authority 明确覆盖。
