@@ -215,5 +215,22 @@ Agent 完成后，Builder / Research / Repair / Verifier 保持详细 durable re
 
 ## 6. Versioned Definitions
 
-- `2.1.0`：编译 Architect `CONTINUE_WITHIN_AUTHORITY` 与 Human Dispatch Card `执行依赖` 六字段语义。
 - `2.1.1`：public portability hardening；移除 maintainer-specific repo coordinate，明确 current governance repo / deployment-local control-plane role indirection；不改变 `DIRECT | DELEGATE`、authority、dependency taxonomy 或 Completion Card 语义。
+- `2.1.0`：编译 Architect `CONTINUE_WITHIN_AUTHORITY` 与 Human Dispatch Card `执行依赖` 六字段语义；历史五字段 Human Card 保持 provenance 有效。
+- `2.0.4`：编译 Architect `DIRECT | DELEGATE` 接口边界；Human Dispatch Card 明确为 Human 手工启动 delegated executor 的 UX；Minimal Seed 不增加 provider/model/routing 字段。
+- `2.0.3`：Minimal Seed 从“最少行”收敛为“最少无歧义启动信息”；private repo 固定携带 `access: github-private`；访问优先级为 native authenticated GitHub -> authenticated `gh` -> remote 校验后的 local Git。
+- `2.0.2`：同步 Bootstrap Ordered Applicability；Seed 不提前适用任务正文。
+- `2.0.1`：clarification；强化 Seed 只做 addressing，并保留 private GitHub 最小 access 扩展。
+
+---
+
+## 7. Boundary Conditions
+
+- 本文只定义公开/通用方法论，不承载部署实例 private topology / heads / endpoints / secrets。
+- 本文不改变 Runner/program behavior，也不定义 provider/backend routing contract。
+- current durable dispatch / Work Order 在 Minimal Seed / transport 之前；Seed 不替代 dispatch。
+- 派发前 Architect 必须确认 durable source 足以让 fresh Agent 执行；否则先修 Work Order/dispatch。
+- Human Dispatch Card 只属于 Human 手工 transport / scheduling UX；authorized automated transport 不需要先生成 Human Card。
+- Architect continuous advancement 只适用于 Project/Global Architect current durable authority 内；不得扩展为 Builder/Research/Repair/Verifier 的长期自治或 merge authority。
+- Human-facing narrative 遵守 `AGENTS.md` L0；英文任务/模板本身不构成 language override。
+- public portability 不产生任何新的 repo permission / governance authority / deploy authority。
