@@ -92,7 +92,7 @@ addressing_mode: ROLE_BOOTSTRAP
 
 Fresh/takeover Architect role cold-start 没有 explicit Work Coordinate 时，只记录最小 `ROLE_BOOTSTRAP` coordinate（target repo + role + governance/access pointer）；不得把“最新 open Issue”“最高优先级标签”或 README 路线自动升级为 current Work Coordinate。
 
-若当前场景需要寻找 deployment-local control plane，优先从 current governance repo 的 `workspace_registry.control_plane.repo`（或等价 deployment role registration）解析；**不得通过 `ai-hub`、`../hub`、repo owner 或上游维护者账号猜真实控制面地址。**
+若当前场景需要寻找 deployment-local control plane，优先从 current governance repo 的 `workspace_registry.control_plane.repo`（或等价 deployment role registration）解析；**不得通过示例仓库名、物理 sibling 路径、repo owner 或上游维护者账号猜真实 control-plane 地址。**
 
 ---
 
@@ -225,7 +225,7 @@ Bootstrap report MAY 列 current active graph / blockers，但不得仅凭 repo/
 陌生外部使用者 cold-start 必须满足：
 
 1. 不要求访问上游维护者的 private repo / account。
-2. 不把 `youling/...`、`ai-hub`、`../hub` 等示例名称当成 fixed coordinate。
+2. 不把 maintainer-specific owner/repo、示例 control-plane 名称或示例物理路径当成 fixed coordinate。
 3. governance L0 从 current governance repo 解析；control-plane 从 `workspace_registry.control_plane.repo` 或等价 deployment registration 解析。
 4. private repo 首次 durable read 使用 authenticated route；匿名 404 不是权限/存在性证据。
 5. missing optional `asset` / `project` role 不阻塞最小 workspace；只有必需 role 或真实 authority/access/currentness 缺口才 fail closed。
