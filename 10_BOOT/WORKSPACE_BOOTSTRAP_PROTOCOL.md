@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** 新组织 / 新 Global Architect 初始化 workspace 时触发读取。
 
-**Protocol Version: 1.1.0**
+**Protocol Version: 1.0.0 (clarified, backward-compatible)**
 
 ## 目的
 
@@ -28,11 +28,11 @@
 
 ## Workspace Registry（最小结构）
 
-workspace 的仓库拓扑以 YAML 声明，**机器可读 + 人类可读**，不引入数据库。
+workspace 的仓库拓扑以 YAML 声明，**机器可读 + 人类可读**，不引入数据库。本轮只澄清 1.0.0 字段的 optionality / resolution 语义，**不引入新 schema generation**；已有合法 1.0.0 registry 不需要迁移。
 
 ```yaml
 workspace_registry:
-  version: 1.1.0
+  version: 1.0.0
   governance:
     repo: <owner/repo>
   control_plane:
@@ -44,10 +44,10 @@ workspace_registry:
 
 字段说明：
 
-- `workspace_registry.version` —— registry 结构版本；
+- `workspace_registry.version` —— registry 结构版本，保持 `1.0.0`；
 - `governance.repo` —— current governance 仓库位置；
 - `control_plane.repo` —— deployment-local control-plane 仓库的 canonical repo coordinate；**公共 ai-use 需要引用“自己的 hub/control plane”时应通过这里（或等价 deployment registration）解析，不指向上游维护者私有仓库，也不假设 sibling 目录名称**；
-- `asset` —— 可选；需要时写 `{ repo: <owner/repo> }`，不需要时为 `null` / omit；
+- `asset` —— 可选；需要时写 `{ repo: <owner/repo> }`，不需要时为 `null` / omit；已有 1.0.0 registry 仍写具体 `asset.repo` 继续有效；
 - `projects.repos` —— 项目仓库列表，可为空数组。
 
 registry 保存在 governance repo 内（例如 `workspace_registry.yaml`），作为 workspace topology 的 durable source。
@@ -92,7 +92,7 @@ GLOBAL_ARCHITECT_READY
 - 若 registry 只存在本地：状态为 `WORKSPACE_REGISTERED_LOCAL`，不得视为 READY。
 - 仅当 registry 已进入 durable source：才允许 `WORKSPACE_REGISTERED_DURABLE`。
 - `GLOBAL_ARCHITECT_READY` 只要求 **governance + control_plane** 两个必需角色已注册且 current；`asset: null` / `projects.repos: []` 是合法 READY 状态。
-- 可选角色日后增加时更新 registry，不需要重建 governance identity。
+- 可选角色日后增加时更新 registry，不需要重建 governance identity 或迁移 schema version。
 
 ## Global Architect Ready 状态
 
@@ -100,7 +100,7 @@ GLOBAL_ARCHITECT_READY
 
 ```yaml
 GLOBAL_ARCHITECT_READY
-version: 1.1.0
+version: 1.0.0
 identity:
   node: <node_id | none-if-not-applicable>
   agent_type: global-architect
