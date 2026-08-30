@@ -40,7 +40,7 @@
 | Governance hierarchy / merge principle / verification / Incident | `CONSTITUTION.md` |
 | Bootstrap + GitHub access/currentness mechanics | `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md` |
 | Workspace role registration / initialization | `10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md` |
-| DIRECT / DELEGATE / dispatch / continuation / Maintenance Lane | `docs/AGENT_INTERFACE.md` |
+| Common mutation workspace/scope hygiene；DIRECT / DELEGATE / dispatch / continuation / Maintenance Lane | `docs/AGENT_INTERFACE.md` |
 | Fresh/takeover material architecture current-state alignment | `docs/ARCHITECT_RECONNAISSANCE.md` |
 | Durable checkpoints / recovery trace | `30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md` |
 | Human-facing language details / override | `00_KERNEL/LANGUAGE_POLICY.md` |
@@ -54,12 +54,12 @@
 
 | 角色/场景 | 默认读取 (L0) | 按需读取 (L1/L2) | 默认不读 |
 | --- | --- | --- | --- |
-| **Generic Executor** | `AGENTS.md` | current target-local rules、exact Work Order/Dispatch、owns scope；startup/recovery 需要 access/currentness 时读 Bootstrap；需要 Completion/Seed interface 时读 Agent Interface | full Constitution、Session Lifecycle、其它项目、governance rationale |
-| **Project Architect** | `AGENTS.md` | target project README/architecture index/current active graph；startup/recovery -> Bootstrap；material new-domain/pivot -> Reconnaissance；选择 `DIRECT | DELEGATE`、dispatch、Review/Repair/continuation -> Agent Interface；merge/verification/Incident/governance conflict -> Constitution；identity-sensitive GitHub mutation -> project-local identity/access mapping（若有）；仅明确依赖时读 cross-repo contract | 其它项目代码、全量 ai-use、整个 workspace open work |
-| **Global Architect** | `AGENTS.md` | current governance canonical source + targeted project summary；workspace init -> Workspace Bootstrap；material architecture/governance direction -> Reconnaissance；execution/dispatch/continuation/Maintenance Lane -> Agent Interface；merge/verification/Incident/governance conflict -> Constitution；identity-sensitive mutation -> target-local identity/access mapping | 为普通任务扫描所有项目代码/全部 open work |
-| **Builder / Research / Repair** | `AGENTS.md` | exact Dispatch/Work Order、target-local rules、owns content；startup gate -> Bootstrap；Seed/Completion/interface -> Agent Interface；durable checkpoint -> Durable Trace | full Constitution、governance rationale、unrelated project context |
-| **Verifier** | `AGENTS.md` | original requirements、exact-head diff/code/tests、current verification contract；verification policy ambiguity -> Constitution；Completion interface -> Agent Interface | Builder self-report 作为结论、unrelated docs |
-| **Release** | `AGENTS.md` | exact release dispatch、current PR/head/merge/cleanup facts；merge authority -> Constitution；startup/currentness -> Bootstrap | 为 cleanup 重建全项目历史 |
+| **Generic Executor** | `AGENTS.md` | current target-local rules、exact Work Order/Dispatch、owns scope；任何 mutation/workspace ownership scene -> Agent Interface §1.0；startup/recovery -> Bootstrap；Completion/Seed interface -> Agent Interface | full Constitution、Session Lifecycle、其它项目、governance rationale |
+| **Project Architect** | `AGENTS.md` | target project README/architecture index/current active graph；startup/recovery -> Bootstrap；material new-domain/pivot -> Reconnaissance；mutation hygiene / `DIRECT | DELEGATE` / dispatch / Review/Repair/continuation -> Agent Interface；merge/verification/Incident/governance conflict -> Constitution；identity-sensitive GitHub mutation -> project-local identity/access mapping（若有）；仅明确依赖时读 cross-repo contract | 其它项目代码、全量 ai-use、整个 workspace open work |
+| **Global Architect** | `AGENTS.md` | current governance canonical source + targeted project summary；workspace init -> Workspace Bootstrap；material architecture/governance direction -> Reconnaissance；mutation hygiene / execution/dispatch/continuation/Maintenance Lane -> Agent Interface；merge/verification/Incident/governance conflict -> Constitution；identity-sensitive mutation -> target-local identity/access mapping | 为普通任务扫描所有项目代码/全部 open work |
+| **Builder / Research / Repair** | `AGENTS.md` | exact Dispatch/Work Order、target-local rules、owns content；mutation/workspace hygiene + Seed/Completion/interface -> Agent Interface；startup gate -> Bootstrap；durable checkpoint -> Durable Trace | full Constitution、governance rationale、unrelated project context |
+| **Verifier** | `AGENTS.md` | original requirements、exact-head diff/code/tests、current verification contract；若会 mutation/repair workspace -> Agent Interface §1.0；verification policy ambiguity -> Constitution；Completion interface -> Agent Interface | Builder self-report 作为结论、unrelated docs |
+| **Release** | `AGENTS.md` | exact release dispatch、current PR/head/merge/cleanup facts；任何 cleanup/mutation -> Agent Interface §1.0；merge authority -> Constitution；startup/currentness -> Bootstrap | 为 cleanup 重建全项目历史 |
 | **Incident** | `AGENTS.md` | `CONSTITUTION.md` §8 + incident-relevant targeted references/evidence | —— |
 
 ---
@@ -72,6 +72,7 @@
 | zero-prompt next-hop | `NAMESPACE.md` 给 chain；本表判断 `NEXT | SKIP | STOP_*` |
 | startup / recovery / access / live-state gate | `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md` |
 | workspace initialization / role registration | `10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md` + `50_TEMPLATES/HUMAN_WORKSPACE_BOOTSTRAP.md` |
+| any write/mutation / workspace ownership / scope hygiene | `docs/AGENT_INTERFACE.md` §1.0；适用于 Direct 与 delegated executor |
 | Fresh/takeover Architect material architecture；material new-domain / major capability / major pivot | `docs/ARCHITECT_RECONNAISSANCE.md`；Bootstrap `EXECUTION_ALLOWED` 后完成适用的 ARCH-0，再进入 `ARCHITECT_READY` |
 | ordinary Architect Hot Resume / small bug / deterministic maintenance | 不机械重复 ARCH-0；只对可能改变方案的 external delta targeted refresh |
 | Architect 选择 DIRECT/DELEGATE、dispatch/review/repair、continuous advancement、Maintenance Lane | `docs/AGENT_INTERFACE.md` |
