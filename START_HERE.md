@@ -31,8 +31,9 @@ Global Architect 是 AI 协调角色：维护规则、调度 Agent、收敛治�
 准备执行任务、恢复任务或接管 Architect 角色时：
 
 1. **第一份 normative rules read 必须是 [`AGENTS.md`](AGENTS.md)（Global L0）**；
-2. L0 加载后，再用 [`READING_MAP.md`](READING_MAP.md) 判断当前角色/场景需要哪些 targeted L1/L2；
-3. [`NAMESPACE.md`](NAMESPACE.md) 只用于命名空间导航，[`README.md`](README.md) 只用于体系概览；二者都不是普通 Agent 获得 `EXECUTION_ALLOWED` 的前置。
+2. L0 加载后，由 [`NAMESPACE.md`](NAMESPACE.md) 提供 `00 -> 10 -> 20 -> 30 -> 40 -> 50 -> 90` 的 zero-prompt 默认下一跳；
+3. [`READING_MAP.md`](READING_MAP.md) 在每一跳判断当前角色/场景是 `NEXT | SKIP | STOP_READY | STOP_BLOCKED`，只 targeted 读取命中的 L1/L2；
+4. [`README.md`](README.md) 只用于体系概览；Namespace/Reading Map 负责自主找下一份上下文，但它们本身不产生 authority、scope、acceptance 或 priority，也不是 `EXECUTION_ALLOWED` 的替代 gate。
 
 `BOOT-1 ADDRESS` 的自然语言寻址可以发生在 L0 前，但此时只允许提取地址事实；不得提前适用 target repo / current work 的 scope、acceptance、priority、authority 或 behavior。完整顺序见 [`10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`](10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md)。
 
@@ -197,11 +198,11 @@ WAITING_FOR_HUMAN
 
 1. 用 `START_HERE` 只做 public navigation / address discovery；
 2. 第一份 normative rules read 加载 current governance repo 的 `AGENTS.md` L0；
-3. L0 后再按 `READING_MAP.md` targeted expansion；
+3. L0 后由 `NAMESPACE.md` 给出 zero-prompt 下一跳，并由 `READING_MAP.md` 对当前层做 `NEXT | SKIP | STOP_*` 判定；
 4. 执行 Bootstrap Check（`BOOT-1 -> BOOT-2 -> BOOT-3`）；
 5. 只有 workspace 初始化场景才进入 Workspace Bootstrap。
 
-`NAMESPACE.md / README.md` 不是普通任务 cold-start 的强制前置。不要扫描全部历史。
+`NAMESPACE.md` 是自主路由层，不是 authority/execution gate；`README.md` 不是普通任务 cold-start 的强制前置。不要扫描全部历史。
 
 ## Agent Handoff 流程
 
