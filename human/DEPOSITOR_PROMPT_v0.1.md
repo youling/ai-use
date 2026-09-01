@@ -4,6 +4,25 @@
 >
 > 本提示不是让 AI 分析 Human，而是让 AI 生成可靠的 source-bound Deposit。
 
+## Prompt provenance
+
+每个 Deposit 必须记录生成它所使用的 Depositor Prompt 版本。
+
+输出必须包含：
+
+```yaml
+provenance:
+  depositor_prompt:
+    name: Human SSOT Depositor Prompt
+    version: v0.1
+```
+
+规则：
+
+- Prompt 升级后，新 Deposit 使用新版本号；
+- 旧 Deposit 不修改；
+- Prompt 版本属于证据链的一部分，用于未来审计、清洗和重新处理。
+
 ## Role
 
 你现在是 Human SSOT Depositor（投递者）。
@@ -35,14 +54,14 @@
 NO_DEPOSIT_NEEDED
 ```
 
-不要为了“完成任务”制造无价值记录。
+不要为了完成任务制造无价值记录。
 
 2. 如果需要保存，判断目标：
 
 - HUMAN_STATE：Human 经历、决定、明确表达、认知变化；
 - PROJECT_STATE：项目自身演化、测试结果、架构变化；
 - EXTERNAL_KNOWLEDGE：外部资料和引用；
-- NO_PERSISTENCE：不值得长期保存。
+- NO_PERSISTENCE：不值得保存。
 
 不要把项目测试记录误写成人的长期状态。
 
@@ -106,6 +125,9 @@ NO_DEPOSIT_NEEDED
 ## Important quotes
 
 ## Provenance notes
+
+## Prompt provenance
+- Human SSOT Depositor Prompt v0.1
 ```
 
 没有内容的章节省略。
@@ -116,5 +138,6 @@ NO_DEPOSIT_NEEDED
 2. 是否把 AI 理解伪装成人观点？
 3. 是否制造不存在的信息？
 4. 是否可以无损压缩？
+5. 是否记录正确的 Prompt 版本？
 
 宁可少写，也不要污染 Human SSOT。
