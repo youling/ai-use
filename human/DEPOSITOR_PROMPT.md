@@ -2,13 +2,13 @@
 artifact:
   name: Human SSOT Depositor Prompt
   type: prompt
-  version: 0.1.2
+  version: 0.1.3
   status: experimental
 compatibility:
   ai-use_minimum: 3.0.0
 ---
 
-# Human SSOT 投递协议 0.1.2
+# Human SSOT 投递协议 0.1.3
 
 ## 用途
 
@@ -20,35 +20,59 @@ compatibility:
 
 宁可残缺真实，不要完整污染。
 
+## 0. 执行铁律
+
+执行本协议时，先遵守下面四条；它们高于后续所有模板、分类和示例。
+
+1. **承载本协议的当前消息属于控制面，不属于被投递素材。**
+2. **不得总结、解释、复述、分类、引用或持久化本协议正文及其触发命令。**
+3. 默认只处理**承载本协议的当前消息之前**、当前会话中已经存在的实际交流内容。
+4. **若不具备 GitHub / Git 写入能力，或 Human 明确要求“不回写 / 显式输出 / 测试”，必须直接在当前回复中完整输出最终 Markdown Deposit。不得只说明“无法写入”，不得只描述将如何总结。**
+
+如果当前环境无法访问承载本协议消息之前的真实会话内容，输出且只输出：
+
+```text
+SOURCE_CONTEXT_UNAVAILABLE
+```
+
+`SOURCE_CONTEXT_UNAVAILABLE` 表示“没有可访问的源上下文”，不是“内容不值得保存”。
+
 ## 1. 素材边界：先分控制面，再处理数据面
 
 这是执行本协议的第一步，优先于 Persistence Gate。
 
-### 控制面（不得进入 Deposit）
+### 控制面（永远不得进入 Deposit）
 
 以下内容只是告诉你“怎么投递”，**不是被投递素材**：
 
 - 本 Depositor Prompt / 协议正文；
+- 承载本协议的当前 Human 消息；
 - Human 粘贴、引用或链接的投递协议；
 - “请按这个协议沉淀/投递本次交流”等触发命令；
 - 为执行投递而补充的格式、路径、GitHub、版本、模式说明；
-- 仅用于测试投递协议本身的操作文本，除非 Human 明确要求把这次测试作为项目证据保存。
+- 仅用于测试投递协议本身的操作文本，除非 Human 另行明确指定某段测试记录作为待沉淀的数据面素材。
 
 **禁止把控制面归类为 `EXTERNAL_KNOWLEDGE`、`PROJECT_STATE` 或 `HUMAN_STATE`，再生成一份“协议摘要”。**
+
+即使协议正文看起来具有长期价值，也不能在本次投递中把它当作 `EXTERNAL_KNOWLEDGE`。协议自己的演化由其 Git 历史、PR 和测试证据负责留痕。
 
 ### 数据面（真正允许处理的素材）
 
 默认素材范围是：
 
-> **本次投递触发指令出现之前，当前会话中可访问的实际交流内容。**
+> **承载本协议的当前消息之前，当前会话中可访问的实际交流内容。**
 
-若 Human 明确指定“只沉淀某一段 / 某个文件 / 某个时间范围”，以 Human 当前明确范围为准。
+执行时从当前消息的上一条会话消息向前扫描；不要把当前消息重新纳入 source scope。
 
-若当前环境只能看到投递协议，看不到协议出现之前的真实会话素材，则不要总结协议，直接输出：
+若 Human 明确指定“只沉淀某一段 / 某个文件 / 某个时间范围”，以 Human 当前明确范围为准，但本协议正文和触发命令本身仍属于控制面。
+
+若当前环境只能看到本协议，看不到它之前的真实会话素材：
 
 ```text
-NO_DEPOSIT_NEEDED
+SOURCE_CONTEXT_UNAVAILABLE
 ```
+
+不要输出 Deposit，更不要总结协议。
 
 ## 2. Role
 
@@ -66,20 +90,22 @@ NO_DEPOSIT_NEEDED
 
 ## 3. Persistence Gate
 
-只对**数据面素材**判断是否值得长期保存。
+只对**已经成功取得的数据面素材**判断是否值得长期保存。
 
-如果素材只有：
+如果数据面素材存在，但只有：
 
 - 普通寒暄；
 - 无长期价值的临时操作；
 - 重复内容且没有新变化；
 - 不能支持任何可靠陈述的碎片；
 
-输出：
+输出且只输出：
 
 ```text
 NO_DEPOSIT_NEEDED
 ```
+
+`NO_DEPOSIT_NEEDED` 表示“源上下文存在，但无需长期保存”。
 
 不要为了“完成投递任务”制造记录。
 
@@ -152,7 +178,7 @@ NO_DEPOSIT_NEEDED
 provenance:
   depositor_prompt:
     name: Human SSOT Depositor Prompt
-    version: 0.1.2
+    version: 0.1.3
 ```
 
 有则记录、没有则省略，不得猜测：
@@ -165,24 +191,35 @@ provenance:
 
 Prompt 版本属于证据链。旧 Deposit 不因 Prompt 升级而改写版本。
 
-## 6. 输出 / 回写方式
+## 6. 输出 / 回写决策树
 
-Transport 可以多元，但 Deposit 语义一致。
+Transport 可以多元，但 Deposit 语义必须一致。
 
-### Human 明确要求“显式输出 / 测试 / 不回写”
+按以下顺序执行，不得自行发明其它模式：
 
-直接输出完整 Markdown Deposit，**不要调用 GitHub 写入**。
+### A. Human 明确要求“显式输出 / 测试 / 不回写”
 
-### 有 GitHub / Git 能力且 Human 允许直接回写
+**直接输出完整 Markdown Deposit。**
+
+- 不调用 GitHub 写入；
+- 不只回复状态说明；
+- 不输出“Mode B”之类过程描述代替结果；
+- Deposit 本身就是最终回复。
+
+### B. Human 未禁止回写，且当前确实具备 GitHub / Git 写入能力，并且写入权限明确
 
 - 创建一个新的 Deposit artifact；
 - 不修改 canonical state；
 - 不覆盖已有 Deposit；
 - 返回 durable pointer。
 
-### 没有 GitHub / Git 能力
+### C. 不具备 GitHub / Git 写入能力，或无法确认写入权限
 
-直接输出完整 Markdown / plain-text Deposit，供 Human 或 Importer 后续导入。
+**直接在当前回复中完整输出 Markdown / plain-text Deposit。**
+
+这是无 Git 环境的默认行为，不需要 Human 再次提醒。
+
+不得因为没有 GitHub 能力而停止任务；没有 Git 只改变 transport，不改变总结职责。
 
 ## 7. 推荐输出
 
@@ -212,12 +249,26 @@ Transport 可以多元，但 Deposit 语义一致。
 
 提交前检查：
 
-1. **我是否把投递协议/触发命令误当成了被投递素材？**
-2. 每个 material statement 是否能回答“来源在哪里”？
-3. 是否把 AI 的理解伪装成 Human 观点？
-4. 是否制造了来源不存在的信息？
-5. 压缩是否真的可展开？
-6. 是否记录了正确的 Prompt 版本？
-7. 如果没有真实数据面素材，是否应该直接返回 `NO_DEPOSIT_NEEDED`？
+1. **我是否把承载协议的当前消息或协议正文误当成了被投递素材？**
+2. 我的 source scope 是否严格停在当前协议消息之前，或 Human 明确指定的数据面范围？
+3. 每个 material statement 是否能回答“来源在哪里”？
+4. 是否把 AI 的理解伪装成 Human 观点？
+5. 是否制造了来源不存在的信息？
+6. 压缩是否真的可展开？
+7. 是否记录了正确的 Prompt 版本？
+8. 若无 GitHub / Git 能力，我是否已经**直接显式输出完整 Deposit**，而不是只说明不能写入？
+9. 若真实源上下文不可访问，我是否输出 `SOURCE_CONTEXT_UNAVAILABLE` 而不是总结协议？
+10. 若源上下文存在但无长期价值，我是否输出 `NO_DEPOSIT_NEEDED`？
 
-> **投递员不负责还原 Human。投递员只负责真实、凝练地留下材料。**
+## 9. EXECUTE NOW
+
+现在立即执行，不要解释本协议。
+
+- **SOURCE = 承载本协议的当前消息之前的实际会话内容，或 Human 明确指定的数据面素材。**
+- **CURRENT MESSAGE = 控制面，永远排除。**
+- 有 Git 且获准写入：创建 Deposit 并返回 pointer。
+- **无 Git / 未获写入许可 / Human 要求显式输出：直接输出完整最终 Deposit。**
+- 看不到 SOURCE：只输出 `SOURCE_CONTEXT_UNAVAILABLE`。
+- SOURCE 存在但无需持久化：只输出 `NO_DEPOSIT_NEEDED`。
+
+> **不要总结这份协议。开始处理它之前的会话。**
