@@ -43,6 +43,7 @@
 | Common mutation workspace/scope hygiene；DIRECT / DELEGATE / dispatch / continuation / Maintenance Lane | `docs/AGENT_INTERFACE.md` |
 | Fresh/takeover material architecture current-state alignment | `docs/ARCHITECT_RECONNAISSANCE.md` |
 | Durable checkpoints / recovery trace | `30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md` |
+| Durable business data / data model / schema migration | `docs/DURABLE_DATA_DOCTRINE.md` |
 | Human-facing language details / override | `00_KERNEL/LANGUAGE_POLICY.md` |
 | zero-prompt next-hop | `NAMESPACE.md` + this map |
 
@@ -80,6 +81,7 @@
 | repository merge authority / merge gate | `CONSTITUTION.md` §2 + current project/local contract；identity-sensitive 时再读 project-local identity/access mapping |
 | verification policy / Incident Mode | `CONSTITUTION.md` §§7–8 + task-specific verification contract |
 | durable trace / checkpoint / recovery trace | `30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md` |
+| durable business data / data model / schema migration | `docs/DURABLE_DATA_DOCTRINE.md` |
 | Human-facing language/override ambiguity | `00_KERNEL/LANGUAGE_POLICY.md`；L0 只保留 default + pointer |
 | session / handoff / recovery playbook | **先 Bootstrap** 恢复 current authority/access/live state；`docs/SESSION_LIFECYCLE.md` 只作 compatibility playbook |
 | public cold-start / Kernel ABI regression | `40_GUIDES/PUBLIC_COLD_START_CHECKLIST.md` |
