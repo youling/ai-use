@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** Read when dispatching/executing Agent work, choosing Architect execution mode, advancing an authorized program, or producing/reviewing Human/Agent interface artifacts.
 
-**Protocol Version: 2.2.0**
+**Protocol Version: 2.3.0**
 
 本文是 **execution / dispatch / continuation interface** 的 canonical home。公共 `ai-use` 不绑定任何特定 owner/repo、私有 control-plane 名称或上游维护者账号。
 
@@ -143,103 +143,45 @@ Maintenance Lane 的目的只是消除低风险治理仪式，不是绕过 safet
 
 ## 2. Human Dispatch Card
 
-Human Dispatch Card 只用于 **Human 手工启动 delegated executor**，恰好六个语义字段，顺序固定：
+Human Dispatch Card 只用于 **Human 手工启动 delegated executor**。可复制格式不在本文件重复维护，统一使用 [`../50_TEMPLATES/DISPATCH_PAIR.md`](../50_TEMPLATES/DISPATCH_PAIR.md)。
 
-| # | 字段 | 内容 |
-|---|---|---|
-| 1 | 任务 | 一句话任务标题 |
-| 2 | 为什么做 | 背景 / 理由 |
-| 3 | 你要做什么 | 本轮工作内容 |
-| 4 | 执行依赖 | objective execution-environment dependency；以 canonical class 开头 |
-| 5 | 调度建议 | 只给 Human：难度、上下文规模、模型建议、词元/时间粗估、并行策略、本轮重点 |
-| 6 | 本轮终点 | 完成边界 / stop condition |
+### 2.1 Canonical 运行位置
 
-`执行依赖` 与 `调度建议` 必须分离。执行依赖不授予 capability / authority，也不编码 provider/model/price/quota，更不进入 Minimal Agent Seed。
+Human-facing 调度统一使用四类运行位置，并按能完整完成和验证任务的最低资源层级选择：
 
-### 2.1 Canonical execution dependency classes
+`网页端 -> 云端电脑 -> 本地 -> 本地+设备`
 
-`执行依赖` MUST 以以下六类之一开头：
+- `网页端`：当前 Chat/Agent 仅凭已授权 GitHub / Web / 文件等连接能力即可完成，不需要独立代码运行环境。
+- `云端电脑`：需要 workspace、toolchain、进程、测试或长时间运行，但不依赖 Human 本机独有状态或真实设备。
+- `本地`：必须使用 Human 本机的文件、工具链、进程、私网、本地状态或其它不能可靠搬到云端的环境。
+- `本地+设备`：除本地环境外，还必须访问指定节点、手机、平板或其它真实设备。
 
-- `CLOUD_ONLY` — 不依赖 local checkout/toolchain、private node/network、real device、local daemon/long-running process 或 physical interaction；实际 connector/tool capability 仍须 startup 验证。
-- `LOCAL_REQUIRED` — 必须使用 local filesystem/workspace/toolchain/process/runtime，但不要求特定 node。
-- `NODE_REQUIRED` — 必须进入指定 managed/execution node 或 private-network path。
-- `DEVICE_REQUIRED` — 必须访问真实 phone/tablet/其它 device 或 device-control path。
-- `MIXED` — 有有意义的 cloud tranche，但最终 acceptance 依赖 local/node/device evidence；应优先拆 cloud tranche。
-- `UNKNOWN` — current evidence 不足以真实分类；不得因为任务看起来只是文字就默认 `CLOUD_ONLY`。
+运行位置是 **Human scheduling metadata**，不是 capability / authority grant。executor 启动后仍须验证实际工具、权限、currentness 与安全 gate。
 
-关键边界：
+若一个任务可以拆成独立 tranche，优先把网页端 / 云端电脑可完成的部分单独派发；不要因为最终 acceptance 需要本地或设备，就让整条任务占用更高成本环境。
 
-- `CLOUD_ONLY != CAPABILITY_OR_AUTHORITY_GRANT`；
-- secret/Human/physical confirmation gate 独立存在；
-- dependency taxonomy 不写具体 provider/model/价格/quota。
+Human Dispatch Card 的 current 模板采用五个语义：`任务 / 为什么做 / 你要做什么 / 运行位置 / 本轮终点`。不再单列“调度建议”；上下文亲和进入 Agent Seed，模型、provider、价格、quota 等瞬时调度信息留给 deployment-local scheduler。
 
-### 2.2 Generic 示例
+### 2.2 Compatibility
 
-```text
-任务: <control-plane-repo>#<issue> / routing + docs 收敛
-为什么做: 旧治理映射与 current public contract 不一致
-你要做什么: targeted GitHub 核验、文档同步、exact diff readback
-执行依赖: CLOUD_ONLY — authenticated GitHub R/W + Web
-调度建议: 上下文 Medium；文档编辑 + targeted GitHub 核验；可单 delegated executor 完成
-本轮终点: 提交 PR，报告 exact head + 验证结果后停止，等 Architect Review
-```
-
-Human Card 是手工 transport / scheduling UX，不是 Agent 指令或状态源，也不是所有 delegated execution 的治理必经节点。
-
-兼容性：2.1.0 canonical compilation 之前 durable 产生的五字段 Human Card 保持 historical provenance 有效；之后的新 Card 使用六字段顺序。
+`2.3.0` 之前 durable 产生的 `CLOUD_ONLY | LOCAL_REQUIRED | NODE_REQUIRED | DEVICE_REQUIRED | MIXED | UNKNOWN` 六类执行依赖与旧六字段 Human Card 保持 historical provenance 有效；新的 Human 手工派发使用四类运行位置模板。
 
 ---
 
 ## 3. Default Minimal Agent Seed
 
-Minimal Agent Seed 的目标是**最少无歧义启动信息**，不是固定最少行。它只用于 Agent-facing delegated execution；Architect `DIRECT` 不制造虚假的 Agent Seed。
+Minimal Agent Seed 的目标仍是**最少无歧义启动信息**。可复制格式统一使用 [`../50_TEMPLATES/DISPATCH_PAIR.md`](../50_TEMPLATES/DISPATCH_PAIR.md)，本文件不再维护第二份抽象 Seed 与示例。
 
-### 3.1 Public / access 已无歧义
+新 Human-facing Seed 使用中文扁平键值：
 
-```text
-按 `<owner>/<repo>#<issue>` 的 <DISPATCH_TYPE> comment `<id>` 执行。
+- `私仓工单：<repo#issue[/comment]>` 或 `公仓工单：<repo#issue[/comment]>`；
+- `节点：...`、`项目：...`、`情景：...`、`上下文参考：...` 仅在有值时出现；无值整行省略。
 
-work: <owner>/<repo>#<issue>@<step>
-startup_mode: Fresh <Role>
-```
+`私仓工单` / `公仓工单` 分别映射 BOOT-1 的 `github-private` / `github-public` access class；具体 authenticated access route 与 fallback 仍只由 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md` 定义。
 
-`<owner>/<repo>` 是使用者当前 deployment 的真实 target repo coordinate，不是公共文档作者的 owner/repo。
+`上下文参考` 只是 scheduler / warm-context affinity hint：它不产生 authority，不声明 currentness，也不得覆盖 current GitHub durable truth。
 
-### 3.2 Private GitHub canonical seed
-
-private repo 首次 durable read 依赖 authenticated route，因此必须带 `access: github-private`：
-
-```text
-按 `<owner>/<private-repo>#<issue>` 的 `ARCHITECT_BUILD_DISPATCH` comment `<id>` 执行。
-
-work: <owner>/<private-repo>#<issue>@<step>
-startup_mode: Fresh Builder
-access: github-private
-```
-
-如果 target 是 deployment-local control plane，repo coordinate 从 `workspace_registry.control_plane.repo`（或等价 deployment registration）取得；不得把示例中的 `ai-hub`、`../hub` 或上游维护者账号当 fixed address。
-
-### 3.3 Seed 允许的最小扩展
-
-只有 pointer 无法无歧义启动时，才补 bootstrap-critical 精确引用（如 private/public access hint、exact ref）。Seed 不得复制：
-
-- scope / acceptance / requirements / reporting / stop；
-- Human Card 的执行依赖或调度建议；
-- 启动读取顺序、evidence 清单、执行步骤、禁止事项或验证清单；
-- 难度、token/时间估计、模型建议；
-- dependencies / relationships；
-- Builder 自评、旧 findings、Architect 旧裁决或 counted Verifier 输出；
-- provider/model/routing/pricing/quota metadata。
-
-fresh Agent 仅凭 exact dispatch pointer + 必要 access metadata 无法从 durable source 取得任务事实时，说明 Work Order/dispatch 不完整：先修 durable source，再派发。
-
-### 3.4 Access metadata boundary
-
-`access: github-private | github-public` 只描述 BOOT-1A 的 access class，不承载任务合同，也不授予 authority。
-
-**Canonical access route 与 fallback 只定义在 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`。** 本文件不再复制 native connector / authenticated `gh` / local Git / public HTTPS 的优先级与错误语义，避免两份 route policy 漂移。
-
-`Capability != Authority` 仍是 L0 invariant。
+Seed 不复制 role、startup_mode、scope、acceptance、requirements、reporting、stop、执行步骤、权限、安全 gate、模型/provider/price/quota。以上任务知识仍留在 current durable Work Order / dispatch；如果 fresh Agent 仅凭精确地址无法从 durable source 取得任务事实，先修 durable source，再派发。
 
 ---
 
@@ -274,6 +216,7 @@ Human-facing language 只引用 `00_KERNEL/LANGUAGE_POLICY.md`；本接口不复
 
 ## 6. Versioned Definitions
 
+- `2.3.0`：Human/Agent 双词收敛为 `50_TEMPLATES/DISPATCH_PAIR.md` 单一可复制模板；Human Card 从旧六类执行依赖/六字段 UX 收敛为 `网页端 | 云端电脑 | 本地 | 本地+设备` 四类运行位置与五字段卡；Minimal Seed 改为中文扁平键值并加入可选 `节点 / 项目 / 情景 / 上下文参考`，去除 Human-facing `startup_mode/access/work` 重复字段；旧格式保持 historical provenance。
 - `2.2.0`：Kernel residency canonicalization；本文件正式成为 common mutation workspace/scope hygiene、`DIRECT | DELEGATE`、Architect continuous advancement、Global Architect Maintenance Lane 与 Human/Agent dispatch interface 的 canonical home；Bootstrap access routing 与 language override 只保留 pointer，不再复制 downstream policy。**Behavior preserved; residency changed.**
 - `2.1.1`：public portability hardening；移除 maintainer-specific repo coordinate，明确 current governance repo / deployment-local control-plane role indirection；不改变 `DIRECT | DELEGATE`、authority、dependency taxonomy 或 Completion Card 语义。
 - `2.1.0`：编译 Architect `CONTINUE_WITHIN_AUTHORITY` 与 Human Dispatch Card `执行依赖` 六字段语义；历史五字段 Human Card 保持 provenance 有效。
