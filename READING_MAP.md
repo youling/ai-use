@@ -42,6 +42,7 @@
 | Workspace role registration / initialization | `10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md` |
 | Common mutation workspace/scope hygiene；DIRECT / DELEGATE / dispatch / continuation / Maintenance Lane | `docs/AGENT_INTERFACE.md` |
 | Fresh/takeover material architecture current-state alignment | `docs/ARCHITECT_RECONNAISSANCE.md` |
+| Architect current-session capability observation / optional central mirror | `docs/CAPABILITY_OBSERVATION.md` |
 | Durable checkpoints / recovery trace | `30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md` |
 | Durable business data / data model / schema migration | `docs/DURABLE_DATA_DOCTRINE.md` |
 | Human-facing language details / override | `00_KERNEL/LANGUAGE_POLICY.md` |
@@ -72,6 +73,7 @@
 | Public entry / 第一次不知道从哪开始 | `START_HERE.md`；只做 navigation |
 | zero-prompt next-hop | `NAMESPACE.md` 给 chain；本表判断 `NEXT | SKIP | STOP_*` |
 | startup / recovery / access / live-state gate | `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md` |
+| Fresh/takeover Architect current-session capability observation / placement capability probe | `docs/CAPABILITY_OBSERVATION.md`；只做低成本 P0 + route-relevant safe P1，central mirror 不产生 authority/liveness |
 | workspace initialization / role registration | `10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md` + `50_TEMPLATES/HUMAN_WORKSPACE_BOOTSTRAP.md` |
 | any write/mutation / workspace ownership / scope hygiene | `docs/AGENT_INTERFACE.md` §1.0；适用于 Direct 与 delegated executor |
 | Fresh/takeover Architect material architecture；material new-domain / major capability / major pivot | `docs/ARCHITECT_RECONNAISSANCE.md`；Bootstrap `EXECUTION_ALLOWED` 后完成适用的 ARCH-0，再进入 `ARCHITECT_READY` |
