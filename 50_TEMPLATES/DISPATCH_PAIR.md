@@ -1,6 +1,6 @@
 # 双词派单模板
 
-**版本：0.1.0**
+**版本：0.1.1**
 
 本文件本身就是模板，不再拆“字段说明 + 抽象模板 + 示例”。复制最接近当前任务的一组，替换真实值；没有节点、项目、情景或上下文参考时，直接删除对应行。
 
@@ -8,6 +8,28 @@
 
 - **人类派发卡**：给 Human 判断任务做什么、放哪里跑、做到哪停；
 - **Agent 种子词**：给 executor 最小寻址与上下文亲和信息。任务事实仍以 durable Work Order / dispatch 为准。
+
+## Agent seed 最小化规则
+
+当完整施工合同已经 durable 存在于 GitHub Issue / comment / Work Order，且 Agent 能访问该 source 时，**Agent 种子词只负责寻址，不重复施工合同**。
+
+默认只保留：
+
+- 身份 / startup role（仅在无法由工单自动推断时）；
+- 项目 / 任务坐标；
+- 权威施工单引用；
+- 必要 access class / 运行位置；
+- currentness / fail-closed 启动要求；
+- 完成后的停止条件。
+
+推荐控制在 **5～10 行**。这不是机械字符上限，而是异常检测尺子：如果 seed 明显膨胀，先停下来判断——
+
+1. 是否正在把 durable dispatch / Work Order 复制成第二份 SSOT；
+2. 或者 durable task contract 本身尚未定义清楚，需要先补工单，而不是继续扩 seed。
+
+`role`、scope、requirements、acceptance、reporting、权限、安全 gate、完整测试矩阵等任务事实，应留在 durable dispatch / Work Order，不在 seed 重复。
+
+只有当 Agent **无法访问 durable source** 时，才允许在 seed 中内联完成任务所必需的最小合同内容。该内联只是 transport fallback，不产生新的 authority，也不成为第二 SSOT；一旦 durable source 可访问，应恢复“短 seed + durable pointer”模式。
 
 运行位置按能完整完成并验证任务的**最低资源层级**选择：
 
@@ -120,6 +142,8 @@
 
 - `私仓工单` / `公仓工单` 已表达 BOOT-1 access class；具体 authenticated route 与 fallback 仍以 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md` 为准。
 - Agent 种子词默认只放：工单地址，以及有价值时的节点 / 项目 / 情景 / 上下文参考；没有就省略。
+- durable dispatch 已存在且可访问时，优先使用“短 seed + durable pointer”；不要把施工合同二次复制进 seed。
 - `上下文参考` 只是调度与 warm-context affinity，不是 authority，也不能覆盖 current GitHub SSOT。
 - role、startup mode、scope、acceptance、requirements、reporting、stop、权限与安全 gate 留在 durable dispatch / Work Order；不要复制进种子词。
+- Agent 无法访问 durable source 时才允许最小必要内联；该 fallback 不产生新的 authority / SSOT。
 - 运行位置是 Human 调度信息，不授予 capability 或 authority；executor 启动后仍须验证实际工具与权限。
