@@ -1,14 +1,18 @@
 # Diagram-as-Code 与架构拓扑导航
 
 **Classification: L2 Targeted Reference**  
-**Protocol Version: 0.1.0**  
-**Source Issue:** `youling/ai-use#53`
+**Protocol Version: 0.2.0**  
+**Source Issues:** `youling/ai-use#53`, `youling/ai-use#55`
 
-本协议定义：什么时候值得维护架构图、图拥有什么 authority、动态图如何处理 currentness，以及 Agent 怎样把图当作导航而不是第二 SSOT。
+本协议定义：什么时候值得维护架构图、图拥有什么 authority、图放在哪里、动态图如何处理 currentness，以及 Agent 怎样把图当作导航而不是第二 SSOT。
 
 核心句：
 
 > **图不是 SSOT；图是 SSOT 的索引、投影与导航。**
+
+布局口诀：
+
+> **总图放入口，细图贴对象；入口在 README，图源在附近。**
 
 ---
 
@@ -100,7 +104,97 @@ HTML / SVG / PNG render
 
 ---
 
-## 5. 四类 currentness 标记
+## 5. 图放在哪里：总图放入口，细图贴对象
+
+图的**入口位置**和**机器图源位置**不是一回事。
+
+### 5.1 普通项目根 README
+
+根 `README.md` 是 Human / Fresh Architect / Fresh Agent 的第一导航面。复杂项目默认把总图或总图入口放在第一屏，推荐顺序：
+
+```text
+# 项目名
+
+1–3 句：它是什么 / 拥有什么 / 不拥有什么
+
+[项目架构总览图 / 总图入口]
+
+当前阶段 / 关键入口 / 下一跳
+
+详细正文……
+```
+
+因此：
+
+- 不建议把图直接放在项目名之前；先给读者最小定位；
+- 不建议把总图藏在长篇 README 末尾；地图必须在详细正文之前；
+- README 内联 Mermaid、SVG/PNG 或指向 richer navigator 的链接都可以，但它们仍是 `DERIVED` navigation；
+- 根 README 不要求承载所有局部图，只负责“我在哪里、旁边是谁、下一跳去哪”。
+
+### 5.2 图源跟随 semantic owner
+
+机器可读图源不必堆在仓库根目录。默认：
+
+```text
+docs/diagrams/**
+```
+
+或跟随拥有该语义的子系统：
+
+```text
+subsystem/
+  README.md
+  diagrams/
+    ...
+```
+
+原则：**谁拥有这个语义，图就跟谁走。**
+
+不要为了集中管理图形建立脱离 domain owner 的中央大杂烩：
+
+```text
+/diagrams/fleet.*
+/diagrams/kefu.*
+/diagrams/juece.*
+/diagrams/everything.*
+```
+
+也不要仅因为多个项目都有图就新建独立 `shared/common/diagram` 仓。跨项目总图属于 portfolio/control-plane navigation；项目内部图仍留在项目 owner 附近。
+
+### 5.3 复杂子系统逐层下钻
+
+当项目内部已经出现独立复杂子域，局部 `README.md` 应承担局部地图入口：
+
+```text
+repo/README.md
+  -> 项目总图
+
+repo/subsystem/README.md
+  -> 子系统总图
+
+repo/subsystem/feature/README.md
+  -> 仅在确有必要时放更细的 workflow / sequence / lifecycle
+```
+
+过细实现图不要抬到根 README；它只在相关对象附近存在，并由上一级地图用 pointer 下钻。
+
+### 5.4 ai-hub 特例
+
+`ai-hub` 同时是自己的项目，也是 Youling cross-project control / information exchange surface，因此：
+
+```text
+ai-hub 根 README
+= Portfolio 世界地图 / 舰桥入口优先
+
+ai-hub 自身 Execution Fabric / Console / Agent Host 等内部结构
+= docs/ 或对应模块继续下钻
+```
+
+这不让 `ai-hub` 获得其它 repo 的事实 authority；它只承担 portfolio navigation/read-model 的入口职责。
+
+---
+
+## 6. 四类 currentness 标记
 
 动态图 / status overlay 至少能区分：
 
@@ -130,7 +224,7 @@ Dynamic status 只是 navigation compression，不能建立新的全局 lifecycl
 
 ---
 
-## 6. 图作为 Agent Routing Index
+## 7. 图作为 Agent Routing Index
 
 Fresh Architect / Agent 使用图的正确方式：
 
@@ -168,7 +262,7 @@ find owner
 
 ---
 
-## 7. Diagram lifecycle = Artifact lifecycle
+## 8. Diagram lifecycle = Artifact lifecycle
 
 本协议不创建第二套 Git 流程。
 
@@ -195,7 +289,7 @@ find owner
 
 ---
 
-## 8. Renderer / compiler 是工具，不是 authority
+## 9. Renderer / compiler 是工具，不是 authority
 
 工具可以负责：
 
@@ -234,7 +328,7 @@ Architect Review
 
 ---
 
-## 9. 建议的 drill-down 层级
+## 10. 建议的 drill-down 层级
 
 复杂 portfolio 可逐层展开：
 
@@ -259,13 +353,14 @@ L4 Implementation
 
 ---
 
-## 10. 最小维护契约
+## 11. 最小维护契约
 
 新增/维护重要 diagram 时至少回答：
 
 ```text
 图在回答什么问题？
 图源在哪里？
+根/局部 README 的入口在哪里？
 canonical source 在哪里？
 图是 CANONICAL / DERIVED / HISTORICAL / STALE_OR_UNKNOWN 中哪一类？
 哪些 node/edge 是 hard dependency，哪些只是 support/reuse candidate？
