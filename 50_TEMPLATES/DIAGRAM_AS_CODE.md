@@ -18,6 +18,8 @@
 
 布局口诀：**总图放入口，细图贴对象；入口在 README，图源在附近。**
 
+复杂度口诀：**规模不是删信息的理由；规模变大，优先增加层级、区域与下钻。**
+
 - 根 README 只放项目级总图/入口；
 - 图源默认放 `docs/diagrams/**` 或 semantic owner 对应子系统附近；
 - 子系统自己的复杂图放其局部 README/目录，不抬到根 README；
@@ -95,6 +97,83 @@ Canonical source：producer/consumer contracts
 禁止：复制 producer raw truth 到 consumer 形成第二 SSOT
 ```
 
+## 复杂图设计 / Review checklist
+
+当一张图开始变复杂，不要先问“最多能画多少节点”，先判断是哪一种复杂：
+
+```text
+Render scale
+- renderer/browser 是否有真实 benchmark / stress evidence？
+- 没有 evidence 时，不声称已经验证 100 / 1000 nodes。
+
+Default-view readability
+- 默认桌面视图主要文字是否可读？
+- 是否有 edge-through-node / crossing / shared corridor？
+- label 是否压线、压节点或依赖频繁 zoom 才能读？
+
+Semantic complexity
+- 这张图是否同时回答多个层级的问题？
+- 是否混合 architecture / workflow / delivery / implementation？
+- Fresh Agent 能否直接判断 owner 与下一 source pointer？
+```
+
+优先修复顺序：
+
+```text
+1. 分清失败类别；
+2. 不同阅读任务 -> 分层 / 独立 view；
+3. 同层复杂 -> region / lane / subgraph；
+4. 调 edge route / corridor / label placement；
+5. 缩短节点 copy，把细节移到 inspector/card/pointer；
+6. 必要时调画布/节点尺寸；
+7. 只删重复 presentation，不删关键语义。
+```
+
+禁止默认使用：
+
+```text
+无限缩小字号
+为了过 validator 删除关键 dependency / ownership
+把不同 relation 合并成一条含糊线
+让 Portfolio 总图复制 Project / Work / Delivery 全部细节
+```
+
+validator 结果解释：
+
+```text
+READABILITY_FAIL        != renderer capacity failure
+ROUTING_FAIL            != renderer capacity failure
+LABEL_CLEARANCE_FAIL    != renderer capacity failure
+SEMANTIC_LAYERING_FAIL  = 应重新分层/分区
+RENDER_CAPACITY_FAIL    = 只有真实性能/容量证据成立时才使用
+
+showcase PASS
+!= semantic correctness
+!= Human visual acceptance
+!= large-scale benchmark proof
+```
+
+## Progressive drill-down
+
+```text
+L0 Portfolio
+  -> repo / owner / capability / major flow
+
+L1 Project
+  -> phase / canonical surfaces / adjacent owners
+
+L2 Program / Work Graph
+  -> Issue / dependency / gate / owner
+
+L3 Delivery
+  -> PR / exact head / checks / evidence
+
+L4 Implementation
+  -> file / module / class / function / interface
+```
+
+不要把层级理解成固定节点数限制。同层仍复杂时先按 `domain / region / lane / subgraph` 分区；阅读任务变化时再下钻。
+
 ## PR / Issue 说明句
 
 ```text
@@ -102,4 +181,5 @@ Canonical source：producer/consumer contracts
 图源可 Git diff；rendered HTML/SVG/PNG 为可重建 presentation artifact。
 总图入口位于 <README pointer>；局部图跟随 semantic owner，不建立中央图纸 SSOT。
 本次若图与 canonical source 冲突，以 canonical source 为准并修 diagram drift。
+若 validator 拦截，本 PR 按 readability / routing / semantic layering / real capacity 分类别解释，不把版式失败误写成 renderer 节点规模上限。
 ```
