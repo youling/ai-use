@@ -1,8 +1,8 @@
 # Diagram-as-Code 与架构拓扑导航
 
 **Classification: L2 Targeted Reference**  
-**Protocol Version: 0.2.0**  
-**Source Issues:** `youling/ai-use#53`, `youling/ai-use#55`
+**Protocol Version: 0.3.0**  
+**Source Issues:** `youling/ai-use#53`, `youling/ai-use#55`, `youling/ai-use#57`
 
 本协议定义：什么时候值得维护架构图、图拥有什么 authority、图放在哪里、动态图如何处理 currentness，以及 Agent 怎样把图当作导航而不是第二 SSOT。
 
@@ -13,6 +13,10 @@
 布局口诀：
 
 > **总图放入口，细图贴对象；入口在 README，图源在附近。**
+
+复杂度口诀：
+
+> **规模不是删信息的理由；规模变大，优先增加层级、区域与下钻。**
 
 ---
 
@@ -194,7 +198,115 @@ ai-hub 自身 Execution Fabric / Console / Agent Host 等内部结构
 
 ---
 
-## 6. 四类 currentness 标记
+## 6. 规模、可读性与语义复杂度必须分开判断
+
+不要把“图很大”“默认屏幕看不清”“语义关系太复杂”混成同一个问题。维护重要 diagram 时至少区分三个尺度：
+
+| 尺度 | 它回答什么 | 常见证据 |
+| --- | --- | --- |
+| **Render scale** | renderer / browser 能否稳定承载、交互和导出该规模 | benchmark、stress fixture、真实大图测试、内存/渲染/交互证据 |
+| **Default-view readability** | Human 第一次打开时能否看清主要结构和文字 | projected text、viewport、overlap、crossing、route/label clearance、真实浏览器视觉证据 |
+| **Semantic complexity** | 是否把太多不同层级、不同问题的关系塞进同一张图 | owner/domain 数、关系类型、跨区 edge、阅读任务是否混杂、是否需要 drill-down |
+
+三者彼此相关，但不能互相替代。
+
+### 6.1 Quality gate 失败不等于 renderer capacity 失败
+
+机械 validator 可能因为以下原因拒绝一张图：
+
+```text
+text projected too small
+edge-through-node
+proper crossing
+ambiguous shared corridor
+label / route clearance
+container / legend collision
+route rhythm
+```
+
+这些默认属于**图形质量 / 默认可读性问题**。除非有明确的容量、性能、崩溃或 benchmark 证据，不得把它们写成：
+
+```text
+“节点太多，renderer 扛不住”
+“项目太复杂，所以工具无法绘制”
+```
+
+同理，一个小节点数的图也可能因为线路设计差、长文案、默认缩放过小而失败；一个大节点数的图也可能通过分区、分层、zoom/radar/focus 等导航机制保持可用。
+
+### 6.2 正确修复顺序：先保语义，再修呈现
+
+当图触发 readability / geometry gate 时，默认按以下顺序处理：
+
+```text
+1. 判断：这是语义问题、默认视图问题，还是 renderer capacity 问题？
+2. 若混入不同阅读任务：拆成上/下层或独立视图；
+3. 若同层仍复杂：按 domain / lane / region / subgraph 分区；
+4. 调整 edge route / port / corridor / label placement；
+5. 缩短节点 copy，把细节放 inspector / card / pointer；
+6. 必要时调整画布与节点尺寸；
+7. 最后才考虑删减信息，而且只能删重复 presentation，不得删掉真实关键语义。
+```
+
+禁止为了“过 validator”默认采取：
+
+```text
+无限缩小字号
+把所有节点挤进一屏
+删除关键 dependency / ownership edge
+把多个不同语义 relation 合并成一条含糊线
+让总图复制所有下层细节
+```
+
+核心原则：
+
+> **复杂度应被导航结构吸收，而不是被字号和像素压扁。**
+
+### 6.3 分层不是固定节点数阈值
+
+本协议不规定“一张图最多 N 个节点”。节点数本身不能决定是否拆图。
+
+应拆层/拆区的信号是：
+
+- 一张图同时回答多个不同层级的问题；
+- Human 必须反复 zoom 才能识别入口级结构；
+- 跨区关系大量穿过无关节点或共用 corridor；
+- 节点主要空间被解释性小字占据，而非结构本身；
+- Reader 需要先理解几十条次要边，才能找到主要 path；
+- Fresh Agent 无法从当前图稳定判断“下一跳读哪个 owner/source”。
+
+同一层内部也可以有 region/subgraph；分层与分区可以同时使用。
+
+### 6.4 大图能力必须有 evidence，不能从 feature 名推断
+
+`pan / zoom / radar / focus / semantic lens / reading depth` 等能力说明 renderer 具备大图导航基础设施，但**不自动证明**它已经通过某个节点规模的 benchmark。
+
+因此：
+
+```text
+有明确 100 / 1000-node benchmark -> 可以引用该 evidence
+只有 pan/zoom/radar 功能 -> 只能说具备大图浏览机制
+没有 benchmark -> 不声称已验证某个规模上限
+```
+
+`showcase PASS` 只证明当前 artifact 通过对应机械质量门；它既不证明架构语义正确，也不证明 renderer 已通过更大规模 stress test。
+
+### 6.5 Youling dogfood 规则
+
+Youling 在真实 diagram dogfood 中，如果 validator 拦截图，应把失败记录解释为具体诊断类别，而不是笼统写“图太复杂”。例如：
+
+```text
+READABILITY_FAIL
+ROUTING_FAIL
+LABEL_CLEARANCE_FAIL
+SEMANTIC_LAYERING_FAIL
+RENDER_CAPACITY_FAIL   # 仅在真实容量/性能证据成立时使用
+```
+
+若修复方式是增加 Project / Work / Delivery 下钻，则这属于**复杂度治理成功**，不是“为了迁就 renderer 删除系统信息”。
+
+---
+
+## 7. 四类 currentness 标记
 
 动态图 / status overlay 至少能区分：
 
@@ -224,7 +336,7 @@ Dynamic status 只是 navigation compression，不能建立新的全局 lifecycl
 
 ---
 
-## 7. 图作为 Agent Routing Index
+## 8. 图作为 Agent Routing Index
 
 Fresh Architect / Agent 使用图的正确方式：
 
@@ -262,7 +374,7 @@ find owner
 
 ---
 
-## 8. Diagram lifecycle = Artifact lifecycle
+## 9. Diagram lifecycle = Artifact lifecycle
 
 本协议不创建第二套 Git 流程。
 
@@ -289,7 +401,7 @@ find owner
 
 ---
 
-## 9. Renderer / compiler 是工具，不是 authority
+## 10. Renderer / compiler 是工具，不是 authority
 
 工具可以负责：
 
@@ -314,7 +426,7 @@ Archify
 
 `Archify` 是当前已 dogfood 的优先工具之一，不是 ai-use kernel dependency，也不是全项目强制 runtime。使用外部 renderer 时应 pin version/commit；自动更新不得静默改变历史 artifact 编译结果。
 
-机械 validate 与语义 Review 分工：
+机械 validate、语义 Review、规模 benchmark 分工：
 
 ```text
 renderer validator
@@ -322,13 +434,18 @@ renderer validator
 
 Architect Review
 = ownership / authority / currentness / semantic correctness
+
+scale benchmark / stress evidence
+= renderer 在特定规模、环境和交互条件下的容量证据
 ```
 
-若没有真实 browser/perceptual evidence，不得把 deterministic render PASS 写成“Human 视觉已验收”。
+三者不能互相冒充。
+
+若没有真实 browser/perceptual evidence，不得把 deterministic render PASS 写成“Human 视觉已验收”。若没有明确 stress/benchmark evidence，也不得从“支持 zoom/radar”推导出“已验证 N 个节点”。
 
 ---
 
-## 10. 建议的 drill-down 层级
+## 11. 建议的 drill-down 层级
 
 复杂 portfolio 可逐层展开：
 
@@ -351,9 +468,13 @@ L4 Implementation
 
 每层应尽量保存 pointer，而不是复制下一层全文。
 
+这不是固定深度限制。若某层内部仍然复杂，可以先按 domain / region / lane / subgraph 继续组织；如果阅读任务发生变化，再增加下一层。原则是：
+
+> **先按问题分层，再按同层结构分区。**
+
 ---
 
-## 11. 最小维护契约
+## 12. 最小维护契约
 
 新增/维护重要 diagram 时至少回答：
 
@@ -365,6 +486,9 @@ canonical source 在哪里？
 图是 CANONICAL / DERIVED / HISTORICAL / STALE_OR_UNKNOWN 中哪一类？
 哪些 node/edge 是 hard dependency，哪些只是 support/reuse candidate？
 动态内容如何判断 freshness？
+当前复杂度属于 render scale / default-view readability / semantic complexity 哪一类？
+若图变复杂，下一层 / region / subgraph 在哪里？
+validator PASS 能证明什么、不能证明什么？
 坏图如何重建/回滚？
 ```
 
