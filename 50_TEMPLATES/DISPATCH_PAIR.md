@@ -1,6 +1,6 @@
 # 双词派单模板
 
-**版本：0.1.1**
+**版本：0.2.0**
 
 本文件本身就是模板，不再拆“字段说明 + 抽象模板 + 示例”。复制最接近当前任务的一组，替换真实值；没有节点、项目、情景或上下文参考时，直接删除对应行。
 
@@ -138,12 +138,22 @@
 
 ---
 
+## 上下文模式（可选 pointer）
+
+需要表达 mode / context / independence / delegation 时，不把维度表复制进本文件；由本文件以 targeted pointer 引用 [`CONTEXT_MODE_SEED.md`](CONTEXT_MODE_SEED.md)。日常 Seed 仍只写工单地址与有价值的节点 / 项目 / 情景 / 上下文参考；只有“为什么这次被唤醒 / 当前执行模式”无歧义需要时，才追加一行可选语义意图：
+
+```text
+执行意图：<mode/context intent>；按 current durable acceptance 持续到对应 boundary
+```
+
+它不是 acceptance / stop 副本，不得复制 tests、scope、权限、安全 gate、完成条件；无歧义时整行省略。正交维度与可执行判据见 `CONTEXT_MODE_SEED.md`；continuation 与完成边界的 authority 见 `docs/AGENT_INTERFACE.md`。
+
 ## 使用边界
 
 - `私仓工单` / `公仓工单` 已表达 BOOT-1 access class；具体 authenticated route 与 fallback 仍以 `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md` 为准。
-- Agent 种子词默认只放：工单地址，以及有价值时的节点 / 项目 / 情景 / 上下文参考；没有就省略。
+- Agent 种子词默认只放：工单地址，以及有价值时的节点 / 项目 / 情景 / 上下文参考；没有就省略；可选 `执行意图` 仅为语义意图，不复制 acceptance / stop。
 - durable dispatch 已存在且可访问时，优先使用“短 seed + durable pointer”；不要把施工合同二次复制进 seed。
-- `上下文参考` 只是调度与 warm-context affinity，不是 authority，也不能覆盖 current GitHub SSOT。
+- `上下文参考` 只是调度与 warm-context affinity，不是 authority，也不能覆盖 current GitHub SSOT；正交维度需要时 pointer 到 `CONTEXT_MODE_SEED.md`，不扩肥本文件。
 - role、startup mode、scope、acceptance、requirements、reporting、stop、权限与安全 gate 留在 durable dispatch / Work Order；不要复制进种子词。
 - Agent 无法访问 durable source 时才允许最小必要内联；该 fallback 不产生新的 authority / SSOT。
 - 运行位置是 Human 调度信息，不授予 capability 或 authority；executor 启动后仍须验证实际工具与权限。
