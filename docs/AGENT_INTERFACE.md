@@ -165,19 +165,19 @@ AND executor_yielded
 => PREMATURE_YIELD
 ```
 
-真实合法 stop gate 仅为 `REAL_HUMAN_GATE | AUTHORITY_BLOCKED | SECURITY_OR_DESTRUCTIVE_GATE | DEPENDENCY_BLOCKED | UNRECOVERABLE_EXECUTOR_FAILURE`。
+真实合法 stop gate 至少包括以下 canonical classes（可扩展，但扩展 class 必须 fail-closed，且不得把 ordinary repair input 升格为 Human gate）：`REAL_HUMAN_GATE | AUTHORITY_BLOCKED | SECURITY_OR_DESTRUCTIVE_GATE | DEPENDENCY_BLOCKED | UNRECOVERABLE_EXECUTOR_FAILURE`。
 
 普通 test / lint / typecheck / red CI、已知 review finding、可在当前 scope 内修复的代码错误属于 repair input，不是 Human interrupt。同一 lineage 内 executor 遇到此类输入应自动进入 repair loop，不得把 Human prompt 当 scheduling clock。
 
 ### 1.8 Completion boundary：来自 durable acceptance
 
-不新造第二套 acceptance。executor goal / stop predicate 必须从 current durable Work Order acceptance 编译；只有 deterministic checks、currentness、commit / push exact head、required durable evidence 满足后才可 `COMPLETION_REACHED`。
+不新造第二套 acceptance。executor goal / stop predicate 必须从 current durable Work Order acceptance 编译：只有本任务 acceptance 要求的 deterministic checks / currentness / commit-push / exact-head / evidence 均满足，才可 `COMPLETION_REACHED`。不适用项不得凭模板被强制创造。
 
 Executor 自述 `done / completed` 只是 observation，不能覆盖 deterministic finish / review / evidence gates。`DIRECT` 与 `DELEGATE` 均适用本条；选择执行方式不改变 evidence 要求。
 
 ### 1.9 Fresh 与 delegation 边界（指针）
 
-Fresh context 只用于 independence / 安全 / 高风险 / 污染 / 真并行场景，不得因 warm 方便取消 current contract 已要求的 fresh independent verification。`FORK_CONTEXT != FRESH_CONTEXT`；`SELF_REVIEW != FRESH_VERIFY`。Subagent 是隔离与并行机制，不是 authority 来源，也不是默认 mode 切换方式。可执行判据与可复制缝合见 [`../50_TEMPLATES/CONTEXT_MODE_SEED.md`](../50_TEMPLATES/CONTEXT_MODE_SEED.md) 与 [`SESSION_LIFECYCLE.md`](SESSION_LIFECYCLE.md)；本文不复制其检查表。
+Fresh context 默认主要用于 independence / 安全 / 高风险 / 污染 / 真并行场景；恢复路径同样是 fresh 触发：warm context missing / invalid（`CONTEXT_UNAVAILABLE`）时从 durable checkpoint / current state 做 `FRESH_CONTEXT` 重建。不得因 warm 方便取消 current contract 已要求的 fresh independent verification。`FORK_CONTEXT != FRESH_CONTEXT`；`SELF_REVIEW != FRESH_VERIFY`。Subagent 是隔离与并行机制，不是 authority 来源，也不是默认 mode 切换方式。可执行判据与可复制缝合见 [`../50_TEMPLATES/CONTEXT_MODE_SEED.md`](../50_TEMPLATES/CONTEXT_MODE_SEED.md) 与 [`SESSION_LIFECYCLE.md`](SESSION_LIFECYCLE.md)；本文不复制其检查表。
 
 ---
 

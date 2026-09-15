@@ -80,7 +80,8 @@ parallelism: NONE
 ## 同 lineage 默认与 fresh 触发（可复制判据）
 
 - 同一 implementation lineage 内默认 `WARM_RESUME`：`PLAN -> BUILD -> TEST -> REPAIR -> SELF_REVIEW -> REPAIR` 优先复用 current owned warm context；明确 review finding 回流后优先由原 executor 修。
-- Fresh context 仅用于：independent verification、security / permission boundary review、high-risk final acceptance、adversarial review、context contamination / unrelated new work、true parallel work。
+- Fresh context 默认主要用于：independent verification、security / permission boundary review、high-risk final acceptance、adversarial review、context contamination / unrelated new work、true parallel work。
+- 恢复路径同样是 fresh 触发：warm context missing / invalid（`CONTEXT_UNAVAILABLE`）时，从 durable checkpoint / current state 做 `FRESH_CONTEXT` 重建，不伪造 active session。
 - 不得因 warm 方便取消 current contract 已要求的 fresh independent verification。
 - `DEFAULT_SAME_LINEAGE = WARM_RESUME`
 
@@ -94,7 +95,7 @@ AND executor_yielded
 => PREMATURE_YIELD
 ```
 
-真实合法 stop gate 仅为：
+至少包括以下 canonical classes（可扩展，但扩展 class 必须 fail-closed，且不得把 ordinary repair input 升格为 Human gate）：
 
 `REAL_HUMAN_GATE | AUTHORITY_BLOCKED | SECURITY_OR_DESTRUCTIVE_GATE | DEPENDENCY_BLOCKED | UNRECOVERABLE_EXECUTOR_FAILURE`
 
@@ -102,7 +103,7 @@ AND executor_yielded
 
 ## Completion boundary（指针式）
 
-不新造第二套 acceptance。本模板不复制 acceptance 正文；executor goal / stop predicate 必须从 current durable Work Order acceptance 编译，只有 deterministic checks、currentness、commit / push exact head、required durable evidence 满足后才可 `COMPLETION_REACHED`。
+不新造第二套 acceptance。本模板不复制 acceptance 正文；executor goal / stop predicate 必须从 current durable Work Order acceptance 编译：只有本任务 acceptance 要求的 deterministic checks / currentness / commit-push / exact-head / evidence 均满足，才可 `COMPLETION_REACHED`。不适用项不得凭模板被强制创造（例如无需 commit 的任务不因本模板而必须 commit）。
 
 ## Durable before fragile（检查点触发）
 

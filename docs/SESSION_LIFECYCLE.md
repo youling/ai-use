@@ -278,7 +278,7 @@ ARCHITECT CONVERGENCE
 
 ## 8. Keep old session vs start new session
 
-> 本表是启发式；canonical 的正交维度与 fresh 触发见 §11 与 `AGENT_INTERFACE.md` §1.6 / §1.9，可复制形态见 `50_TEMPLATES/CONTEXT_MODE_SEED.md`。冲突时以 canonical 为准。
+> 本表是启发式；canonical 的正交维度与 fresh 触发见 §10 与 `AGENT_INTERFACE.md` §1.6 / §1.9，可复制形态见 `50_TEMPLATES/CONTEXT_MODE_SEED.md`。冲突时以 canonical 为准。
 
 | 情形 | 选择 |
 | --- | --- |
@@ -331,11 +331,11 @@ Human Agent Seed 的规范格式见 `docs/AGENT_INTERFACE.md` §3；可复制格
 
 > 日常派发**不复制**以上非规范格式。需要表达 mode / context / independence / delegation 时，由 `DISPATCH_PAIR.md` 以 targeted pointer 引用 `CONTEXT_MODE_SEED.md`，不把维度表复制进 Seed。
 
-## 11. Work Context lifecycle（Context Lifecycle v0.1）
+## 10. Work Context lifecycle（Context Lifecycle v0.1）
 
 本节是 Work Context 执行连续性的 lifecycle playbook；continuation 与完成边界的 authority 仍在 [`AGENT_INTERFACE.md`](AGENT_INTERFACE.md) §1.4 / §1.6–§1.9，正交维度的可复制形态在 [`../50_TEMPLATES/CONTEXT_MODE_SEED.md`](../50_TEMPLATES/CONTEXT_MODE_SEED.md)。三者不重复。
 
-### 11.1 Work Context 与 Project Architect Context 分离
+### 10.1 Work Context 与 Project Architect Context 分离
 
 ```text
 Work Context
@@ -349,7 +349,7 @@ Work Context
 
 长期 Project Architect Context 承载项目架构、方向与跨工单连续性，保持低工具噪声；短 / 中寿命 Work Context 承载一个 Issue / PR / implementation lineage，完成后归档或 compact。不把整个 Project 永久绑定一个无限增长 session，也不把 session memory 提升为 durable truth。
 
-### 11.2 正交组合关系
+### 10.2 正交组合关系
 
 `context_policy / mode / continuation / independence` 正交组合，另加最小 `delegation / parallelism`；`FRESH_VERIFY` 等只是 convenience label。可复制定义见 `CONTEXT_MODE_SEED.md`，本文不复制第二份维度表。
 
@@ -359,19 +359,19 @@ FRESH_VERIFY = FRESH_CONTEXT + VERIFY + independence:REQUIRED
 side research = SIDE_CONTEXT + INVESTIGATE
 ```
 
-### 11.3 Durable before fragile
+### 10.3 Durable before fragile
 
 Warm context 是 working memory / cache。以下风险前必须先建 current durable checkpoint：context compaction、provider / backend handoff、session termination / replacement、workspace ownership transition、long-running crash 风险。压缩摘要不得覆盖 GitHub current truth。
 
-### 11.4 Fresh 触发
+### 10.4 Fresh 触发
 
-Fresh context 仅用于 independent verification、security / permission boundary review、high-risk final acceptance、adversarial review、context contamination / unrelated new work、true parallel work。§8 的启发式表与本节冲突时以本节与 `AGENT_INTERFACE.md` §1.9 为准。
+Fresh context 默认主要用于 independent verification、security / permission boundary review、high-risk final acceptance、adversarial review、context contamination / unrelated new work、true parallel work；恢复路径同样是 fresh 触发：warm context missing / invalid（`CONTEXT_UNAVAILABLE`）时从 durable checkpoint / current state 做 `FRESH_CONTEXT` 重建。§8 的启发式表与本节冲突时以本节与 `AGENT_INTERFACE.md` §1.9 为准。
 
-### 11.5 与旧模板的关系
+### 10.5 与旧模板的关系
 
 §3–§5 的完整冷启动 / warm resume / restore 模板保留 recovery / handoff 背景价值；与 L0 / Bootstrap / `AGENT_INTERFACE.md` 冲突时按 L0 隔离 lower-layer drift。日常派发不机械复制整份模板，pointer seed 见 `AGENT_INTERFACE.md` §3 与 `DISPATCH_PAIR.md`。
 
-## 10. Project Reproducibility Contract
+## 11. Project Reproducibility Contract
 
 每个项目必须把自身可复现所需的知识放回项目仓库，而不是复制进 ai-use / ai-hub。
 
