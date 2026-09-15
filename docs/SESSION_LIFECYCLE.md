@@ -1,6 +1,6 @@
 # Session & Context Lifecycle
 
-ai-use v2.0.0
+ai-use v2.1.0
 
 **Classification: L2 Reference / Playbook. Not default bootstrap reading.**
 
@@ -278,6 +278,8 @@ ARCHITECT CONVERGENCE
 
 ## 8. Keep old session vs start new session
 
+> 本表是启发式；canonical 的正交维度与 fresh 触发见 §10 与 `AGENT_INTERFACE.md` §1.6 / §1.9，可复制形态见 `50_TEMPLATES/CONTEXT_MODE_SEED.md`。冲突时以 canonical 为准。
+
 | 情形 | 选择 |
 | --- | --- |
 | 同 WO + 同 branch + 连续施工 | 优先旧会话（Warm Resume） |
@@ -319,16 +321,57 @@ seed 默认只包含：
 
 ### 9.3 指向规范源
 
-Human Agent Seed 的**唯一规范格式**见 `docs/AGENT_INTERFACE.md` §3（Default Minimal Agent Seed：pointer + work + startup_mode 三行）。
+Human Agent Seed 的规范格式见 `docs/AGENT_INTERFACE.md` §3；可复制格式只在 `50_TEMPLATES/DISPATCH_PAIR.md` 维护；正交 context / mode / delegation 维度只在 `50_TEMPLATES/CONTEXT_MODE_SEED.md` 维护。三处不重复，冲突时以 `AGENT_INTERFACE.md` 为准并修 drift。
 
-本文 §9.1 的最小必要项列表与 §3–§5 的完整协议模板属于历史参考，不是 Human Agent Seed 的规范格式。以下格式均为**非规范参考**，仅用于说明演进背景：
+本文 §9.1 的最小必要项列表与 §3–§5 的完整协议模板属于历史参考，不是日常派发的规范格式。以下格式均为**非规范参考**，仅用于说明演进背景：
 
-- 早期一-line pointer seed（如 `领取架构师任务 <Issue URL>`）—— 说明极简指针的可行性，但规范格式为 AGENT_INTERFACE.md §3 的三行结构；
-- 完整 control-plane protocol template（含 control_plane / work_order / project / access / branch / startup_mode / exact_ref / stop）—— 属于控制平面协议设计参考，不是日常派发的 Human Agent Seed 格式。
+- 早期一-line pointer seed（如 `领取架构师任务 <Issue URL>`）—— 说明极简指针的可行性，但当前规范源为 `AGENT_INTERFACE.md` §3 与 `DISPATCH_PAIR.md`；
+- 完整 control-plane protocol template（含 control_plane / work_order / project / access / branch / startup_mode / exact_ref / stop）—— 属于控制平面协议设计参考，不是日常派发的 Human Agent Seed 格式；
+- `AGENT_INTERFACE.md` §3 曾维护的 pointer + work + startup_mode 三行抽象 Seed—— 已收敛为 `DISPATCH_PAIR.md` 单一可复制模板，本文保留为 historical provenance。
 
-> 日常派发**不复制**以上非规范格式。Human Agent Seed 的规范源为 `docs/AGENT_INTERFACE.md` §3。
+> 日常派发**不复制**以上非规范格式。需要表达 mode / context / independence / delegation 时，由 `DISPATCH_PAIR.md` 以 targeted pointer 引用 `CONTEXT_MODE_SEED.md`，不把维度表复制进 Seed。
 
-## 10. Project Reproducibility Contract
+## 10. Work Context lifecycle（Context Lifecycle v0.1）
+
+本节是 Work Context 执行连续性的 lifecycle playbook；continuation 与完成边界的 authority 仍在 [`AGENT_INTERFACE.md`](AGENT_INTERFACE.md) §1.4 / §1.6–§1.9，正交维度的可复制形态在 [`../50_TEMPLATES/CONTEXT_MODE_SEED.md`](../50_TEMPLATES/CONTEXT_MODE_SEED.md)。三者不重复。
+
+### 10.1 Work Context 与 Project Architect Context 分离
+
+```text
+Work Context
+= Work Coordinate
++ session binding
++ isolated workspace / worktree
++ current exact head
++ current mode
++ context health / checkpoint
+```
+
+长期 Project Architect Context 承载项目架构、方向与跨工单连续性，保持低工具噪声；短 / 中寿命 Work Context 承载一个 Issue / PR / implementation lineage，完成后归档或 compact。不把整个 Project 永久绑定一个无限增长 session，也不把 session memory 提升为 durable truth。
+
+### 10.2 正交组合关系
+
+`context_policy / mode / continuation / independence` 正交组合，另加最小 `delegation / parallelism`；`FRESH_VERIFY` 等只是 convenience label。可复制定义见 `CONTEXT_MODE_SEED.md`，本文不复制第二份维度表。
+
+```text
+FRESH_VERIFY = FRESH_CONTEXT + VERIFY + independence:REQUIRED
+普通修复 = WARM_RESUME + REPAIR + continuation:TO_DURABLE_BOUNDARY
+side research = SIDE_CONTEXT + INVESTIGATE
+```
+
+### 10.3 Durable before fragile
+
+Warm context 是 working memory / cache。以下风险前必须先建 current durable checkpoint：context compaction、provider / backend handoff、session termination / replacement、workspace ownership transition、long-running crash 风险。压缩摘要不得覆盖 GitHub current truth。
+
+### 10.4 Fresh 触发
+
+Fresh context 默认主要用于 independent verification、security / permission boundary review、high-risk final acceptance、adversarial review、context contamination / unrelated new work、true parallel work；恢复路径同样是 fresh 触发：warm context missing / invalid（`CONTEXT_UNAVAILABLE`）时从 durable checkpoint / current state 做 `FRESH_CONTEXT` 重建。§8 的启发式表与本节冲突时以本节与 `AGENT_INTERFACE.md` §1.9 为准。
+
+### 10.5 与旧模板的关系
+
+§3–§5 的完整冷启动 / warm resume / restore 模板保留 recovery / handoff 背景价值；与 L0 / Bootstrap / `AGENT_INTERFACE.md` 冲突时按 L0 隔离 lower-layer drift。日常派发不机械复制整份模板，pointer seed 见 `AGENT_INTERFACE.md` §3 与 `DISPATCH_PAIR.md`。
+
+## 11. Project Reproducibility Contract
 
 每个项目必须把自身可复现所需的知识放回项目仓库，而不是复制进 ai-use / ai-hub。
 

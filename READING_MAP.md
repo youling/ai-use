@@ -47,6 +47,8 @@
 | Diagram-as-code / topology navigation / diagram currentness | `30_PROTOCOLS/DIAGRAM_AS_CODE.md` |
 | Durable business data / data model / schema migration | `docs/DURABLE_DATA_DOCTRINE.md` |
 | Human-facing language details / override | `00_KERNEL/LANGUAGE_POLICY.md` |
+| Work Context lifecycle / durable-before-fragile / fresh triggers (playbook) | `docs/SESSION_LIFECYCLE.md` §10 |
+| Context / mode / continuation / independence / delegation copyable contract | `50_TEMPLATES/CONTEXT_MODE_SEED.md` |
 | zero-prompt next-hop | `NAMESPACE.md` + this map |
 
 其它文档只引用，不复制完整 mechanics。
@@ -84,6 +86,9 @@
 | 复杂架构图 / ownership topology / status overlay / workflow / sequence / dataflow / lifecycle / diagram drift | `30_PROTOCOLS/DIAGRAM_AS_CODE.md`；需要可复制形态再读 `50_TEMPLATES/DIAGRAM_AS_CODE.md` |
 | repository merge authority / merge gate | `CONSTITUTION.md` §2 + current project/local contract；identity-sensitive 时再读 project-local identity/access mapping |
 | verification policy / Incident Mode | `CONSTITUTION.md` §§7–8 + task-specific verification contract |
+| execution continuation / WARM_RESUME / PREMATURE_YIELD / completion boundary | `docs/AGENT_INTERFACE.md` §1.4 / §1.6–§1.9 |
+| Work Context lifecycle / durable-before-fragile / fresh triggers | `docs/SESSION_LIFECYCLE.md` §10 |
+| context / mode / delegation copyable contract | `50_TEMPLATES/CONTEXT_MODE_SEED.md`；日常先读 `50_TEMPLATES/DISPATCH_PAIR.md` 的 pointer |
 | durable trace / checkpoint / recovery trace | `30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md` |
 | durable business data / data model / schema migration | `docs/DURABLE_DATA_DOCTRINE.md` |
 | Human-facing language/override ambiguity | `00_KERNEL/LANGUAGE_POLICY.md`；L0 只保留 default + pointer |
@@ -95,6 +100,8 @@
 ---
 
 ## Session Lifecycle compatibility note
+
+`docs/SESSION_LIFECYCLE.md` §10 是 Work Context lifecycle 的 current playbook；continuation 与完成边界的 authority 仍在 `docs/AGENT_INTERFACE.md`。早期模板说明如下：
 
 `docs/SESSION_LIFECYCLE.md` 包含早期完整模板，保留 recovery/handoff 背景价值，但不是 current bootstrap/execution authority。特别是：
 

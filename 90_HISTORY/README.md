@@ -7,3 +7,4 @@
 当前 ADR：
 
 - [`ADR-0001_DOCS_AS_CODE_CHANGE_LIFECYCLE.md`](ADR-0001_DOCS_AS_CODE_CHANGE_LIFECYCLE.md) — 关键文档采用 docs-as-code，低关键文档允许周期性维护。
+- [`ADR-0002_CONTEXT_LIFECYCLE_V0_1.md`](ADR-0002_CONTEXT_LIFECYCLE_V0_1.md) — Context Lifecycle v0.1：Work Context 执行连续性（#60）。
