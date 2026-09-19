@@ -1,7 +1,7 @@
 # 文档即代码与变更生命周期
 
 **Classification: L2 Targeted Reference**  
-**Protocol Version: 0.1.0**
+**Protocol Version: 0.2.0**
 
 本协议定义代码与文档 Artifact 的统一变更留痕方式。目标不是把所有 Markdown 都变成重治理对象，而是让**真正会影响 Human / Agent 判断的文档**拥有和代码一样可审查、可追溯、可回滚的生命周期。
 
@@ -149,6 +149,96 @@ ADR 记录的是**长期设计选择与取舍**，不是重复粘贴 Issue。后
 5. **不要重复 Git metadata。** author、timestamp、commit parent 等已有 Git 事实不要求每个 Markdown 再写一遍；只有机器或 Human 真正需要稳定读取的 metadata 才进入 Artifact 正文。
 6. **文档不是第二 SSOT。** derived/read-model 文档必须能指回 canonical source；周期性文档不能因“更好读”而夺取事实 ownership。
 7. **代码也按同一等级判断。** 小代码 diff 不自动是 L0；只要改变行为就是至少 L1，架构/authority/schema seam 变化可升 L2。
+
+---
+
+## 4.1 Repo-wide migration / bulk refactor execution
+
+当变更具有明显的 repository-wide 特征时，除了按 L1/L2 留痕，还要选择适合批量施工的执行方法。目标是让变更成本与**语义复杂度**相关，而不是被逐文件远程编辑放大。
+
+以下任一条件命中时，默认进入 repo-wide migration 模式：
+
+- 大约 10 个以上文件需要 move / rename / 同类重写；
+- directory / namespace / package ownership 重构；
+- import/path/reference 需要跨代码、tests、workflow、docs 同步修改；
+- 一次变更同时影响多类消费者（例如 runtime + CI + docs）；
+- 需要 repository-wide grep / mechanical rewrite / generated update 才能可靠完成。
+
+### Durable plan first
+
+施工前先在 owner repo 建 durable migration plan。它至少应记录：
+
+- X.Y.Z Artifact Version；
+- exact base SHA / target branch；
+- goal / non-goal；
+- current -> target mapping；
+- affected code / imports / workflows / tests / docs；
+- execution phases；
+- validation / acceptance；
+- rollback / compatibility boundary；
+- current checkpoint / next action。
+
+聊天、临时 scratchpad、runner workspace 都不是该计划的替代品。
+
+### Bulk execution over per-file remote editing
+
+优先选择能形成**少量逻辑 commit**的批量方式：
+
+```text
+exact base
+ -> local/worktree or Git tree/blob batch patch
+ -> local/static/targeted tests
+ -> small logical commits
+ -> push candidate
+ -> HEAD_FROZEN
+ -> CI
+ -> exact-head Review
+```
+
+对于 repo-wide refactor，GitHub Contents API 的“一文件一次写/一次 commit”不是默认方案。它适合小改；若导致大量机械 commit、反复移动 head、重复 CI，就应切换到本地/worktree、Git tree/blob batch、或等价批处理方式。
+
+本地/远程 engineering workspace 可以使用 managed engineering node、ephemeral worktree 或 runner，但 GitHub 仍是 durable SSOT：计划、Work、Review、CI、最终 diff/commit 都必须回到 owner repo。
+
+### CI head freeze
+
+Final candidate 开始 CI 后默认：
+
+```text
+HEAD_FROZEN = YES
+```
+
+如果 CI 失败：
+
+1. 先收集**完整失败集合**；
+2. 在本地/批处理 workspace 一次修一批；
+3. targeted/local checks；
+4. push 一个逻辑 repair commit；
+5. 新 head 再跑 CI。
+
+不要每看到一个 assertion 就 push 一个 micro-fix，让旧 CI 不断 cancel/restart。过期 head 的绿灯或失败都不能计入最终 acceptance。
+
+### Context / log discipline
+
+- 默认只取 failed job / failed test / 必要上下文；
+- 不机械把完整巨型 CI log、repo tree、diff 全灌入对话；
+- checkpoint 写入 GitHub plan/Issue，而不是依赖长会话记忆；
+- 会话中断后从 exact repo/head + migration plan 恢复。
+
+### Execution method selection
+
+```text
+1-5 个文件的小修
+ -> GitHub/API direct edit 可接受
+
+repo-wide rename/move/refactor
+ -> plan-first + bulk patch/worktree/Git tree
+
+需要真实机器/软件环境验证
+ -> 使用项目已授权的执行节点/Agent runtime
+
+所有情况
+ -> GitHub owner repo 保持 durable SSOT
+```
 
 ---
 
