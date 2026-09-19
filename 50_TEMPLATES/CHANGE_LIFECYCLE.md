@@ -1,6 +1,6 @@
 # 文档 / 代码变更留痕模板
 
-**版本：0.1.0**
+**版本：0.2.0**
 
 以下内容就是可复制模板。先按 `30_PROTOCOLS/CHANGE_LIFECYCLE.md` 判定 `L0 | L1 | L2` 与 `STRICT_DOCS_AS_CODE | PERIODIC_DOCS`，再复制最接近的一组。
 
@@ -120,6 +120,76 @@ ADR：REQUIRED
 Review：exact head <sha>
 回滚：按 ADR 与 migration 边界执行 revert / supersede；不得改写旧 ADR 历史。
 ```
+
+---
+
+## Repo-wide migration / bulk refactor
+
+当目录、namespace、package、imports、workflows/tests/docs 需要成批迁移时，先建立 migration plan，不要把 GitHub 当成逐文件远程编辑器。
+
+### Migration plan
+
+```text
+标题：<migration name>
+Artifact Version：X.Y.Z
+变更等级：L1 | L2
+Owner repo：<repo>
+Exact base SHA：<sha>
+Target branch / PR：<branch / PR>
+
+Goal：
+Non-goals：
+
+Current -> Target：
+- <old path> -> <new path>
+- ...
+
+Affected consumers：
+- imports：
+- workflows：
+- tests：
+- docs/contracts：
+
+Execution：
+1. exact base / clean worktree；
+2. bulk move/rewrite；
+3. local/static checks；
+4. small logical commits；
+5. push candidate；
+6. HEAD_FROZEN；
+7. CI；
+8. exact-head Review。
+
+Acceptance：
+- no stale old paths；
+- compatibility/rollback boundary明确；
+- all required CI on the exact final head；
+- no unrelated scope expansion。
+
+Checkpoint：
+- last completed：
+- current exact head：
+- blocker：
+- next action：
+```
+
+### Repair after CI failure
+
+```text
+不要：
+failure A -> push
+failure B -> push
+failure C -> push
+
+应该：
+collect whole failure set
+ -> repair batch
+ -> local/targeted checks
+ -> one logical repair commit
+ -> new frozen-head CI
+```
+
+默认只提取 failed tests / 必要 log excerpt；完整巨型 log 只有确有诊断需要时再读。
 
 ---
 
