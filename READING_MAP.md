@@ -84,6 +84,7 @@
 | Architect 选择 DIRECT/DELEGATE、dispatch/review/repair、continuous advancement、Maintenance Lane | `docs/AGENT_INTERFACE.md` |
 | Human Dispatch / Minimal Seed / Completion Card / execution dependency taxonomy | `docs/AGENT_INTERFACE.md` |
 | 文档即代码、代码/文档变更分级、Issue/ADR/PR 留痕、周期性文档维护 | `30_PROTOCOLS/CHANGE_LIFECYCLE.md`；需要可复制形态再读 `50_TEMPLATES/CHANGE_LIFECYCLE.md` |
+| repo-wide rename/move/package/directory migration、批量 import/path rewrite、跨 workflow/tests/docs 重构 | `30_PROTOCOLS/CHANGE_LIFECYCLE.md` §4.1；先写 durable migration plan，再选择 worktree/Git tree 等 bulk execution；需要模板再读 `50_TEMPLATES/CHANGE_LIFECYCLE.md` |
 | 复杂架构图 / ownership topology / status overlay / workflow / sequence / dataflow / lifecycle / diagram drift | `30_PROTOCOLS/DIAGRAM_AS_CODE.md`；需要可复制形态再读 `50_TEMPLATES/DIAGRAM_AS_CODE.md` |
 | repository merge authority / merge gate | `CONSTITUTION.md` §2 + current project/local contract；identity-sensitive 时再读 project-local identity/access mapping |
 | verification policy / Incident Mode | `CONSTITUTION.md` §§7–8 + task-specific verification contract |
