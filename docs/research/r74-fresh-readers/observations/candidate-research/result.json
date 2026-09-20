@@ -1,0 +1,200 @@
+{
+  "class": "RESEARCH_EVIDENCE / CRASH_TAKEOVER_OR_OLD_CONTEXT_UNAVAILABLE（只读 fresh-reader 观察）",
+  "snapshot": {
+    "source_sha": "d38cb8aa6c74cc6a5b5f4a49ea39c3f51cf9674d",
+    "tree": "5d811690041acf9c5d2aa652ddcce1cccfad174b",
+    "basis": "冻结仓库文档；current authority/access/project contract/state 按 synthetic Work Order 场景前提接受，未另行验证 live 项目。"
+  },
+  "applicable_rules": [
+    {
+      "rule": "L0 先读，按匹配场景 targeted 展开，达到最小充分 context 即停止；routing 不产生 authority 或项目事实。",
+      "source": "AGENTS.md §6；NAMESPACE.md Result；READING_MAP.md 阅读原则"
+    },
+    {
+      "rule": "Capability != Authority；授权仅覆盖隔离分支内的有界能力比较和证据交付，不涵盖 adoption、merge、deploy、admin。",
+      "source": "AGENTS.md §§1–3；docs/AGENT_INTERFACE.md §§1.3–1.4；synthetic Work Order"
+    },
+    {
+      "rule": "使用 crash 恢复；从 current durable authority/state 重建 FRESH_CONTEXT，保留 Bootstrap、单一 primary、currentness 和必要独立性。",
+      "source": "30_PROTOCOLS/RECOVERY_HANDOFF.md §§1–3.2、§4"
+    },
+    {
+      "rule": "小规模且 scope/acceptance 已冻结，若低风险、可逆、有验证路径且没有实际冲突，Project Architect 可 DIRECT；research 标签本身不强制派 Builder 或 Verifier。",
+      "source": "docs/AGENT_INTERFACE.md §§1.0、1.3；CONSTITUTION.md §§2、6–7"
+    },
+    {
+      "rule": "写实验必须使用物理隔离的 mutable workspace；仅在同一 working tree 切分支不构成隔离。",
+      "source": "docs/AGENT_INTERFACE.md §1.0"
+    },
+    {
+      "rule": "研究可复用结论与验证结果需要 durable trace；完成边界取自既有 Work acceptance，不由自述或模板追加。",
+      "source": "docs/AGENT_INTERFACE.md §1.8、§4；30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md 阶段性 checkpoint、Pointer 规则"
+    },
+    {
+      "rule": "若实验交付涉及受治理代码/文档实质变化，按其语义判 L1/L2，使用 owner repo 的 Issue/branch/checks/PR/exact-head Review；L2 才因长期裁决要求 ADR。流程不授予 merge authority。",
+      "source": "30_PROTOCOLS/CHANGE_LIFECYCLE.md §§2–4；AGENTS.md §1"
+    }
+  ],
+  "can_ignore": [
+    {
+      "item": "旧 session、旧方 REQUEST、READY_FOR_ARCHITECT_HANDOFF、旧 handoff/checkpoint 的缺失；不必伪造或要求 Human 补旧聊天。",
+      "source": "30_PROTOCOLS/RECOVERY_HANDOFF.md §§3.2、5；30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md Resume / Recovery"
+    },
+    {
+      "item": "Workspace 初始化/role registration、Human 二脑协作、历史、外部项目全扫描、全 catalog、全部 Constitution、无对应 artifact 的模板；本场景不因项目类型自动触发。",
+      "source": "READING_MAP.md 阅读原则、workspace/human-collaboration/history routes、Artifact shapes"
+    },
+    {
+      "item": "窄实验的冻结设计不机械重做 ARCH-0；只有实际 material architecture 判断、重大方向变化或新 runtime/subsystem 引入才触发对应要求。",
+      "source": "docs/ARCHITECT_RECONNAISSANCE.md §2；10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md EXECUTION_ALLOWED 与 ARCHITECT_READY"
+    },
+    {
+      "item": "未发生 production adoption 时不套 mature-core External Wheel Admission Gate；研究发现不自动成为依赖引入决定。",
+      "source": "docs/ARCHITECT_RECONNAISSANCE.md §§5.3、8"
+    },
+    {
+      "item": "没有实际触发的 repo-wide migration plan、bulk refactor、diagram/data doctrine；不为小实验制造 ADR、双验证或多份重复恢复报告。",
+      "source": "30_PROTOCOLS/CHANGE_LIFECYCLE.md §§3、4.1；READING_MAP.md diagram/data；CONSTITUTION.md §§6–8；30_PROTOCOLS/RECOVERY_HANDOFF.md §2"
+    }
+  ],
+  "native_capability_reuse": {
+    "proven_policy": [
+      {
+        "claim": "GitHub native relationships/labels/reviews/milestone/Projects 等 durable facts 优先，避免第二份自然语言状态库。",
+        "source": "CONSTITUTION.md §3"
+      },
+      {
+        "claim": "已授权 native GitHub capability 先验证可用，再回退 authenticated gh，local Git 最后与 remote ref 核对；这是访问路由规则。",
+        "source": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md BOOT-1A"
+      },
+      {
+        "claim": "按任务需要验证 tools/runtime/version/access/limits，未知写 unknown；可复用适用 current evidence，不要求重复报告。",
+        "source": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md §4"
+      },
+      {
+        "claim": "复用可为 artifact、existing seam 内适配或知识后 native implement；选择由阶段和 current local fit 决定。provider 命令名不证明能力或授权。",
+        "source": "docs/ARCHITECT_RECONNAISSANCE.md §§4–5；30_PROTOCOLS/RECOVERY_HANDOFF.md §5"
+      }
+    ],
+    "actual_two_tool_capabilities": "UNKNOWN：场景未具名两工具，也未提供其实测结果；冻结治理文档不能证明其具体 API 行为、互相等价、可用性、性能或生产适用性。",
+    "no_inferred_platform": "Bootstrap §4 明确不建立 Lab、provider capability registry 或 promotion schema；不得据公共规则补造这些 native 能力。"
+  },
+  "owner_local_design": {
+    "conclusion": "比较设计、tool adapter、fixtures、evidence layout、acceptance 与项目运行约束由 current Work Order/project owner-local contract 承载；公共治理提供边界，不能推出具体实现或另造控制面。",
+    "sources": [
+      "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md BOOT-2B/2C、§4",
+      "docs/AGENT_INTERFACE.md §§1.1、3、7",
+      "30_PROTOCOLS/RECOVERY_HANDOFF.md §§5、7",
+      "CONSTITUTION.md §§3–4"
+    ],
+    "boundary": "项目事实留项目仓，provider 映射由 deployment/control-plane adapter 持有；本实验不重新设计冻结 contract，不把研究工具引入变成生产长期设计决策。"
+  },
+  "done_current_production_evidence": {
+    "done": {
+      "conclusion": "只能按研究 Work acceptance 判断 Done：交付两个能力的证据、适用条件、限制、实际执行/未执行项及精确可恢复 pointer；self-report done 不能越过既有检查与证据门。本观察未执行实验，所以不声称实验 Done。",
+      "source": "docs/AGENT_INTERFACE.md §1.8、§4；CONSTITUTION.md §5；30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md Pointer 规则"
+    },
+    "current": {
+      "conclusion": "旧 artifact 的存在不证明 current；authority、refs、lifecycle、active graph 应以当前 durable/live source 校验。此处仅在 synthetic Work Order 已验证的场景前提下判断，不把冻结 SHA 当成真实项目 live 验证。",
+      "source": "AGENTS.md §2；10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md BOOT-3B；30_PROTOCOLS/RECOVERY_HANDOFF.md §2"
+    },
+    "production": {
+      "conclusion": "研究成功不能推出 production-ready 或 adoption authority。生产引入需要独立适用授权和项目证据；若届时属于 mature/core 外部 runtime 引入，才适用 ARCH-0 与 External Wheel Admission Gate。当前无生产证据、无此授权。",
+      "source": "CONSTITUTION.md §§1、5；docs/ARCHITECT_RECONNAISSANCE.md §§2、5.3；synthetic Work Order"
+    }
+  },
+  "recovery": {
+    "can_continue": true,
+    "meaning": "场景已有足够 current durable 输入，可从当前状态重建并继续冻结范围的研究；不因旧上下文/交接产物缺失等待 Human 新 prompt。本次仅观察规则，不实际执行。",
+    "required_missing_inputs": [],
+    "extra_required_gates": [],
+    "ordinary_retained_requirements": [
+      "按 BOOT-1→2→3 核对既有 current evidence、primary ownership、相关 refs 与真实 blocker。",
+      "若尚未完成，Fresh/takeover 的 BOOT-3C durable Bootstrap writeback 是既有完成门；可与恢复结果共用一个报告。这是授权内的动作，不能机械升级为 Human confirmation。未写回时不能自称 durable EXECUTION_ALLOWED。",
+      "实验写入需物理隔离 workspace，完成需当前 Work acceptance 所要求的证据与 durable report。"
+    ],
+    "source": "30_PROTOCOLS/RECOVERY_HANDOFF.md §§2、3.2；10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md §3C；docs/AGENT_INTERFACE.md §§1.0、1.4、1.8"
+  },
+  "canonical_homes": {
+    "bootstrap": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md — Ordered Applicability、§3 execution gate、§4 capability preflight",
+    "continuation_completion": "docs/AGENT_INTERFACE.md — §§1.4、1.6–1.8；§4 Completion Card",
+    "recovery_context": "30_PROTOCOLS/RECOVERY_HANDOFF.md — §§1–5",
+    "change_lifecycle": "30_PROTOCOLS/CHANGE_LIFECYCLE.md — §§3–4.1",
+    "durable_trace": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md — checkpoint、Resume / Recovery、Pointer 规则"
+  },
+  "wrong_or_extra_mandatory_hops": {
+    "actually_adopted": [],
+    "rejected": [
+      "要求旧 Session 文档、handoff 模板或旧 REQUEST/READY/ACCEPTED 事务才能 crash 恢复。",
+      "将 NAMESPACE 的所有层、ROUTING_CATALOG、history、workspace 初始化或外部私有 control-plane 视为必读。",
+      "为了 Project Architect 直接做小实验强制 Builder dispatch、Human transport card、额外 fresh Verifier。",
+      "把能力研究视为 production adoption，先做完整 External Wheel Admission 或修改长期架构 ADR。",
+      "要求独立重复 capability/bootstrap/recovery 报告，而不复用适用 current evidence。"
+    ],
+    "sources": "READING_MAP.md；30_PROTOCOLS/RECOVERY_HANDOFF.md §§2、3.2、6；docs/AGENT_INTERFACE.md §§1.3、2、7；10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md §4"
+  },
+  "false_blockers": {
+    "actually_adopted": [],
+    "rejected_potential_errors": [
+      {
+        "blocker": "旧 context/旧 handoff/checkpoint 不可用，因此不能接任。",
+        "source": "30_PROTOCOLS/RECOVERY_HANDOFF.md §3.2、§5"
+      },
+      {
+        "blocker": "必须等 Human 重新授权同一冻结工作或再次发继续 prompt。",
+        "source": "AGENTS.md §4；docs/AGENT_INTERFACE.md §1.4"
+      },
+      {
+        "blocker": "旧会话不可读即证明双 primary。",
+        "source": "30_PROTOCOLS/RECOVERY_HANDOFF.md §2"
+      },
+      {
+        "blocker": "研究/工具比较本身要求新架构审批、production gate 或额外 verifier。",
+        "source": "docs/ARCHITECT_RECONNAISSANCE.md §§2、8；CONSTITUTION.md §§2、7"
+      },
+      {
+        "blocker": "可选工具/asset role/上游维护者私库不可达就阻塞。",
+        "source": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md Portability invariants、§4"
+      }
+    ],
+    "real_gates_preserved": "真实 authority/access/currentness、单一 primary 冲突、security、destructive/production 越权、必需事实无法恢复或不可写 durable anchor 等仍按 canonical protocol 处理；本场景没有给出这些实际失败事实。"
+  },
+  "ambiguities": [
+    "没有具名工具或 capability evidence，不能形成工具强弱、native API 或生产可用性结论；这是该规则阅读实验的证据边界，不是对 synthetic 已授权工作的新增阻塞。",
+    "场景未单列 Bootstrap writeback pointer；不能声称已经 durable EXECUTION_ALLOWED。既有 §3C 可在当前授权内完成，不需要追回旧 handoff。",
+    "“隔离 feature branch”在真正 mutation 时需满足物理 workspace 隔离；若仅指同一 working tree 的不同分支，则尚未满足 §1.0。本次无项目 mutation，不据此推定已发生冲突。",
+    "文档没有把所有研究报告固定为同一 change level；只有实际修改的语义与 owner-local contract 才决定 L1/L2、Issue/ADR/PR 是否适用。"
+  ],
+  "instrument_summary": {
+    "files_read": [
+      "AGENTS.md",
+      "NAMESPACE.md",
+      "READING_MAP.md",
+      "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+      "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+      "docs/AGENT_INTERFACE.md",
+      "docs/ARCHITECT_RECONNAISSANCE.md",
+      "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+      "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+      "CONSTITUTION.md"
+    ],
+    "file_count": 10,
+    "read_operations": 14,
+    "bytes_read_including_repeats": 95599,
+    "unique_source_bytes_read": 95599,
+    "list_metadata_bytes": 0,
+    "limits": "UTF-8 document bytes, not tokens/time, and excludes task seed, instructions, tool envelopes, model reasoning and output."
+  },
+  "tool_output_truncation": {
+    "observed": false,
+    "recovery": "未发生工具输出截断。",
+    "line_range_errors": [
+      {
+        "path": "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+        "request": "--start 1 --end 200",
+        "outcome": "exit_code 1；ValueError: invalid exact line range；未返回正文。",
+        "recovery": "随后使用同一 reader_io 和 root/log、不指定行范围完整读取该文件成功。summary 的 read_operations 未包含这一失败请求。"
+      }
+    ]
+  }
+}

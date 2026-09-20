@@ -1,0 +1,374 @@
+{
+  "artifact_version": "1.0.0",
+  "authority": "NON_NORMATIVE_SOURCE_BINDING",
+  "source_commit": "d38cb8aa6c74cc6a5b5f4a49ea39c3f51cf9674d",
+  "source_tree": "5d811690041acf9c5d2aa652ddcce1cccfad174b",
+  "final_binding": "Final delivery may add only experiment evidence/instrument artifacts; every file in this frozen source manifest must have the same Git blob at the exact delivered head. Exact-head check receipts are attached to #74.",
+  "files": [
+    {
+      "path": ".github/workflows/audit-69-reusable.yml",
+      "bytes": 925,
+      "sha256": "e99f09b9d4d6878c03e5e316a5f61fc4788766fc87058718d133e1f6b44aac10"
+    },
+    {
+      "path": ".github/workflows/audit-69.yml",
+      "bytes": 1046,
+      "sha256": "fc87152df9555c43a1d84cdf6c3dd1365521fdce6e7a48c3d54453d1963aa306"
+    },
+    {
+      "path": ".github/workflows/routing.yml",
+      "bytes": 1004,
+      "sha256": "57fc0d58315a368ba6adfaa9d9738986646b86cb543f3ef6499af803cc212a7a"
+    },
+    {
+      "path": "00_KERNEL/LANGUAGE_POLICY.md",
+      "bytes": 2386,
+      "sha256": "0e8fe90e96428438f637bfda88ee394bb4a455d21d7c6543d88f5dc83a3ee6d9"
+    },
+    {
+      "path": "00_KERNEL/README.md",
+      "bytes": 2887,
+      "sha256": "36bbbab2d3a432bc83df4f775686f73d91bb95362b00a51e0bb2575ba54b2b1e"
+    },
+    {
+      "path": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+      "bytes": 13689,
+      "sha256": "4ba5688daad969e191ba5980fa3ecda4dfcd53dba5538714a4878a31050531a0"
+    },
+    {
+      "path": "10_BOOT/README.md",
+      "bytes": 531,
+      "sha256": "dfa60fdd097a84466b9240eb7b9a2c6d8667e4df659124db663adf3a909c16a5"
+    },
+    {
+      "path": "10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md",
+      "bytes": 6155,
+      "sha256": "a09416777c695a6fd67d181bf271c92b090671938cc31e6d17e134c45fa8e575"
+    },
+    {
+      "path": "20_ROLES/README.md",
+      "bytes": 256,
+      "sha256": "94b84c3519a5763572c6f294584e48451cfcfb9dde39ea0f3cee1f1cc6f4af70"
+    },
+    {
+      "path": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+      "bytes": 10652,
+      "sha256": "173ed1c3b5e28af01f24071780d98bfb2f219170f1b58691de4a6e4d52b6be4b"
+    },
+    {
+      "path": "30_PROTOCOLS/DIAGRAM_AS_CODE.md",
+      "bytes": 15464,
+      "sha256": "2cea113ada9d47c4b8657eb23b97ed610383c0f65ee94d0524b69b5babd4c3f7"
+    },
+    {
+      "path": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+      "bytes": 5075,
+      "sha256": "79adc9f2139026be79005a3eb9b22586780718705319faee1f9277956cc99979"
+    },
+    {
+      "path": "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+      "bytes": 11016,
+      "sha256": "1770d8b97fd9eb81b25facaef8dce2e9abc35a3c6bc008d7aa55709bd8779309"
+    },
+    {
+      "path": "40_GUIDES/PUBLIC_COLD_START_CHECKLIST.md",
+      "bytes": 17147,
+      "sha256": "dba7d7c0c64300fd5f601eadb7635b0d479fd472bba9b822b3f51f2b7484ea7d"
+    },
+    {
+      "path": "40_GUIDES/README.md",
+      "bytes": 340,
+      "sha256": "6385ab59a5a2f041ec352d11f2c28b4537fd3287057e40783c4846ef314db88d"
+    },
+    {
+      "path": "50_TEMPLATES/CHANGE_LIFECYCLE.md",
+      "bytes": 5813,
+      "sha256": "566b3deac8dc5367d981175e2c8967a9d1fc636e6747422250c48f4ee3414570"
+    },
+    {
+      "path": "50_TEMPLATES/CONTEXT_MODE_SEED.md",
+      "bytes": 1890,
+      "sha256": "6ce49fe01b22647d179fc74a04334521a4cc932cd3f87aa100893363470e13c7"
+    },
+    {
+      "path": "50_TEMPLATES/DIAGRAM_AS_CODE.md",
+      "bytes": 6089,
+      "sha256": "b4ec966c8f2fe7b00ad4f8f9d2fbf51e8adf53e22df02c6d495d85b8b6702551"
+    },
+    {
+      "path": "50_TEMPLATES/DISPATCH_PAIR.md",
+      "bytes": 2085,
+      "sha256": "646e44b6984c2ade9a09235dc257bf249000bb1b203ef52bb5e768e795ea6a23"
+    },
+    {
+      "path": "50_TEMPLATES/HUMAN_WORKSPACE_BOOTSTRAP.md",
+      "bytes": 2240,
+      "sha256": "489c5ccc18ce230d28d31058aa65d6f4a44c5cb59dc9c34d38df5e42df6a3af4"
+    },
+    {
+      "path": "50_TEMPLATES/README.md",
+      "bytes": 2921,
+      "sha256": "43239f5f34fc24e4f9e3515b797503e9a15d14848e9f9f28aeda6da2d4322cef"
+    },
+    {
+      "path": "50_TEMPLATES/architect_handoff_check.md",
+      "bytes": 1463,
+      "sha256": "986b293012514ec1f9afff6bf55e04e2ccfd582e671f7ae9de74d69e0442aabc"
+    },
+    {
+      "path": "50_TEMPLATES/architect_handoff_transaction.md",
+      "bytes": 2095,
+      "sha256": "e24008ab3b84c42b312e7d98fa7fe7aa47f8db9d933231d4a47aa34455363b06"
+    },
+    {
+      "path": "50_TEMPLATES/bootstrap_check_request.md",
+      "bytes": 2492,
+      "sha256": "4615561f7ca1781975a91c932aa00fafa7c1a1a5b377658204703335e9586092"
+    },
+    {
+      "path": "50_TEMPLATES/capability_self_check.md",
+      "bytes": 1230,
+      "sha256": "cb3f0e88d5fdabd68c269b04d83c9ed506be12741a473896892ad23469c52eb2"
+    },
+    {
+      "path": "50_TEMPLATES/pointer_response.md",
+      "bytes": 1479,
+      "sha256": "64ce7bf14604e4f1f79bcab0a6365f97171ebada430be9aa94484f1de15a2b9e"
+    },
+    {
+      "path": "90_HISTORY/ADR-0001_DOCS_AS_CODE_CHANGE_LIFECYCLE.md",
+      "bytes": 3172,
+      "sha256": "a29448c424b238ac5cb12448fbba37f989b1a0c1bdf02ea1090308fe61728629"
+    },
+    {
+      "path": "90_HISTORY/ADR-0002_CONTEXT_LIFECYCLE_V0_1.md",
+      "bytes": 8548,
+      "sha256": "86143caf06815dd94b25c790ac451f121b98daf9de0bd09da66409fdf196c9d6"
+    },
+    {
+      "path": "90_HISTORY/ADR-0003_STAGE_AWARE_REUSE.md",
+      "bytes": 4517,
+      "sha256": "e6bf82523462bb747f986cd2d4b4f2d61b94afb25caa5cf38a9bc7261328f977"
+    },
+    {
+      "path": "90_HISTORY/ADR-0004_RECOVERY_ROUTING_SINGLE_SOURCE.md",
+      "bytes": 4262,
+      "sha256": "0eac8e23d7d16e9a346807bb37e75140618ced7985a217c0dfee2a017079bda1"
+    },
+    {
+      "path": "90_HISTORY/README.md",
+      "bytes": 941,
+      "sha256": "40b025870203144b46b3a33b4cb49a08f316b8574b1983ea55d2d8fa0c836bad"
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 7430,
+      "sha256": "5e1a4885d56fe20ee233ac7a461138054afe8c8f1281b0c9c04fde2170de72e0"
+    },
+    {
+      "path": "CONSTITUTION.md",
+      "bytes": 9409,
+      "sha256": "8b8f05735a798a8adfdf1f7144ffbe82a1b9b1bdb57f9f65d9a16e50f5adb626"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "NAMESPACE.md",
+      "bytes": 1571,
+      "sha256": "8cb50b6ef590ffa28163900d19bd35b8e60283d3eeaa3fa053236b1de4ec502f"
+    },
+    {
+      "path": "READING_MAP.md",
+      "bytes": 7128,
+      "sha256": "6bc527e2227e66910a8f2c151dd855ca7d65fe656449048e567263ea9d1ceaf5"
+    },
+    {
+      "path": "README.md",
+      "bytes": 6885,
+      "sha256": "d07332df1e345bc7c54db8d1f8667f7c957a3dc360be9cf1e62024e12c7a1724"
+    },
+    {
+      "path": "ROUTING_CATALOG.yaml",
+      "bytes": 10072,
+      "sha256": "12cc6a7d51f3a3b2cd34d5dc6a4bb6b3b5dcf9eb8ade7ed3037dee660cca5b6a"
+    },
+    {
+      "path": "START_HERE.md",
+      "bytes": 2509,
+      "sha256": "4cac496c787cd01007c728fb335b23fe863a6e31da616bd4d3ae29feb5567448"
+    },
+    {
+      "path": "docs/AGENT_INTERFACE.md",
+      "bytes": 20533,
+      "sha256": "0fe9a0a61ce418be5d017c23f8ca7d2ba9041179a411c5bd848c7561d56d88bd"
+    },
+    {
+      "path": "docs/ARCHITECT_RECONNAISSANCE.md",
+      "bytes": 11122,
+      "sha256": "ae4007b089184c7f7202bacb15ed3b3b82cb02bec20d13ad1a1eec7bd9adaf4c"
+    },
+    {
+      "path": "docs/DURABLE_DATA_DOCTRINE.md",
+      "bytes": 4937,
+      "sha256": "431a9c68fad019661b04c3a9eaa3fcb3bc8163a11049b76fa6fdf235e6684dd8"
+    },
+    {
+      "path": "docs/DeepSeekPP-github-mcp-usage.md",
+      "bytes": 2251,
+      "sha256": "013d062e88ed8f2eecd8723fe860f3b6ed03d82a8158768be55eeebf4e22b81a"
+    },
+    {
+      "path": "docs/PROGRESSIVE_CONTEXT_BOOT.md",
+      "bytes": 2481,
+      "sha256": "cddf8274a28ca293a522945925e69d8ff8596e3b8c14975669f2f818f4930e33"
+    },
+    {
+      "path": "docs/ROUTING_INDEX.md",
+      "bytes": 5128,
+      "sha256": "c0bcf79bf5fe895d2d41a97d68bbc5b843f13aecc37ded99c3afa930399b2a78"
+    },
+    {
+      "path": "docs/SESSION_LIFECYCLE.md",
+      "bytes": 3482,
+      "sha256": "23367ef1724676d6196839832672c6008d04af02082843c3dd2a186cea0770f6"
+    },
+    {
+      "path": "docs/issue-26-mcp-injection-truncation-root-cause.md",
+      "bytes": 3903,
+      "sha256": "c26e8ae93b023c8fdff9bfb17793399047eabad0c816b66b0e73991c284ef8d1"
+    },
+    {
+      "path": "docs/migrations/R74_RECOVERY_ROUTING.md",
+      "bytes": 6892,
+      "sha256": "e93e3ad051f26f0256897b7afdd50b80f61e5338c980f963fd5d75eadbb544f6"
+    },
+    {
+      "path": "docs/research/astra-audit-69/ARTIFACT_REVIEW.md",
+      "bytes": 9883,
+      "sha256": "7b765331b665e88957eda802165d8be947a6f3673f8961fcd07856a7e6183f03"
+    },
+    {
+      "path": "docs/research/astra-audit-69/README.md",
+      "bytes": 3105,
+      "sha256": "ced6b31c0c141729321dcc0b25b3f15de4b7fd8eb0e62ee7772db4410929ef8d"
+    },
+    {
+      "path": "docs/research/astra-audit-69/REPORT.md",
+      "bytes": 52973,
+      "sha256": "2888e80f8c05b444ae45e20ee2e092766da96f182bedf982a452a5924ac9284a"
+    },
+    {
+      "path": "docs/research/astra-audit-69/evidence/actions-receipt.json",
+      "bytes": 1950,
+      "sha256": "35564bb2f8548e39cbb36a1371eb1020779feee11c7fe7b38bf2dced6bc73a50"
+    },
+    {
+      "path": "docs/research/astra-audit-69/evidence/api-canaries.json",
+      "bytes": 1717,
+      "sha256": "cdc017c0cd42fddce4794c7825a8b0b532c54d7fd4065a3de85e20e51a9eabe8"
+    },
+    {
+      "path": "docs/research/astra-audit-69/evidence/baseline-work.json",
+      "bytes": 2095,
+      "sha256": "8144acf5488d5243e62c1b01dd8e93893ff0f9d869390053fe6682ada0bd1657"
+    },
+    {
+      "path": "docs/research/astra-audit-69/evidence/capability-index.json",
+      "bytes": 21336,
+      "sha256": "b898d209aa37a4770bca7c165e9f484f8982a61c9e2132b4594e6ed8032b51b8"
+    },
+    {
+      "path": "docs/research/astra-audit-69/evidence/inventory.json",
+      "bytes": 15880,
+      "sha256": "9c850e1cacc87245fbe972e7b78b95798f9f85d3081f7fe981a7d505aae7cffe"
+    },
+    {
+      "path": "docs/research/astra-audit-69/evidence/links.json",
+      "bytes": 9688,
+      "sha256": "3443839f5ce71a228cf9d65ccce4bb91a4325261c84e3da5caf95b3e9fc2ef59"
+    },
+    {
+      "path": "docs/research/astra-audit-69/evidence/measurements.json",
+      "bytes": 7069,
+      "sha256": "dbb5ba066cd215eff60e4b1469cf0acd3d17bd2005861b1114051eb032fc69b5"
+    },
+    {
+      "path": "docs/research/astra-audit-69/evidence/platform-snapshot.json",
+      "bytes": 2834,
+      "sha256": "b2953b0cbc2f6bf042a5a122dbb4468f35667e2742293605145c825a225ad5e9"
+    },
+    {
+      "path": "docs/research/astra-audit-69/evidence/pr-compliance.json",
+      "bytes": 8769,
+      "sha256": "09908cc072fd2dd62c1f09ed59d7b376f4120c22d9179f47b0f2841c3353f393"
+    },
+    {
+      "path": "docs/research/astra-audit-69/evidence/relationships.json",
+      "bytes": 759,
+      "sha256": "34690f4be073949c8f1b9e882639e3495af4839e62c66d0a42957f96a7ff405b"
+    },
+    {
+      "path": "human/DEPOSITOR_PROMPT.md",
+      "bytes": 8835,
+      "sha256": "c90f3dfe94d170120a38699171b547da630e26a3be334ac432ebc431f6d347ea"
+    },
+    {
+      "path": "human/DEPOSITOR_PROMPT_v0.1.md",
+      "bytes": 3495,
+      "sha256": "e7faacf2e8ca0775c7de0cfb3adb36d200adfaa4b22e598565e26e650672db89"
+    },
+    {
+      "path": "human/PROMPT_VERSIONING.md",
+      "bytes": 2490,
+      "sha256": "f125b476bab72b7b5c42d1e5f16a7a1423b03f36500d8a4070b6c5af9f8225b4"
+    },
+    {
+      "path": "human/README.md",
+      "bytes": 12981,
+      "sha256": "bc3d7ac912bb9e392bba365e77581f08df1af281b63160c2abe6a6c078d42ac2"
+    },
+    {
+      "path": "human/tests/DEPOSITOR_TEST_CASE_001_prompt_only_scope_confusion.md",
+      "bytes": 811,
+      "sha256": "7762ee47228a90a9360b68a4211e8c8a0fb0ff4fc540a08be39f2f6022cdb529"
+    },
+    {
+      "path": "human/tests/DEPOSITOR_TEST_CASE_002_control_plane_misclassified_as_external_knowledge.md",
+      "bytes": 3942,
+      "sha256": "ecee66fce8aaa29159b5b83f9d1234f23fae30439c08edbd0e45ed55f0e4ec37"
+    },
+    {
+      "path": "human/tests/DEPOSITOR_TEST_CASE_003_v0.1.2_prompt_self_capture_and_transport.md",
+      "bytes": 5141,
+      "sha256": "e997cd33a8fc5822ee8447089d1e64a3c83b6cd09385c1b2716143b6a3c0559b"
+    },
+    {
+      "path": "tools/audit_69.py",
+      "bytes": 6227,
+      "sha256": "e3b50fab140a6c8e139c000248568f06c399da891c510e7dea4b3fa9f0882d7f"
+    },
+    {
+      "path": "tools/audit_69_api.py",
+      "bytes": 3923,
+      "sha256": "18dd2643879792aa5c66bd9f6cebfefacb6f680c416cb44992e42b0fbeb0316b"
+    },
+    {
+      "path": "tools/audit_69_token_probe.py",
+      "bytes": 1632,
+      "sha256": "0f09bccceb05c36760cbd5a2c65bdaddddea315e2ad3be429d4ea97fc0fca94f"
+    },
+    {
+      "path": "tools/routing.py",
+      "bytes": 12960,
+      "sha256": "6c8d1ca7472134b78e798a8954a2b0af4b4153009f702d61964d3ba7af1e558d"
+    },
+    {
+      "path": "tools/test_routing.py",
+      "bytes": 3745,
+      "sha256": "57eecab0af03d2f9fe7f9887a732744c0f552d3e3eb05f77d1cd5d2c6c11b1b8"
+    }
+  ]
+}

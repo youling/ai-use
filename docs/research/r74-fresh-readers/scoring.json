@@ -1,0 +1,703 @@
+{
+  "artifact_version": "1.0.0",
+  "authority": "NON_NORMATIVE_COORDINATOR_INTERPRETATION",
+  "method": "Predeclared evaluation-plan topics and actual adopted-gate scoring; model result arrays are not counted blindly.",
+  "observations": [
+    {
+      "reader": "base-infrastructure",
+      "class": "infrastructure",
+      "revision": "base",
+      "assessment": "Manual source-grounded coordinator scoring; not independent Global semantic Review",
+      "source_observation": "observations/base-infrastructure/result.json",
+      "canonical_home_topics": [
+        {
+          "topic": "bootstrap",
+          "recognized_home": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "reader_answer": {
+            "path": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+            "section": "BOOT-1 ADDRESS; BOOT-2 APPLICABLE RULES; BOOT-3 EXECUTION GATE, especially BOOT-3C",
+            "ambiguity": "AGENTS/NAMESPACE explicitly route through NAMESPACE + READING_MAP, while Bootstrap BOOT-2B says NAMESPACE/README are not universal execution prerequisites. No recovery blocker results."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "continuation_completion",
+          "recognized_home": "docs/AGENT_INTERFACE.md",
+          "reader_answer": {
+            "path": "docs/AGENT_INTERFACE.md",
+            "section": "§1.4; §§1.6–1.9; §4 completion card",
+            "ambiguity": "Clear canonical authority; historical session stop language must not override it."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "recovery_context",
+          "recognized_home": "docs/SESSION_LIFECYCLE.md",
+          "reader_answer": {
+            "path": "docs/SESSION_LIFECYCLE.md",
+            "section": "§10.3 Durable before fragile; §10.4 Fresh triggers; §10.5 compatibility",
+            "related": [
+              {
+                "path": "docs/AGENT_INTERFACE.md",
+                "section": "§1.9"
+              },
+              {
+                "path": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+                "section": "Resume / Recovery rules; checkpoints"
+              }
+            ],
+            "ambiguity": "Recovery is split by concern. Durable Trace's numbered instruction to read a latest checkpoint has no explicit absent-checkpoint clause; Interface §1.9 and Session §10.4 explicitly allow rebuilding from durable checkpoint/current state, resolving the missing-handoff scenario."
+          },
+          "score": 1,
+          "interpretation": "Baseline recognizes the then-current Session section 10 plus current Interface/Trace recovery fallback; this is not a unique-owner claim."
+        },
+        {
+          "topic": "change_lifecycle",
+          "recognized_home": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "reader_answer": {
+            "path": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+            "section": "§3 L0/L1/L2; §4 common rules; §5 artifact responsibilities",
+            "ambiguity": "Cannot choose L1 versus L2 from 'material change' alone; concrete semantics remain owner-local."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "material_architecture",
+          "recognized_home": "docs/ARCHITECT_RECONNAISSANCE.md",
+          "reader_answer": {
+            "path": "docs/ARCHITECT_RECONNAISSANCE.md",
+            "section": "§2 triggers; ARCH-0A/B/C and §6 durable output; §5.3 admission; §5.4 foundations",
+            "ambiguity": "Scenario triggers fresh material assessment. The implementation stage under a genuinely frozen design can avoid repeating ARCH-0; project maturity is not supplied and must not be invented."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        }
+      ],
+      "canonical_home_score": {
+        "correct": 5,
+        "applicable": 5
+      },
+      "can_recover_without_prior_chat": true,
+      "adopted_false_blockers": 0,
+      "wrong_or_extra_mandatory_hops": 0,
+      "gate_scoring_reason": "Missing old chat/handoff and ceremonial Human reconfirmation were rejected. Bootstrap writeback, current primary/access/state, physical isolation and required Review are source-supported ordinary gates, not errors. Material ARCH-0 and L2 ADR judgments in infrastructure/archive/decision remain conditional on the actual scope; research/product do not mechanically trigger them.",
+      "other_answers_assessed": "Reader distinguishes governance/native access policy from unproven specific tool/runtime capability, keeps implementation/facts owner-local, and does not claim project Done/current production from this synthetic observation."
+    },
+    {
+      "reader": "base-archive",
+      "class": "archive",
+      "revision": "base",
+      "assessment": "Manual source-grounded coordinator scoring; not independent Global semantic Review",
+      "source_observation": "observations/base-archive/result.json",
+      "canonical_home_topics": [
+        {
+          "topic": "bootstrap",
+          "recognized_home": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "reader_answer": {
+            "path_section": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md BOOT-1 → BOOT-2 → BOOT-3",
+            "ambiguities": "Bootstrap says NAMESPACE is scene-based, while L0 routes through NAMESPACE + READING_MAP; both agree against full reading. Not a recovery blocker."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "continuation_completion",
+          "recognized_home": "docs/AGENT_INTERFACE.md",
+          "reader_answer": {
+            "path_section": "docs/AGENT_INTERFACE.md §§1.4, 1.6–1.9 and §4",
+            "ambiguities": "Historical Session templates include generic stopping behavior that current interface and explicit compatibility notes supersede."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "recovery_context",
+          "recognized_home": "docs/SESSION_LIFECYCLE.md",
+          "reader_answer": {
+            "path_section": "docs/AGENT_INTERFACE.md §1.9; docs/SESSION_LIFECYCLE.md §10; 30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md Resume / Recovery 规则; Bootstrap first",
+            "ambiguities": "Recovery trace's numbered step to read the latest valid checkpoint/HANDOFF/READY_FOR_REVIEW lacks an explicit if-present branch; Interface §1.9 and Session §10.4 explicitly allow current-state reconstruction."
+          },
+          "score": 1,
+          "interpretation": "Baseline recognizes the then-current Session section 10 plus current Interface/Trace recovery fallback; this is not a unique-owner claim."
+        },
+        {
+          "topic": "change_lifecycle",
+          "recognized_home": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "reader_answer": {
+            "path_section": "30_PROTOCOLS/CHANGE_LIFECYCLE.md §§2–5",
+            "ambiguities": "New schema/identity semantics versus a simple periodic derived refresh must be classified from the actual design; the scenario does not disclose that design."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "durable_data",
+          "recognized_home": "docs/DURABLE_DATA_DOCTRINE.md",
+          "reader_answer": {
+            "path_section": "docs/DURABLE_DATA_DOCTRINE.md §§1–7, Durable state 的三类常见归属, 使用边界",
+            "ambiguities": "It deliberately leaves concrete identity/schema, retention, storage and privacy/deletion contracts owner-local. Global Git/GitHub durable-truth shorthand must not be read as requiring business archives to move into GitHub."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        }
+      ],
+      "canonical_home_score": {
+        "correct": 5,
+        "applicable": 5
+      },
+      "can_recover_without_prior_chat": true,
+      "adopted_false_blockers": 0,
+      "wrong_or_extra_mandatory_hops": 0,
+      "gate_scoring_reason": "Missing old chat/handoff and ceremonial Human reconfirmation were rejected. Bootstrap writeback, current primary/access/state, physical isolation and required Review are source-supported ordinary gates, not errors. Material ARCH-0 and L2 ADR judgments in infrastructure/archive/decision remain conditional on the actual scope; research/product do not mechanically trigger them.",
+      "other_answers_assessed": "Reader distinguishes governance/native access policy from unproven specific tool/runtime capability, keeps implementation/facts owner-local, and does not claim project Done/current production from this synthetic observation."
+    },
+    {
+      "reader": "base-product",
+      "class": "product",
+      "revision": "base",
+      "assessment": "Manual source-grounded coordinator scoring; not independent Global semantic Review",
+      "source_observation": "observations/base-product/result.json",
+      "canonical_home_topics": [
+        {
+          "topic": "bootstrap",
+          "recognized_home": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "reader_answer": {
+            "path": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+            "section": "BOOT-1 -> BOOT-2 -> BOOT-3; BOOT-3C durable writeback",
+            "ambiguity": "BOOT-2B calls NAMESPACE only scene-dependent, while AGENTS §6/NAMESPACE frame it as default post-L0 routing. I read it once; no full-chain/full-repo requirement."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "continuation_completion",
+          "recognized_home": "docs/AGENT_INTERFACE.md",
+          "reader_answer": {
+            "path": "docs/AGENT_INTERFACE.md",
+            "section": "§1.4; §§1.6–1.9; §4",
+            "ambiguity": "Current canonical source is explicit; historical Session Lifecycle STOP wording is displaced."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "recovery_context",
+          "recognized_home": "docs/SESSION_LIFECYCLE.md",
+          "reader_answer": {
+            "path": "docs/SESSION_LIFECYCLE.md",
+            "section": "§10, especially §§10.3–10.5",
+            "supporting_home": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md: Resume / Recovery; Bootstrap precedes both",
+            "ambiguity": "Mechanics are distributed across three complementary homes. Durable Trace asks for latest valid checkpoint/handoff, but Interface §1.9 and Session §10.4 expressly allow current-state reconstruction when context is unavailable."
+          },
+          "score": 1,
+          "interpretation": "Baseline recognizes the then-current Session section 10 plus current Interface/Trace recovery fallback; this is not a unique-owner claim."
+        },
+        {
+          "topic": "change_lifecycle",
+          "recognized_home": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "reader_answer": {
+            "path": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+            "section": "§3 L1; §§4–5",
+            "ambiguity": "L1 says Issue is required. Fixture names a durable Work Order without its representation; existing Issue-backed Work Order should be reused, and a second Issue must not be invented as mandatory."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "mutation_hygiene",
+          "recognized_home": "docs/AGENT_INTERFACE.md",
+          "reader_answer": {
+            "path": "docs/AGENT_INTERFACE.md",
+            "section": "§1.0",
+            "ambiguity": "Same-file §1.3 additionally defines DIRECT eligibility; different branches sharing one mutable tree do not satisfy isolation."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        }
+      ],
+      "canonical_home_score": {
+        "correct": 5,
+        "applicable": 5
+      },
+      "can_recover_without_prior_chat": true,
+      "adopted_false_blockers": 0,
+      "wrong_or_extra_mandatory_hops": 0,
+      "gate_scoring_reason": "Missing old chat/handoff and ceremonial Human reconfirmation were rejected. Bootstrap writeback, current primary/access/state, physical isolation and required Review are source-supported ordinary gates, not errors. Material ARCH-0 and L2 ADR judgments in infrastructure/archive/decision remain conditional on the actual scope; research/product do not mechanically trigger them.",
+      "other_answers_assessed": "Reader distinguishes governance/native access policy from unproven specific tool/runtime capability, keeps implementation/facts owner-local, and does not claim project Done/current production from this synthetic observation."
+    },
+    {
+      "reader": "base-research",
+      "class": "research",
+      "revision": "base",
+      "assessment": "Manual source-grounded coordinator scoring; not independent Global semantic Review",
+      "source_observation": "observations/base-research/result.json",
+      "canonical_home_topics": [
+        {
+          "topic": "bootstrap",
+          "recognized_home": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "reader_answer": {
+            "path": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+            "section": "BOOT-1 -> BOOT-2 -> BOOT-3",
+            "ambiguity": "Primary home clear; §3C adds Architect writeback."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "continuation_completion",
+          "recognized_home": "docs/AGENT_INTERFACE.md",
+          "reader_answer": {
+            "path": "docs/AGENT_INTERFACE.md",
+            "section": "§1.4 and §§1.6–1.9",
+            "ambiguity": "Current authority overrides historical templates."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "recovery_context",
+          "recognized_home": "docs/SESSION_LIFECYCLE.md",
+          "reader_answer": {
+            "path": "docs/SESSION_LIFECYCLE.md",
+            "section": "§10.3–10.5",
+            "ambiguity": "Playbook only; Bootstrap and Interface own execution authority."
+          },
+          "score": 1,
+          "interpretation": "Baseline recognizes the then-current Session section 10 plus current Interface/Trace recovery fallback; this is not a unique-owner claim."
+        },
+        {
+          "topic": "change_lifecycle",
+          "recognized_home": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "reader_answer": {
+            "path": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+            "section": "§§1–4",
+            "ambiguity": "Depends on governed fact update; research is not automatically L2."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "durable_trace",
+          "recognized_home": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+          "reader_answer": {
+            "path": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+            "section": "Stage checkpoints; Resume / Recovery; Pointer rules",
+            "ambiguity": "Missing handoff can be replaced by current-state reconstruction."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        }
+      ],
+      "canonical_home_score": {
+        "correct": 5,
+        "applicable": 5
+      },
+      "can_recover_without_prior_chat": true,
+      "adopted_false_blockers": 0,
+      "wrong_or_extra_mandatory_hops": 0,
+      "gate_scoring_reason": "Missing old chat/handoff and ceremonial Human reconfirmation were rejected. Bootstrap writeback, current primary/access/state, physical isolation and required Review are source-supported ordinary gates, not errors. Material ARCH-0 and L2 ADR judgments in infrastructure/archive/decision remain conditional on the actual scope; research/product do not mechanically trigger them.",
+      "other_answers_assessed": "Reader distinguishes governance/native access policy from unproven specific tool/runtime capability, keeps implementation/facts owner-local, and does not claim project Done/current production from this synthetic observation."
+    },
+    {
+      "reader": "base-decision",
+      "class": "decision",
+      "revision": "base",
+      "assessment": "Manual source-grounded coordinator scoring; not independent Global semantic Review",
+      "source_observation": "observations/base-decision/result.json",
+      "canonical_home_topics": [
+        {
+          "topic": "bootstrap",
+          "recognized_home": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "reader_answer": {
+            "path": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+            "section": "BOOT-1/2/3; BOOT-3C",
+            "ambiguity": "Fresh recovery with explicit work appears subject to bootstrap writeback."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "continuation_completion",
+          "recognized_home": "docs/AGENT_INTERFACE.md",
+          "reader_answer": {
+            "path": "docs/AGENT_INTERFACE.md",
+            "section": "§§1.4,1.6–1.9; §4",
+            "ambiguity": "None material; templates do not replace acceptance."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "recovery_context",
+          "recognized_home": "docs/SESSION_LIFECYCLE.md",
+          "reader_answer": {
+            "path": "docs/SESSION_LIFECYCLE.md",
+            "section": "§10.3–10.5; Interface §1.9; Durable Trace Resume/Recovery",
+            "ambiguity": "Three homes; historical §5 broad reads/Human stop are expressly subordinated."
+          },
+          "score": 1,
+          "interpretation": "Baseline recognizes the then-current Session section 10 plus current Interface/Trace recovery fallback; this is not a unique-owner claim."
+        },
+        {
+          "topic": "change_lifecycle",
+          "recognized_home": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "reader_answer": {
+            "path": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+            "section": "§§3–4",
+            "ambiguity": "L1/L2 depends on canonical-state semantic impact; I classified the stated material seam L2."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "durable_data",
+          "recognized_home": "docs/DURABLE_DATA_DOCTRINE.md",
+          "reader_answer": {
+            "path": "docs/DURABLE_DATA_DOCTRINE.md",
+            "section": "§§1–7; durable state ownership",
+            "ambiguity": "Seven semantic questions, not a prescribed engine, append-only log or event protocol."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        }
+      ],
+      "canonical_home_score": {
+        "correct": 5,
+        "applicable": 5
+      },
+      "can_recover_without_prior_chat": true,
+      "adopted_false_blockers": 0,
+      "wrong_or_extra_mandatory_hops": 0,
+      "gate_scoring_reason": "Missing old chat/handoff and ceremonial Human reconfirmation were rejected. Bootstrap writeback, current primary/access/state, physical isolation and required Review are source-supported ordinary gates, not errors. Material ARCH-0 and L2 ADR judgments in infrastructure/archive/decision remain conditional on the actual scope; research/product do not mechanically trigger them.",
+      "other_answers_assessed": "Reader distinguishes governance/native access policy from unproven specific tool/runtime capability, keeps implementation/facts owner-local, and does not claim project Done/current production from this synthetic observation."
+    },
+    {
+      "reader": "candidate-infrastructure",
+      "class": "infrastructure",
+      "revision": "candidate",
+      "assessment": "Manual source-grounded coordinator scoring; not independent Global semantic Review",
+      "source_observation": "observations/candidate-infrastructure/result.json",
+      "canonical_home_topics": [
+        {
+          "topic": "bootstrap",
+          "recognized_home": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "reader_answer": {
+            "path": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+            "section": "BOOT-1/2/3; 3C durable writeback; 4 capability preflight",
+            "ambiguities": "Minor wording tension: L0 routes through NAMESPACE+READING_MAP, while Bootstrap 2B calls NAMESPACE non-universal. Followed L0; no blocker."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "continuation_completion",
+          "recognized_home": "docs/AGENT_INTERFACE.md",
+          "reader_answer": {
+            "path": "docs/AGENT_INTERFACE.md",
+            "section": "1.4, 1.6-1.8; 4 completion card",
+            "ambiguities": "None material."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "recovery_context",
+          "recognized_home": "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+          "reader_answer": {
+            "path": "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+            "section": "1-3 recovery; 4 context/independence; 5 delegation; 7 reproducibility",
+            "ambiguities": "None material; Bootstrap owns execution gate and Durable Trace checkpoint mechanics."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "change_lifecycle",
+          "recognized_home": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "reader_answer": {
+            "path": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+            "section": "3-4; 4.1 only if bulk migration applies",
+            "ambiguities": "L1/L2 depends on actual owner-local changed semantics, not a recovery blocker."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "material_architecture",
+          "recognized_home": "docs/ARCHITECT_RECONNAISSANCE.md",
+          "reader_answer": {
+            "path": "docs/ARCHITECT_RECONNAISSANCE.md",
+            "section": "2 trigger; 3-6 ARCH-0/reuse/report; 7 revalidation",
+            "ambiguities": "No maturity/reuse decision inferred solely from infrastructure class."
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        }
+      ],
+      "canonical_home_score": {
+        "correct": 5,
+        "applicable": 5
+      },
+      "can_recover_without_prior_chat": true,
+      "adopted_false_blockers": 0,
+      "wrong_or_extra_mandatory_hops": 0,
+      "gate_scoring_reason": "Missing old chat/handoff and ceremonial Human reconfirmation were rejected. Bootstrap writeback, current primary/access/state, physical isolation and required Review are source-supported ordinary gates, not errors. Material ARCH-0 and L2 ADR judgments in infrastructure/archive/decision remain conditional on the actual scope; research/product do not mechanically trigger them.",
+      "other_answers_assessed": "Reader distinguishes governance/native access policy from unproven specific tool/runtime capability, keeps implementation/facts owner-local, and does not claim project Done/current production from this synthetic observation."
+    },
+    {
+      "reader": "candidate-archive",
+      "class": "archive",
+      "revision": "candidate",
+      "assessment": "Manual source-grounded coordinator scoring; not independent Global semantic Review",
+      "source_observation": "observations/candidate-archive/result.json",
+      "canonical_home_topics": [
+        {
+          "topic": "bootstrap",
+          "recognized_home": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "reader_answer": {
+            "path": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+            "section": "§§1–3 ordered gates/writeback; §4 capability preflight",
+            "ambiguity": "none"
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "continuation_completion",
+          "recognized_home": "docs/AGENT_INTERFACE.md",
+          "reader_answer": {
+            "path": "docs/AGENT_INTERFACE.md",
+            "section": "§1.4 continuation; §§1.6–1.8 repair/stop/completion; §4 completion card",
+            "ambiguity": "none"
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "recovery_context",
+          "recognized_home": "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+          "reader_answer": {
+            "path": "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+            "section": "§§1–5 context/recovery/independence/delegation; §7 reproducibility",
+            "ambiguity": "none; Bootstrap owns execution gate; Durable Trace owns checkpoint mechanics"
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "change_lifecycle",
+          "recognized_home": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "reader_answer": {
+            "path": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+            "section": "§§2–4 classification/lifecycle; §4.1 bulk-triggered only",
+            "ambiguity": "none"
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "durable_data",
+          "recognized_home": "docs/DURABLE_DATA_DOCTRINE.md",
+          "reader_answer": {
+            "path": "docs/DURABLE_DATA_DOCTRINE.md",
+            "section": "§§1–7 and durable-state ownership/use boundaries",
+            "ambiguity": "none; actual schema/security/retention project-owned"
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        }
+      ],
+      "canonical_home_score": {
+        "correct": 5,
+        "applicable": 5
+      },
+      "can_recover_without_prior_chat": true,
+      "adopted_false_blockers": 0,
+      "wrong_or_extra_mandatory_hops": 0,
+      "gate_scoring_reason": "Missing old chat/handoff and ceremonial Human reconfirmation were rejected. Bootstrap writeback, current primary/access/state, physical isolation and required Review are source-supported ordinary gates, not errors. Material ARCH-0 and L2 ADR judgments in infrastructure/archive/decision remain conditional on the actual scope; research/product do not mechanically trigger them.",
+      "other_answers_assessed": "Reader distinguishes governance/native access policy from unproven specific tool/runtime capability, keeps implementation/facts owner-local, and does not claim project Done/current production from this synthetic observation."
+    },
+    {
+      "reader": "candidate-product",
+      "class": "product",
+      "revision": "candidate",
+      "assessment": "Manual source-grounded coordinator scoring; not independent Global semantic Review",
+      "source_observation": "observations/candidate-product/result.json",
+      "canonical_home_topics": [
+        {
+          "topic": "bootstrap",
+          "recognized_home": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "reader_answer": {
+            "path": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+            "section": "§§1-3; §3C durable writeback",
+            "ambiguity": null
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "continuation_completion",
+          "recognized_home": "docs/AGENT_INTERFACE.md",
+          "reader_answer": {
+            "path": "docs/AGENT_INTERFACE.md",
+            "section": "§1.4, §§1.6-1.8; §4 completion card",
+            "ambiguity": null
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "recovery_context",
+          "recognized_home": "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+          "reader_answer": {
+            "path": "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+            "section": "§§1-5, especially §3.2; §7 project reproducibility",
+            "ambiguity": null
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "change_lifecycle",
+          "recognized_home": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "reader_answer": {
+            "path": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+            "section": "§3 L1; §4 common rules",
+            "ambiguity": null
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "mutation_hygiene",
+          "recognized_home": "docs/AGENT_INTERFACE.md",
+          "reader_answer": {
+            "path": "docs/AGENT_INTERFACE.md",
+            "section": "§1.0 common execution hygiene",
+            "ambiguity": null
+          },
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        }
+      ],
+      "canonical_home_score": {
+        "correct": 5,
+        "applicable": 5
+      },
+      "can_recover_without_prior_chat": true,
+      "adopted_false_blockers": 0,
+      "wrong_or_extra_mandatory_hops": 0,
+      "gate_scoring_reason": "Missing old chat/handoff and ceremonial Human reconfirmation were rejected. Bootstrap writeback, current primary/access/state, physical isolation and required Review are source-supported ordinary gates, not errors. Material ARCH-0 and L2 ADR judgments in infrastructure/archive/decision remain conditional on the actual scope; research/product do not mechanically trigger them.",
+      "other_answers_assessed": "Reader distinguishes governance/native access policy from unproven specific tool/runtime capability, keeps implementation/facts owner-local, and does not claim project Done/current production from this synthetic observation."
+    },
+    {
+      "reader": "candidate-research",
+      "class": "research",
+      "revision": "candidate",
+      "assessment": "Manual source-grounded coordinator scoring; not independent Global semantic Review",
+      "source_observation": "observations/candidate-research/result.json",
+      "canonical_home_topics": [
+        {
+          "topic": "bootstrap",
+          "recognized_home": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "reader_answer": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md — Ordered Applicability、§3 execution gate、§4 capability preflight",
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "continuation_completion",
+          "recognized_home": "docs/AGENT_INTERFACE.md",
+          "reader_answer": "docs/AGENT_INTERFACE.md — §§1.4、1.6–1.8；§4 Completion Card",
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "recovery_context",
+          "recognized_home": "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+          "reader_answer": "30_PROTOCOLS/RECOVERY_HANDOFF.md — §§1–5",
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "change_lifecycle",
+          "recognized_home": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "reader_answer": "30_PROTOCOLS/CHANGE_LIFECYCLE.md — §§3–4.1",
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "durable_trace",
+          "recognized_home": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+          "reader_answer": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md — checkpoint、Resume / Recovery、Pointer 规则",
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        }
+      ],
+      "canonical_home_score": {
+        "correct": 5,
+        "applicable": 5
+      },
+      "can_recover_without_prior_chat": true,
+      "adopted_false_blockers": 0,
+      "wrong_or_extra_mandatory_hops": 0,
+      "gate_scoring_reason": "Missing old chat/handoff and ceremonial Human reconfirmation were rejected. Bootstrap writeback, current primary/access/state, physical isolation and required Review are source-supported ordinary gates, not errors. Material ARCH-0 and L2 ADR judgments in infrastructure/archive/decision remain conditional on the actual scope; research/product do not mechanically trigger them.",
+      "other_answers_assessed": "Reader distinguishes governance/native access policy from unproven specific tool/runtime capability, keeps implementation/facts owner-local, and does not claim project Done/current production from this synthetic observation."
+    },
+    {
+      "reader": "candidate-decision",
+      "class": "decision",
+      "revision": "candidate",
+      "assessment": "Manual source-grounded coordinator scoring; not independent Global semantic Review",
+      "source_observation": "observations/candidate-decision/result.json",
+      "canonical_home_topics": [
+        {
+          "topic": "bootstrap",
+          "recognized_home": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "reader_answer": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md：BOOT-1/2/3、access/currentness、writeback、capability preflight",
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "continuation_completion",
+          "recognized_home": "docs/AGENT_INTERFACE.md",
+          "reader_answer": "docs/AGENT_INTERFACE.md §1.4、§1.6–1.8：continuation、repair、PREMATURE_YIELD、acceptance completion",
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "recovery_context",
+          "recognized_home": "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+          "reader_answer": "30_PROTOCOLS/RECOVERY_HANDOFF.md §1–5：recovery paths、Work Context、independence/delegation；§7：project reproducibility",
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "change_lifecycle",
+          "recognized_home": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "reader_answer": "30_PROTOCOLS/CHANGE_LIFECYCLE.md §3–4.1：L0/L1/L2、Issue/ADR/PR/exact-head Review、条件性 bulk migration",
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        },
+        {
+          "topic": "durable_data",
+          "recognized_home": "docs/DURABLE_DATA_DOCTRINE.md",
+          "reader_answer": "docs/DURABLE_DATA_DOCTRINE.md：七项 durable-data 语义与三类 ownership",
+          "score": 1,
+          "interpretation": "Current canonical source recognized; valid section/path under the fixed fixture."
+        }
+      ],
+      "canonical_home_score": {
+        "correct": 5,
+        "applicable": 5
+      },
+      "can_recover_without_prior_chat": true,
+      "adopted_false_blockers": 0,
+      "wrong_or_extra_mandatory_hops": 0,
+      "gate_scoring_reason": "Missing old chat/handoff and ceremonial Human reconfirmation were rejected. Bootstrap writeback, current primary/access/state, physical isolation and required Review are source-supported ordinary gates, not errors. Material ARCH-0 and L2 ADR judgments in infrastructure/archive/decision remain conditional on the actual scope; research/product do not mechanically trigger them.",
+      "other_answers_assessed": "Reader distinguishes governance/native access policy from unproven specific tool/runtime capability, keeps implementation/facts owner-local, and does not claim project Done/current production from this synthetic observation."
+    }
+  ]
+}

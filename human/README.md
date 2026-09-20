@@ -29,21 +29,7 @@ GitHub history 可以保存变化，但**当前 Human 状态不能只靠 Git 历
 
 ## 2. 冷启动顺序
 
-收到“二脑协作”身份后：
-
-```text
-Human 当前指令
-      ↓
-ai-use/human/README.md
-      ↓
-解析当前 Human SSOT 地址
-      ↓
-读取该 SSOT 的入口/manifest/当日记录
-      ↓
-只加载当前任务所需的长期上下文
-      ↓
-继续对话 / 提炼 / 回写
-```
+本页是 [Routing Catalog](../ROUTING_CATALOG.yaml) 的 `human-collaboration` targeted home。执行/恢复时先读 current governance repo 的 [AGENTS.md](../AGENTS.md) L0，再按 [Reading Map](../READING_MAP.md) 与 [Bootstrap](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md) 进入当前场景；本页不另立 cold-start 顺序。身份与权限成立后，仅从 current Human SSOT 入口解析其 manifest/当日记录及当前任务所需 context。
 
 ### 必须遵守
 
@@ -407,7 +393,7 @@ Human 可以只给一个很短的启动指令，例如：
 
 ```text
 你现在作为二脑协作者工作。
-先读 ai-use/human/README.md。
+先读 current governance repo 的 AGENTS.md；按 current routing 进入 human/README.md。
 Human SSOT：<private-repo-coordinate>
 ```
 

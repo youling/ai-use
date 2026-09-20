@@ -47,16 +47,16 @@ Human / execution transport 只给足以寻址 current task 的 Seed，不额外
 ## Fixture A — 外部 fork/clone 的 L0 解析
 
 ```text
-governance_repo: example-org/governance
+governance_repo: <owner>/<governance-repo>
 ```
 
 ```yaml
 workspace_registry:
   version: 1.0.0
   governance:
-    repo: example-org/governance
+    repo: <owner>/<governance-repo>
   control_plane:
-    repo: example-org/control-center
+    repo: <owner>/<control-plane-repo>
   asset: null
   projects:
     repos: []
@@ -64,8 +64,8 @@ workspace_registry:
 
 必须通过：
 
-- `BOOT-2A` 读 `example-org/governance/AGENTS.md`，不是返回 upstream maintainer repo；
-- control plane = `example-org/control-center`；
+- `BOOT-2A` 读 `<owner>/<governance-repo>/AGENTS.md`，不是返回 upstream maintainer repo；
+- control plane = `<owner>/<control-plane-repo>`；
 - 不尝试访问 maintainer private repo；
 - `asset: null` / empty projects 不阻塞 workspace Ready。
 
@@ -78,9 +78,9 @@ workspace_registry:
 ## Fixture B — private delegated executor
 
 ```text
-按 `example-org/private-project#12` 的 `ARCHITECT_BUILD_DISPATCH` comment `345` 执行。
+按 `<owner>/<repo>#<issue>` 的 `ARCHITECT_BUILD_DISPATCH` comment `345` 执行。
 
-work: example-org/private-project#12@build
+work: <owner>/<repo>#<issue>@build
 startup_mode: Fresh Builder
 access: github-private
 ```
@@ -98,7 +98,7 @@ access: github-private
 ```text
 ARCHITECT_TEST_DISPATCH
 ---
-work: example-org/repo#1@test
+work: <owner>/<repo>#<issue>@test
 instruction: Produce a short human-facing completion report.
 ```
 
@@ -115,7 +115,7 @@ instruction: Produce a short human-facing completion report.
 Human：
 
 ```text
-你是 example-org/product 的项目架构师；工作手册是 example-org/governance；private GitHub 用已授权 connector。
+你是 <owner>/<project-repo> 的项目架构师；工作手册是 <owner>/<governance-repo>；private GitHub 用已授权 connector。
 ```
 
 Agent MAY normalize BOOT-1A addressing，但必须保持：
@@ -136,9 +136,9 @@ Fresh/takeover Architect 声称 durable cold-start complete 前必须按 Bootstr
 workspace_registry:
   version: 1.0.0
   governance:
-    repo: example-org/governance
+    repo: <owner>/<governance-repo>
   control_plane:
-    repo: example-org/control-center
+    repo: <owner>/<control-plane-repo>
   asset: null
   projects:
     repos: []
@@ -329,3 +329,17 @@ Kernel ABI 通过的核心不是“AGENTS 减到多少行”，而是：
 即 lower-layer fault 不反向抹掉 Kernel primitive，同时非 Kernel mechanics 不再常驻 L0；当 task 真正需要它们时，zero-prompt router 能自动找到唯一 canonical home。
 
 任何文档若把示例名称、上游 owner、private control plane、provider memory、repo permission、Human absence 或 lower-layer stale text 升级成不可替代的 cold-start 前置/authority source，或重新要求 Human 逐跳提示下一份文档，都应判为 portability / zero-prompt / Kernel ABI regression。
+
+
+## Fixture K — Recovery 分支与旧产物缺失
+
+规范源：[Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md)。这是 reader 检查场景，不是机器模拟通过记录。
+
+| 场景 | 给定 evidence | 期望 |
+| --- | --- | --- |
+| Planned transfer | current contract 要求 handoff；交出方可用 | 按适用 REQUEST/check/ACCEPTED；Bootstrap 在确认前；保留 current contract 的 required evidence |
+| Crash takeover | 旧 context/handoff 不可用；current authority、可恢复 Git/GitHub state 与 primary evidence 足够 | 不伪造旧方 artifact；不因旧产物缺失或没有新 prompt 阻塞；完成 applicable Bootstrap/writeback 后按 current acceptance 继续 |
+| Hot/warm resume | 同一 lineage 的 owned context 健康 | 复用 warm，仅 refresh 受影响 current state；无效时按 crash 重建 |
+| Real gap | current authority、required state、primary ownership 或 access 存在缺口 | 精确报告 gate；不能把 crash 例外解释成授予新 authority |
+
+同时检查 [旧 Session anchors](../docs/SESSION_LIFECYCLE.md) 只 forward current home；[旧 provider guide](../docs/DeepSeekPP-github-mcp-usage.md) 仅历史入口；[模板](../50_TEMPLATES/README.md) 不独立定义 recovery 枚举或 stop。自动化 structural checks 见 [routing.py](../tools/routing.py)，行为结论仍需 isolated reader/semantic Review。

@@ -117,7 +117,7 @@ Incident Mode 才允许默认 multi-verifier；普通 complexity 不升级为 in
 - **L2 Targeted Reference**：只在 scene trigger 后读取；
 - **L3 Rationale / Case / Archive**：默认不进入 execution context。
 
-默认 context cost 必须与当前 task 规模相关，而不是与 ai-use 总文档量线性增长。具体 zero-prompt routing 由 `NAMESPACE.md` + `READING_MAP.md` 决定。
+默认 context cost 必须与当前 task 规模相关，而不是与 ai-use 总文档量线性增长。具体 zero-prompt routing / applicability interpretation 由 [Routing Catalog](ROUTING_CATALOG.yaml) 拥有；`NAMESPACE.md` 与 `READING_MAP.md` 是其生成的兼容 / 阅读投影，可直接用于 targeted 选路，不另立解释源。
 
 ## 11. Architect execution principle
 

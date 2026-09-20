@@ -1,0 +1,50 @@
+{
+  "artifact_version": "1.0.0",
+  "work_order": "https://github.com/youling/ai-use/issues/74",
+  "method": "One isolated no-history model reader per project class and revision; frozen public documentation snapshot; all repository content reads through reader_io.py.",
+  "evidence_class": "SYNTHETIC_CANARY",
+  "baseline_revision": "e6de9acdafbc3b9d12802ecf8de25f444074553b",
+  "candidate_binding": "Frozen Git tree plus per-read source file SHA-256; final pushed commit must contain identical tested source blobs.",
+  "common_fixture": {
+    "role": "Project Architect",
+    "authority": "Synthetic durable Work Order supplies bounded inspection/implementation on an isolated feature branch and requires review; no merge/deploy/admin authority.",
+    "access_and_live_state": "Verified synthetic fixture inputs; no real target project lookup or mutation.",
+    "recovery": "Former context crashed; old handoff artifact unavailable; necessary current project contract and state are recoverable from the supplied synthetic durable Work Order.",
+    "start": "AGENTS.md",
+    "stop": "Sufficient targeted governance to answer questions; no exhaustive repository read."
+  },
+  "classes": {
+    "infrastructure": "Assess a material change to a restricted job executor, then perform only the authorized feature-branch change.",
+    "archive": "Add a bounded current-read catalog derived from an owned archive; material schema decisions require independent review.",
+    "product": "Fix one form validation bug with already defined business acceptance and tests; no architecture/schema/runtime/deploy change.",
+    "research": "Compare two public tool capabilities under a frozen small experiment design; produce evidence and limitations, no production adoption.",
+    "decision": "Change how an event-driven decision input is reconciled against its owned durable source; material state/currentness seam, no deployment authority."
+  },
+  "questions": [
+    "Applicable global rules",
+    "What can be ignored",
+    "Source-proven native capability reuse",
+    "Owner-local design",
+    "Done/current/production evidence",
+    "Can crash recovery proceed without old chat/handoff?",
+    "Canonical homes and ambiguities"
+  ],
+  "scoring": {
+    "canonical_homes": "Root maps reader answers to the current source semantics; counts applicable topics only. A valid section in a compatibility path must resolve to its current canonical home; merely knowing a retired home is not full current-home accuracy.",
+    "wrong_or_extra_mandatory_hops": "Count unjustified REQUIRED reading/action gates, not optional reader investigation or necessary lower-layer checks.",
+    "false_blockers": "Count refusal to recover solely from missing old chat/handoff or a new ceremonial Human prompt despite sufficient current fixture authority/state; preserve genuine missing input or risk gates.",
+    "native_reuse": "Do not treat an audit receipt as normative or production proof. R3/R4 features are not assumed implemented.",
+    "reading_cost": "Log exact UTF-8 document bytes delivered including repeats and distinct source lines. Also log full source-file hashes, paths and selected ranges. Do not call bytes tokens or include unmeasured cognition/time.",
+    "comparison": "Same class/task and instrumentation before/after; independent stochastic readers. One sample per cell is directional, not a statistically reliable performance estimate. #69 whole-file paths are separate, non-equivalent baselines."
+  },
+  "limits": [
+    "Synthetic project inputs, not private downstream execution",
+    "No visual UI/production/reviewer-independence acceptance",
+    "Model self-report supplemented by instrumented read records and root scoring",
+    "Reader roles are benchmarks, not authorized implementers or Global Architect reviewers"
+  ],
+  "authority": "NON_NORMATIVE",
+  "candidate_revision": "d38cb8aa6c74cc6a5b5f4a49ea39c3f51cf9674d",
+  "candidate_tree": "5d811690041acf9c5d2aa652ddcce1cccfad174b",
+  "instrument": "tools/fresh_reader_io.py"
+}

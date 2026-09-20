@@ -1,0 +1,342 @@
+{
+  "artifact_version": "1.0.0",
+  "authority": "NON_NORMATIVE_SYNTHETIC_READER_EVIDENCE",
+  "base_commit": "e6de9acdafbc3b9d12802ecf8de25f444074553b",
+  "candidate_commit": "d38cb8aa6c74cc6a5b5f4a49ea39c3f51cf9674d",
+  "instrument": {
+    "path": "tools/fresh_reader_io.py",
+    "sha256": "cbfa60816af272eea2b6f4bb301aa2b664208d43a8683ae59b4c01728917beec",
+    "unchanged_from_executed_instrument": true
+  },
+  "metric_limit": "Emitted source UTF-8 bytes, including repeats; not precise model-ingested bytes, tokens, latency or statistical performance. Truncation and errors are recorded in observations.",
+  "observations": [
+    {
+      "reader": "base-infrastructure",
+      "class": "infrastructure",
+      "revision": "base",
+      "source_commit": "e6de9acdafbc3b9d12802ecf8de25f444074553b",
+      "metrics": {
+        "files_read": [
+          "AGENTS.md",
+          "NAMESPACE.md",
+          "READING_MAP.md",
+          "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "docs/ARCHITECT_RECONNAISSANCE.md",
+          "docs/AGENT_INTERFACE.md",
+          "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+          "docs/SESSION_LIFECYCLE.md",
+          "CONSTITUTION.md"
+        ],
+        "file_count": 10,
+        "read_operations": 12,
+        "bytes_read_including_repeats": 109319,
+        "unique_source_bytes_read": 105775,
+        "list_metadata_bytes": 0
+      },
+      "result_path": "observations/base-infrastructure/result.json",
+      "result_sha256": "3b80177c2ccbbd31146c2a14301277dd23228aa8c8dd42a4f532b90990c2654e",
+      "original_result_sha256": "3b80177c2ccbbd31146c2a14301277dd23228aa8c8dd42a4f532b90990c2654e",
+      "publication_transformations": [],
+      "read_log_path": "observations/base-infrastructure/reads.jsonl",
+      "read_log_sha256": "b221bd257355aef6c670fde6e5e9fbc90b6af14ac287d8c186d26b427d5e7c49",
+      "log_source_validation": "PASS: all source hashes, file sizes, selected line ranges and byte counts match frozen Git blobs"
+    },
+    {
+      "reader": "base-archive",
+      "class": "archive",
+      "revision": "base",
+      "source_commit": "e6de9acdafbc3b9d12802ecf8de25f444074553b",
+      "metrics": {
+        "files_read": [
+          "AGENTS.md",
+          "NAMESPACE.md",
+          "READING_MAP.md",
+          "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "docs/DURABLE_DATA_DOCTRINE.md",
+          "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "docs/AGENT_INTERFACE.md",
+          "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+          "docs/SESSION_LIFECYCLE.md",
+          "docs/ARCHITECT_RECONNAISSANCE.md",
+          "CONSTITUTION.md"
+        ],
+        "file_count": 11,
+        "read_operations": 13,
+        "bytes_read_including_repeats": 126814,
+        "unique_source_bytes_read": 120530,
+        "list_metadata_bytes": 0
+      },
+      "result_path": "observations/base-archive/result.json",
+      "result_sha256": "460982d45b6163228bd81760de3aaebc4dd59f1591da637e459604e91f592bcc",
+      "original_result_sha256": "460982d45b6163228bd81760de3aaebc4dd59f1591da637e459604e91f592bcc",
+      "publication_transformations": [],
+      "read_log_path": "observations/base-archive/reads.jsonl",
+      "read_log_sha256": "fa93b08f82195580df1c50ea331d6341a6ba79344f1fb7b2c241783d38fbd2e7",
+      "log_source_validation": "PASS: all source hashes, file sizes, selected line ranges and byte counts match frozen Git blobs"
+    },
+    {
+      "reader": "base-product",
+      "class": "product",
+      "revision": "base",
+      "source_commit": "e6de9acdafbc3b9d12802ecf8de25f444074553b",
+      "metrics": {
+        "files_read": [
+          "AGENTS.md",
+          "NAMESPACE.md",
+          "READING_MAP.md",
+          "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "docs/AGENT_INTERFACE.md",
+          "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "docs/SESSION_LIFECYCLE.md",
+          "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+          "CONSTITUTION.md"
+        ],
+        "file_count": 9,
+        "read_operations": 12,
+        "bytes_read_including_repeats": 105856,
+        "unique_source_bytes_read": 104471,
+        "list_metadata_bytes": 0
+      },
+      "result_path": "observations/base-product/result.json",
+      "result_sha256": "fa3a69f6c76a5e8ee3710a6e83b353e0fb0a49bc42bd4971f9ea217f3bb281e4",
+      "original_result_sha256": "fa3a69f6c76a5e8ee3710a6e83b353e0fb0a49bc42bd4971f9ea217f3bb281e4",
+      "publication_transformations": [],
+      "read_log_path": "observations/base-product/reads.jsonl",
+      "read_log_sha256": "3715cea35941d20928fe563ea841af13a1c5ae64a2b0f7d94eacd31fde6ed23f",
+      "log_source_validation": "PASS: all source hashes, file sizes, selected line ranges and byte counts match frozen Git blobs"
+    },
+    {
+      "reader": "base-research",
+      "class": "research",
+      "revision": "base",
+      "source_commit": "e6de9acdafbc3b9d12802ecf8de25f444074553b",
+      "metrics": {
+        "files_read": [
+          "AGENTS.md",
+          "NAMESPACE.md",
+          "READING_MAP.md",
+          "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "docs/AGENT_INTERFACE.md",
+          "CONSTITUTION.md",
+          "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+          "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "docs/SESSION_LIFECYCLE.md",
+          "docs/ARCHITECT_RECONNAISSANCE.md"
+        ],
+        "file_count": 10,
+        "read_operations": 12,
+        "bytes_read_including_repeats": 106854,
+        "unique_source_bytes_read": 106854,
+        "list_metadata_bytes": 926
+      },
+      "result_path": "observations/base-research/result.json",
+      "result_sha256": "3759ebac6d4016c7e49685a056c152399299b3410253c0f0019aef46f21e264d",
+      "original_result_sha256": "02223a45021c735768ce81bb319b76c7c7a5a8f7e9313eb3b2fe84ca0b033a9a",
+      "publication_transformations": [
+        "Normalized CRLF to LF for Git text storage; JSON content unchanged."
+      ],
+      "read_log_path": "observations/base-research/reads.jsonl",
+      "read_log_sha256": "73dc06772885a1e2242e625cdaecf283c80730eceb0e8459518568d433fc3b33",
+      "log_source_validation": "PASS: all source hashes, file sizes, selected line ranges and byte counts match frozen Git blobs"
+    },
+    {
+      "reader": "base-decision",
+      "class": "decision",
+      "revision": "base",
+      "source_commit": "e6de9acdafbc3b9d12802ecf8de25f444074553b",
+      "metrics": {
+        "files_read": [
+          "AGENTS.md",
+          "NAMESPACE.md",
+          "READING_MAP.md",
+          "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "docs/AGENT_INTERFACE.md",
+          "docs/ARCHITECT_RECONNAISSANCE.md",
+          "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "docs/DURABLE_DATA_DOCTRINE.md",
+          "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+          "docs/SESSION_LIFECYCLE.md",
+          "CONSTITUTION.md"
+        ],
+        "file_count": 11,
+        "read_operations": 14,
+        "bytes_read_including_repeats": 150474,
+        "unique_source_bytes_read": 120530,
+        "list_metadata_bytes": 1
+      },
+      "result_path": "observations/base-decision/result.json",
+      "result_sha256": "e5108ebe3a4d575b4864a032fabbd8e9a60b3813876d4e799199a2cb76274ae2",
+      "original_result_sha256": "e5108ebe3a4d575b4864a032fabbd8e9a60b3813876d4e799199a2cb76274ae2",
+      "publication_transformations": [],
+      "read_log_path": "observations/base-decision/reads.jsonl",
+      "read_log_sha256": "4d688a11d078035617abdd078028d1259bd9d0658dbd78ae2f2571aee43d4cc8",
+      "log_source_validation": "PASS: all source hashes, file sizes, selected line ranges and byte counts match frozen Git blobs"
+    },
+    {
+      "reader": "candidate-infrastructure",
+      "class": "infrastructure",
+      "revision": "candidate",
+      "source_commit": "d38cb8aa6c74cc6a5b5f4a49ea39c3f51cf9674d",
+      "metrics": {
+        "files_read": [
+          "AGENTS.md",
+          "NAMESPACE.md",
+          "READING_MAP.md",
+          "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+          "docs/AGENT_INTERFACE.md",
+          "docs/ARCHITECT_RECONNAISSANCE.md",
+          "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+          "CONSTITUTION.md"
+        ],
+        "file_count": 10,
+        "read_operations": 13,
+        "bytes_read_including_repeats": 111055,
+        "unique_source_bytes_read": 97625,
+        "list_metadata_bytes": 0
+      },
+      "result_path": "observations/candidate-infrastructure/result.json",
+      "result_sha256": "358f53280afd61175ac996dde87579c2bb5f64c076f3f90e767a1a7cede1cb16",
+      "original_result_sha256": "b0ac1f5d625b47915eb52c46a4b9f9b1a4b4fc4e3be532de58903c9e24766a84",
+      "publication_transformations": [
+        "Normalized CRLF to LF for Git text storage; JSON content unchanged."
+      ],
+      "read_log_path": "observations/candidate-infrastructure/reads.jsonl",
+      "read_log_sha256": "e8c59825c170d5dbf22011d4d3abd93d76ddb65e1bc89fc6196a20081a7dea03",
+      "log_source_validation": "PASS: all source hashes, file sizes, selected line ranges and byte counts match frozen Git blobs"
+    },
+    {
+      "reader": "candidate-archive",
+      "class": "archive",
+      "revision": "candidate",
+      "source_commit": "d38cb8aa6c74cc6a5b5f4a49ea39c3f51cf9674d",
+      "metrics": {
+        "files_read": [
+          "AGENTS.md",
+          "NAMESPACE.md",
+          "READING_MAP.md",
+          "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+          "docs/DURABLE_DATA_DOCTRINE.md",
+          "docs/AGENT_INTERFACE.md",
+          "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "docs/ARCHITECT_RECONNAISSANCE.md",
+          "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+          "CONSTITUTION.md"
+        ],
+        "file_count": 11,
+        "read_operations": 13,
+        "bytes_read_including_repeats": 103615,
+        "unique_source_bytes_read": 100062,
+        "list_metadata_bytes": 0
+      },
+      "result_path": "observations/candidate-archive/result.json",
+      "result_sha256": "3823cb0dadbf92107b2f606f1ea6aed98f1c507b65b9482c93ba33e1564adb3b",
+      "original_result_sha256": "3823cb0dadbf92107b2f606f1ea6aed98f1c507b65b9482c93ba33e1564adb3b",
+      "publication_transformations": [],
+      "read_log_path": "observations/candidate-archive/reads.jsonl",
+      "read_log_sha256": "9493ebbbed50bb38ec3328648e15acb4d19949b4d2dc83c35158a28bf5c0b14d",
+      "log_source_validation": "PASS: all source hashes, file sizes, selected line ranges and byte counts match frozen Git blobs"
+    },
+    {
+      "reader": "candidate-product",
+      "class": "product",
+      "revision": "candidate",
+      "source_commit": "d38cb8aa6c74cc6a5b5f4a49ea39c3f51cf9674d",
+      "metrics": {
+        "files_read": [
+          "AGENTS.md",
+          "NAMESPACE.md",
+          "READING_MAP.md",
+          "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "docs/AGENT_INTERFACE.md",
+          "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+          "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+          "CONSTITUTION.md"
+        ],
+        "file_count": 9,
+        "read_operations": 10,
+        "bytes_read_including_repeats": 77640,
+        "unique_source_bytes_read": 77617,
+        "list_metadata_bytes": 0
+      },
+      "result_path": "observations/candidate-product/result.json",
+      "result_sha256": "670c6b1b39e69b56699d5f350bb7e150cf075bd5bf6dcdbfcd0d6f6dbfe5a816",
+      "original_result_sha256": "670c6b1b39e69b56699d5f350bb7e150cf075bd5bf6dcdbfcd0d6f6dbfe5a816",
+      "publication_transformations": [],
+      "read_log_path": "observations/candidate-product/reads.jsonl",
+      "read_log_sha256": "95e827bac21d1eba15d30a9cd4540ad38fe3b17ef470629313b03fe48508df3a",
+      "log_source_validation": "PASS: all source hashes, file sizes, selected line ranges and byte counts match frozen Git blobs"
+    },
+    {
+      "reader": "candidate-research",
+      "class": "research",
+      "revision": "candidate",
+      "source_commit": "d38cb8aa6c74cc6a5b5f4a49ea39c3f51cf9674d",
+      "metrics": {
+        "files_read": [
+          "AGENTS.md",
+          "NAMESPACE.md",
+          "READING_MAP.md",
+          "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+          "docs/AGENT_INTERFACE.md",
+          "docs/ARCHITECT_RECONNAISSANCE.md",
+          "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+          "CONSTITUTION.md"
+        ],
+        "file_count": 10,
+        "read_operations": 14,
+        "bytes_read_including_repeats": 95599,
+        "unique_source_bytes_read": 95599,
+        "list_metadata_bytes": 0
+      },
+      "result_path": "observations/candidate-research/result.json",
+      "result_sha256": "e50f8a674a83a5bddaa004cdd9a5626fcb5b9abcc3636fb244b8a83e26382003",
+      "original_result_sha256": "e50f8a674a83a5bddaa004cdd9a5626fcb5b9abcc3636fb244b8a83e26382003",
+      "publication_transformations": [],
+      "read_log_path": "observations/candidate-research/reads.jsonl",
+      "read_log_sha256": "3c0e1a3a22f42c16fdc0e312b1b87f28c9d8b5930bdd865982a5c6ceb36d8b2f",
+      "log_source_validation": "PASS: all source hashes, file sizes, selected line ranges and byte counts match frozen Git blobs"
+    },
+    {
+      "reader": "candidate-decision",
+      "class": "decision",
+      "revision": "candidate",
+      "source_commit": "d38cb8aa6c74cc6a5b5f4a49ea39c3f51cf9674d",
+      "metrics": {
+        "files_read": [
+          "AGENTS.md",
+          "NAMESPACE.md",
+          "READING_MAP.md",
+          "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+          "docs/AGENT_INTERFACE.md",
+          "docs/ARCHITECT_RECONNAISSANCE.md",
+          "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "docs/DURABLE_DATA_DOCTRINE.md",
+          "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+          "CONSTITUTION.md"
+        ],
+        "file_count": 11,
+        "read_operations": 11,
+        "bytes_read_including_repeats": 102562,
+        "unique_source_bytes_read": 102562,
+        "list_metadata_bytes": 0
+      },
+      "result_path": "observations/candidate-decision/result.json",
+      "result_sha256": "b3d528df7da1c594ae996934dc9ce42ef80dbc15950d9860aabeadd487f9e2a8",
+      "original_result_sha256": "c7fe1f44b2e02d6eb46d7c869817931b9e61196620d31899005a9be77573662f",
+      "publication_transformations": [
+        "Replaced class.source_snapshot local transport path with inert placeholder; no observation/decision/metric edits."
+      ],
+      "read_log_path": "observations/candidate-decision/reads.jsonl",
+      "read_log_sha256": "2e91febdf14f783c97286823262a5af0258bb7104e4a217dc7f0a60ed17e6dd9",
+      "log_source_validation": "PASS: all source hashes, file sizes, selected line ranges and byte counts match frozen Git blobs"
+    }
+  ]
+}

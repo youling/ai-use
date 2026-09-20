@@ -50,4 +50,4 @@ Seed 负责寻址，不承载完整知识。
 
 任务目标、范围、验收条件属于工单/持久调度，不复制到 Seed。
 
-Agent 生命周期属于 Agent Interface，不由每个 Seed 重复定义。
+执行 continuation 属于 [Agent Interface](AGENT_INTERFACE.md)；恢复与 context lifecycle 属于 [Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md)，不由 Seed 重复定义。

@@ -4,6 +4,8 @@
 
 > 第一次进入？先读 [`START_HERE.md`](START_HERE.md)。准备执行/接管角色时，第一份 normative rules read 是 current [`AGENTS.md`](AGENTS.md) L0。
 
+[路由总览（派生）](docs/ROUTING_INDEX.md) · [路由目录源](ROUTING_CATALOG.yaml)
+
 ---
 
 ## Why
@@ -70,13 +72,13 @@ Human
 | [`NAMESPACE.md`](NAMESPACE.md) | 全角色（zero-prompt 路由） | L0 后理解 `00→10→20→30→40→50→90` 的默认 next-hop chain；可 `SKIP` / `STOP_*`，不是 mandatory full-read order |
 | [`AGENTS.md`](AGENTS.md) | 所有执行 Agent（机器 L0） | 每个执行/恢复/接管角色进入 normative rules 时首先读取 |
 | [`human/README.md`](human/README.md) | 二脑协作者 / Human | 跨 AI 记录 Human、日终提炼、上下文漂移后冷启动或切换协作者时 |
-| [`docs/SESSION_LIFECYCLE.md`](docs/SESSION_LIFECYCLE.md) | Architect / 需要恢复或交接的人 | L2 按需参考，仅在 session/handoff/recovery 场景触发 |
+| [Recovery & Handoff](30_PROTOCOLS/RECOVERY_HANDOFF.md) | 需要恢复、交接或 context 判定的人 | 当前三分支 recovery 与 context contract；[旧 Session 路径](docs/SESSION_LIFECYCLE.md) 只保留兼容转向 |
 | [`10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`](10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md) | 所有执行 Agent | 启动状态验证（L2 按需） |
 | [`10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md`](10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md) | 新组织 / Global Architect | 初始化 workspace、发现仓库角色、确认 Global Architect Ready（L2 按需） |
 | [`30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md`](30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) | 所有执行 Agent | 需要留痕/返回 pointer 时（L2 按需） |
 | [`00_KERNEL/LANGUAGE_POLICY.md`](00_KERNEL/LANGUAGE_POLICY.md) | 所有执行 Agent | 人类可见输出默认简体中文（L2 按需） |
 
-一句话版：**不要通读整个仓库。** `START_HERE` 只做导航；执行/恢复/接管时先加载 `AGENTS.md` L0，随后由 `NAMESPACE.md` 给出 zero-prompt 下一跳、由 `READING_MAP.md` 判断当前层 `NEXT | SKIP | STOP_*` 并 targeted expansion。普通执行者通常只需要 L0 + 自己的精确任务 + 项目本地上下文。
+一句话版：**不要通读整个仓库。** `START_HERE` 只做导航；执行/恢复/接管时先加载 `AGENTS.md` L0，随后通过 [Routing Catalog](ROUTING_CATALOG.yaml) 的生成投影选路：`NAMESPACE.md` 展示 zero-prompt 下一跳，`READING_MAP.md` 展示当前层 `NEXT | SKIP | STOP_*` 与 targeted homes。routing / applicability interpretation 归 catalog，投影不另立解释源。普通执行者通常只需要 L0 + 自己的精确任务 + 项目本地上下文。
 
 ---
 

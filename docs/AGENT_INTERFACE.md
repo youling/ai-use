@@ -2,9 +2,9 @@
 
 **Classification: L2 Targeted Reference.** Read when dispatching/executing Agent work, choosing Architect execution mode, advancing an authorized program, or producing/reviewing Human/Agent interface artifacts.
 
-**Protocol Version: 2.5.0**
+**Protocol Version: 2.6.0**
 
-本文是 **execution / dispatch / continuation interface** 的 canonical home。公共 `ai-use` 不绑定任何特定 owner/repo、私有 control-plane 名称或上游维护者账号。Work Context lifecycle 的 playbook 见 [`SESSION_LIFECYCLE.md`](SESSION_LIFECYCLE.md)；可复制的正交 context / mode / delegation contract 见 [`../50_TEMPLATES/CONTEXT_MODE_SEED.md`](../50_TEMPLATES/CONTEXT_MODE_SEED.md)。三者不重复：本文定 continuation 与完成边界，`SESSION_LIFECYCLE.md` 定 Work Context 形态与检查点，`CONTEXT_MODE_SEED.md` 只给可复制形态。
+本文是 **execution / dispatch / continuation interface** 的 canonical home。公共 `ai-use` 不绑定特定 owner/repo、私有 control-plane 名称或账号。[Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md) 拥有 recovery、Work Context、正交 context/mode 与 independence/delegation 语义；[CONTEXT_MODE_SEED](../50_TEMPLATES/CONTEXT_MODE_SEED.md) 只给形态。本文保留 continuation、`PREMATURE_YIELD` 与完成边界。
 
 ---
 
@@ -151,7 +151,7 @@ PLAN -> BUILD -> TEST -> REPAIR -> SELF_REVIEW -> REPAIR
 
 优先复用 current owned warm context。明确 review finding 回流后优先由原 executor 修，不为角色仪式重复 context rehydration。`DEFAULT_SAME_LINEAGE = WARM_RESUME`。
 
-正交 machine 维度（`context_policy / mode / continuation / independence`，另加最小 `delegation / parallelism`）的可复制形态见 [`../50_TEMPLATES/CONTEXT_MODE_SEED.md`](../50_TEMPLATES/CONTEXT_MODE_SEED.md)；本文不维护第二份维度表。
+正交 machine 维度的定义见 [Recovery & Handoff §4](../30_PROTOCOLS/RECOVERY_HANDOFF.md#4-work-context-与正交维度)，可复制形态见 [CONTEXT_MODE_SEED](../50_TEMPLATES/CONTEXT_MODE_SEED.md)。
 
 ### 1.7 `PREMATURE_YIELD`：retryable execution failure
 
@@ -177,7 +177,7 @@ Executor 自述 `done / completed` 只是 observation，不能覆盖 determinist
 
 ### 1.9 Fresh 与 delegation 边界（指针）
 
-Fresh context 默认主要用于 independence / 安全 / 高风险 / 污染 / 真并行场景；恢复路径同样是 fresh 触发：warm context missing / invalid（`CONTEXT_UNAVAILABLE`）时从 durable checkpoint / current state 做 `FRESH_CONTEXT` 重建。不得因 warm 方便取消 current contract 已要求的 fresh independent verification。`FORK_CONTEXT != FRESH_CONTEXT`；`SELF_REVIEW != FRESH_VERIFY`。Subagent 是隔离与并行机制，不是 authority 来源，也不是默认 mode 切换方式。可执行判据与可复制缝合见 [`../50_TEMPLATES/CONTEXT_MODE_SEED.md`](../50_TEMPLATES/CONTEXT_MODE_SEED.md) 与 [`SESSION_LIFECYCLE.md`](SESSION_LIFECYCLE.md)；本文不复制其检查表。
+Recovery 分支、fresh 触发、independence 与 delegation 的可执行语义统一见 [Recovery & Handoff §1–5](../30_PROTOCOLS/RECOVERY_HANDOFF.md#1-恢复分类)。旧 Session 与 template 仅保留形态/兼容指针，不再拥有这些规则。
 
 ---
 
@@ -223,7 +223,13 @@ Minimal Agent Seed 的目标仍是**最少无歧义启动信息**。可复制格
 
 Seed 不复制 role、startup_mode、scope、acceptance、requirements、reporting、stop、执行步骤、权限、安全 gate、模型/provider/price/quota。以上任务知识仍留在 current durable Work Order / dispatch；如果 fresh Agent 仅凭精确地址无法从 durable source 取得任务事实，先修 durable source，再派发。
 
-可选 `执行意图` 只表达语义意图，不是 acceptance / stop 副本：允许一行 `执行意图：<mode/context intent>；按 current durable acceptance 持续到对应 boundary` 说明唤醒原因与模式亲和，不得复制 tests、scope、安全 gate、完成条件；无歧义时整行省略。可复制形态与正交维度见 [`../50_TEMPLATES/CONTEXT_MODE_SEED.md`](../50_TEMPLATES/CONTEXT_MODE_SEED.md)。
+可选 `执行意图` 只表达语义意图，不是 acceptance / stop 副本：允许一行 `执行意图：<mode/context intent>；按 current durable acceptance 持续到对应 boundary` 说明唤醒原因与模式亲和，不得复制 tests、scope、安全 gate、完成条件；无歧义时整行省略。正交维度见 [Recovery & Handoff §4](../30_PROTOCOLS/RECOVERY_HANDOFF.md#4-work-context-与正交维度)，可复制形态见 [CONTEXT_MODE_SEED](../50_TEMPLATES/CONTEXT_MODE_SEED.md)。
+
+### Seed minimality 与 transport fallback
+
+默认 Seed 建议 5–10 行；这只是检查是否复制合同的 heuristic，不是字符限制。可访问 durable Work Order/dispatch 时，Seed 只寻址与表达必要 affinity，任务角色、scope、acceptance、stop 仍从 current durable source 取得。
+
+只有 Agent 无法访问 durable source 时，transport 才可内联任务所必需的最小合同内容；它不产生 authority 或第二 SSOT，也不能替代 Bootstrap 必需的 authority/currentness/access evidence。恢复 source 访问后回到短 Seed + durable pointer。durable source 本身缺合同则先补 source，再派发；不得把 access failure 当成放宽执行 gate 的理由。
 
 ---
 
@@ -257,6 +263,8 @@ Human-facing language 只引用 `00_KERNEL/LANGUAGE_POLICY.md`；本接口不复
 ---
 
 ## 6. Versioned Definitions
+
+- `2.6.0`：在已合并的 Local Engineering Gate 2.5.0 基础上保留 R1 relocation：context/recovery/independence/delegation 的 semantic owner 收敛至 Recovery & Handoff；模板仅保留形态。原 Seed minimality/transport fallback 搬回本接口；continuation、repair、completion 与 authority 不变。PR #75 旧候选曾使用 2.5.0，现与上游版本区分，旧候选由 Git provenance 保留。
 
 - `2.5.0`：Local Engineering Human Gate（#76）。`本地 / 本地+设备` 只表达 Human 调度位置，executor 需在 BOOT-3 使用**当前平台原生 adapter**验证 Work Order 所需的本地 tool/auth/repo/project/device capability；Windows reference 检查 PowerShell/Git/GitHub/Codex/OpenCode 等。共享的是 Gate contract，不是 PowerShell implementation；gate 不产生 authority、不接收 Human secret、不要求 L0 扩张。
 - `2.4.0`：Context Lifecycle v0.1 normative materialization（#60）。新增 §1.6 同 lineage 默认 `WARM_RESUME`、§1.7 `PREMATURE_YIELD` 可执行判据、§1.8 completion boundary（来自 durable acceptance）、§1.9 fresh 与 delegation 边界指针；§3 明确可选 `执行意图` 为语义意图而非 acceptance / stop 副本；正交 `context_policy / mode / continuation / independence` 与最小 `delegation / parallelism` 的可复制形态只在 `50_TEMPLATES/CONTEXT_MODE_SEED.md` 维护，本文不复制第二份维度表；provider 命令仅作 informative 示例，不进 canonical。
