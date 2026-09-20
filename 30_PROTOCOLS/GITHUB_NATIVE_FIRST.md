@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.**
 
-**Protocol Version: 1.0.0**
+**Protocol Version: 1.1.0**
 
 语义 owner：[工作项 #67](https://github.com/youling/ai-use/issues/67)；长期裁决：[ADR-0005](../90_HISTORY/ADR-0005_OWNER_NATIVE_DERIVATION.md)。本协议是 architecture decision method，不是平台配置指令或 Capability Lab schema。
 
@@ -56,6 +56,39 @@ Architect 对实际相关的 candidate 做最小比较，记录 current official
 | `REJECT` | 方案违反 owner/authority/security 边界、形成第二 SSOT，或收益不足；记录理由。 |
 
 native-first 不等于所有 native surface 必选，也不等于禁止 custom code。报告可以引用已有 ARCH-0 output 或 owner decision，不另造中央 registry。保存简洁决定、blocker、checkpoint 与 evidence pointers，不保存 chain-of-thought。
+
+### 3.1 GitHub Actions resource-budget gate
+
+选择 GitHub Actions 前，MUST 先判断：
+
+```text
+repository_visibility = PUBLIC | PRIVATE | INTERNAL | UNKNOWN
+runner_class = STANDARD_GITHUB_HOSTED | LARGER_GITHUB_HOSTED | SELF_HOSTED | UNKNOWN
+budget_state = AVAILABLE | CONSTRAINED | EXHAUSTED_OR_BLOCKED | UNKNOWN
+platform_semantics_required = YES | NO
+```
+
+这些是执行环境/计费 current evidence，不产生 authority。deployment 的实际额度、账单、预算属于 owner-local private state，不进入 public ai-use。
+
+**PRIVATE / INTERNAL 默认节制 GitHub-hosted Actions。** 若本地 deterministic validation 能证明同一性质，优先本地执行；generic GitHub 行为已有 current Capability Lab evidence 时优先复用；确实需要 GitHub event/runner/platform semantics 时，优先使用现有、已授权且适用的 self-hosted runner，最后才使用最小充分的 GitHub-hosted run。不得为了方便重复消耗 hosted-runner 额度去跑本地已等价覆盖的 unit test、format/lint、generator、schema/link check，或没有真实跨平台风险的宽 matrix。
+
+若 `budget_state = EXHAUSTED_OR_BLOCKED`，GitHub-hosted Actions **不是默认 required verification path**。其它 evidence 能证明同一 claim 时使用其它 evidence；不能证明时保留该 property 为 `UNKNOWN / BLOCKED`，不得把“省额度”写成“CI PASS”。
+
+**PUBLIC + standard GitHub-hosted runner** 可继续作为优先 native validation/canary surface，但免费不等于无节制：禁止重复 workflow、heartbeat CI、无必要矩阵、未变化 canary 的机械重跑和无必要的大 artifact/cache。larger runner 仍按其 current billing/plan 条件单独判断。
+
+证据强度保持：
+
+```text
+CI unavailable due budget != CI passed
+local PASS != GitHub platform/event semantics proved
+public synthetic canary != private owner production proof
+```
+
+Generic GitHub uncertainty 应尽量“公共 Lab 测一次，下游私仓只测 unresolved local delta”。
+
+官方 current billing/runner 条件入口：
+- [GitHub Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions)
+- [GitHub-hosted runners reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
 
 ## 4. Projection、event 与 currentness
 

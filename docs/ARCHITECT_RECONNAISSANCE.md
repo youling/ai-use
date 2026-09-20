@@ -2,8 +2,9 @@
 
 **Classification: L2 Targeted Reference.** 仅在 Fresh/takeover Architect、material new-domain、major capability / architecture pivot、成熟项目拟引入新的外部 framework/runtime/subsystem，或快速变化外部生态可能改变方案时读取。普通 Hot Resume、小 bug、确定性维护默认不触发。
 
-source ruling: `youling/ai-hub#50` comment `5451269968`  
+source ruling: `youling/ai-hub#50` comment `5451269968`
 stage-aware reuse: `youling/ai-use#62` / ADR-0003
+GitHub Actions resource-budget amendment: `youling/ai-use#89` / ADR-0007
 
 ## 1. 目的与位置
 
@@ -65,6 +66,8 @@ Targeted 回答：
 Has GitHub already solved the generic part?
 Has ai-use already canaried this exact capability class?
 What plan/account/auth/admin limits remain?
+If Actions is proposed: what are repo visibility, runner class and current budget state?
+Can local validation or existing public Lab evidence prove the same property without consuming private hosted-runner quota?
 ```
 
 只调查当前 architecture dependency 或 proposed subsystem 相关的 native primitive、API/权限与实际缺口，不扩大成全平台能力盘点。平台 capability claim 区分下列 evidence classes，并记录 source、target/environment、观察范围与 evidence window：
@@ -79,6 +82,8 @@ What plan/account/auth/admin limits remain?
 | `UNKNOWN` | 缺证据或无法确定；记录 targeted gap，不能声明可用或不存在。 |
 
 同一 claim 可有 documented 与 observed evidence，但二者不互相替代。已有 audit/canary 可在 current、同 capability class、环境适用时作为 donor evidence；它不成为 normative authority、production acceptance 或 Lab promotion。没有 canary 本身不制造通用 blocker，是否需要补测取决于本次真实架构依赖与风险。
+
+若 proposed validation 使用 GitHub Actions，先按 [GitHub Native First §3.1](../30_PROTOCOLS/GITHUB_NATIVE_FIRST.md#31-github-actions-resource-budget-gate) 判定 repository visibility、runner class、budget state 与 platform-semantics necessity。PRIVATE/INTERNAL 的 GitHub-hosted minutes 是 deployment-local constrained resource 时，不因“CI 更方便”默认消耗；预算不足也不得降低 evidence claim。
 
 输出并入现有 reconnaissance report，引用 native-first decision 与剩余 gate，不建新的 mandatory report/schema。普通 bugfix、Hot Resume、确定性维护、已冻结窄实现仍无 mandatory platform scan；live revalidation 足够时复用既有结果。
 
