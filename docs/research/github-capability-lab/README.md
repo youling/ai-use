@@ -1,10 +1,10 @@
 # GitHub Capability Lab
 
-**Contract version: 1.0.0** · **LAB_ESTABLISHED = PENDING**
+**Contract version: 1.0.0** · **LAB_ESTABLISHED = YES**
 
-这是公开、安全、可复用的 GitHub 能力证据入口。建立范围来自 [R4 Work #82](https://github.com/youling/ai-use/issues/82)、[架构冻结](https://github.com/youling/ai-use/issues/73#issuecomment-5750977205) 与 [owner 裁决](https://github.com/youling/ai-use/issues/68#issuecomment-5750977380)。只有 Global Architect 的 exact-head Review 才能接受 establishment；机械 PASS、claim promotion 或本目录存在均不能代替验收。
+这是公开、安全、可复用的 GitHub 能力证据入口。建立范围来自 [R4 Work #82](https://github.com/youling/ai-use/issues/82)、[架构冻结](https://github.com/youling/ai-use/issues/73#issuecomment-5750977205) 与 [owner 裁决](https://github.com/youling/ai-use/issues/68#issuecomment-5750977380)。Establishment 已由 [PR #86 Global Architect exact-head review 5261164668](https://github.com/youling/ai-use/pull/86#pullrequestreview-5261164668) 接受并合并到 `main@1472b3a5d22d4acc5ce4653931353eed99a9a5d5`；机械 PASS、claim promotion 或本目录存在仍不能代替未来 claim/治理变更所需的语义验收。
 
-`EXPERIMENT != NORMATIVE_AUTHORITY`。Lab 不拥有项目事实、生产验收、治理规则、权限或平台配置，也没有数据库、服务、定时刷新器或 control plane。`R5 = HOLD`，downstream adoption 留给各 owner。
+`EXPERIMENT != NORMATIVE_AUTHORITY`。Lab 不拥有项目事实、生产验收、治理规则、权限或平台配置，也没有数据库、服务、定时刷新器或 control plane。`R5 = NON_BLOCKING_EXPERIMENT`，downstream adoption 留给各 owner。
 
 ## 从最小证据开始
 
