@@ -2,8 +2,8 @@
 
 **Classification: L2 Targeted Reference.** 仅在 Fresh/takeover Architect、material new-domain、major capability / architecture pivot、成熟项目拟引入新的外部 framework/runtime/subsystem，或快速变化外部生态可能改变方案时读取。普通 Hot Resume、小 bug、确定性维护默认不触发。
 
-source ruling: `youling/ai-hub#50` comment `5451269968`  
-stage-aware reuse: `youling/ai-use#62` / ADR-0003  
+source ruling: `youling/ai-hub#50` comment `5451269968`
+stage-aware reuse: `youling/ai-use#62` / ADR-0003
 GitHub Actions resource-budget amendment: `youling/ai-use#89` / ADR-0007
 
 ## 1. 目的与位置
