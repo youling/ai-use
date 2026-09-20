@@ -1,7 +1,7 @@
 # ADR-0007：GitHub Actions Resource-Budget Aware Use
 
 **Artifact Version: 1.0.0**
-状态：Proposed / exact-head Review pending
+状态：Decision materialization；acceptance/currentness 以 Git/GitHub exact-head Review + merge history 为准
 裁决来源：[Governance #89](https://github.com/youling/ai-use/issues/89)
 语义 owner：[GitHub Native First](../30_PROTOCOLS/GITHUB_NATIVE_FIRST.md)
 
