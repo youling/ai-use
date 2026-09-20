@@ -1,9 +1,10 @@
 # ADR-0004：Recovery / Routing Single Source
 
 **Artifact Version: 1.0.0**
-状态：Frozen decision materialized / exact-head semantic Review pending
+状态：Accepted / exact-head reviewed
 裁决：[Global Architect #73 freeze](https://github.com/youling/ai-use/issues/73#issuecomment-5749622582)
 实施：[R1/R2 Work Order #74](https://github.com/youling/ai-use/issues/74)
+验收：[PR #75 Global Architect review 5260926445](https://github.com/youling/ai-use/pull/75#pullrequestreview-5260926445)
 
 ## Context
 
