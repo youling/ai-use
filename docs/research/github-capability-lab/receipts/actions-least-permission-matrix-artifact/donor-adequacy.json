@@ -1,0 +1,53 @@
+{
+  "version": "1.0.0",
+  "checked_date_utc": "2026-09-20",
+  "donor_revision": "1524699479bf741d9d801e8053ee0825dd6df5fe",
+  "current_main_context": "51e9bf4ea08aa7675ea670b7ec039bee29bad4fd",
+  "official_sources_reconfirmed": [
+    "https://docs.github.com/en/rest/using-the-rest-api/using-pagination-in-the-rest-api",
+    "https://docs.github.com/en/actions/tutorials/authenticate-with-github_token",
+    "https://docs.github.com/en/actions/tutorials/store-and-share-data",
+    "https://docs.github.com/en/rest/issues/sub-issues",
+    "https://docs.github.com/en/rest/issues/issue-dependencies"
+  ],
+  "official_source_limits": "Current unversioned documentation was read for relevant endpoint/permission/pagination/artifact mechanics; this does not prove all target plans/accounts or capability currentness.",
+  "actions": {
+    "decision": "reuse exact historical observation; no new mutation probe",
+    "run_id": 35506914634,
+    "fixture_revision": "53ba1c2092aa5226bb5fd32b0839dfd2912ce34b",
+    "source_revision": "345184f19bc5e1546c86e6c9e234d5c653437747",
+    "live_run_conclusion": "success",
+    "live_jobs_success": 3,
+    "live_artifact_ids": [10604011812, 10604001853],
+    "live_artifact_expired": false,
+    "retention_days": 7,
+    "downloaded_both_runner_payloads_equal_each_other_and_git": true,
+    "payload_sha256": {
+      "inventory.json": "9c850e1cacc87245fbe972e7b78b95798f9f85d3081f7fe981a7d505aae7cffe",
+      "measurements.json": "dbb5ba066cd215eff60e4b1469cf0acd3d17bd2005861b1114051eb032fc69b5",
+      "links.json": "3443839f5ce71a228cf9d65ccce4bb91a4325261c84e3da5caf95b3e9fc2ef59"
+    },
+    "downloaded_token_probe_read_http": 200,
+    "downloaded_token_probe_write_http": 403,
+    "verified_at_must_remain": "2026-09-20T11:07:00Z",
+    "not_revalidated": ["Different event/token permissions", "Changed workflow/runner image", "Private repo reads", "Failure/UNKNOWN recovery", "Platform merge enforcement", "Attestation or production adoption"],
+    "cleanup": "Recorded write was denied, so no status resource was created. Artifacts expire after seven days; compact payloads/digests in Git provide durable custody. New fixture policy must state unexpected successful status writes are retained as failure evidence, no unsupported status deletion or history rewrite."
+  },
+  "pagination": {
+    "decision": "fresh minimal bounded read-only REST/GraphQL fixture; no writes",
+    "fixture_file": "pagination_probe.py",
+    "receipt_file": "pagination-receipt.json",
+    "old_records": ["api.pagination-labels", "search.incomplete"],
+    "limits": "New probe covers label pagination only; historical search-incomplete observation must not be falsely refreshed or re-exercised by this receipt."
+  },
+  "relationships": {
+    "decision": "fresh minimal sub-issue roundtrip under pre-execution cleanup/recovery plan",
+    "fixture_file": "relationship-fixture.json",
+    "receipt_file": "relationship-receipt.json",
+    "old_fixtures_live_read": {"71": "closed", "72": "closed", "71_subissue_count": 0, "72_blocked_by_count": 0},
+    "old_receipt_adequacy": "Still supports its recorded sub-issue/dependency happy path and cleanup; no fault injection or reproducible original script revision was retained, so use new explicit recipe and one fresh sub-issue edge for R4.",
+    "fresh_fixtures": [84, 85],
+    "fresh_cleanup": "edge removed; both Issues closed, plan/readback/cleanup checkpoints durable on #82"
+  },
+  "authority_effect": "NONE; donor/evidence review does not establish Lab or production acceptance"
+}

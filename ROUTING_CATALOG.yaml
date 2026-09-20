@@ -330,6 +330,20 @@
       "public": true
     },
     {
+      "id": "capability-lab",
+      "layer": "40",
+      "reading_level": "L2",
+      "roles": [
+        "Architect",
+        "Research"
+      ],
+      "when": "需要可复用 GitHub capability evidence 或当前 canary；仅证据 discovery，普通项目工作不默认读取",
+      "home": "docs/research/github-capability-lab/README.md",
+      "section": "",
+      "templates": [],
+      "public": false
+    },
+    {
       "id": "history",
       "layer": "90",
       "reading_level": "L3",

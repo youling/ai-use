@@ -1,0 +1,66 @@
+{
+  "receipt_version": "1.0.0",
+  "repository": "youling/ai-use",
+  "visibility": "public",
+  "started_at": "2026-09-20T16:32:42.705154+00:00",
+  "finished_at": "2026-09-20T16:32:52.979728+00:00",
+  "principal_type": "existing authenticated GitHub CLI session",
+  "permission_class": "public repository read, no scope expansion",
+  "plan": "unknown",
+  "api_version": "2026-03-10",
+  "graphql_version": "unversioned schema at observation",
+  "fixture_sha256": "b59b843717b43ce809a4eca8bda9399206b7797b8cb28ca9415c3724311a21e7",
+  "source_kind": "non-Git live label metadata in the recorded observation window",
+  "rest_page_counts": [
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    0
+  ],
+  "graphql_pages": [
+    {
+      "count": 2,
+      "has_next_page": true
+    },
+    {
+      "count": 2,
+      "has_next_page": true
+    },
+    {
+      "count": 2,
+      "has_next_page": true
+    },
+    {
+      "count": 2,
+      "has_next_page": true
+    },
+    {
+      "count": 2,
+      "has_next_page": true
+    },
+    {
+      "count": 2,
+      "has_next_page": true
+    },
+    {
+      "count": 2,
+      "has_next_page": false
+    }
+  ],
+  "unique_count": 14,
+  "same_unique_ids": true,
+  "unique_id_set_sha256": "e3afdf8227ffe9a6b4240027ef1e48896c71097c7fa6b3e672cb8670a1dea0af",
+  "first_page_count": 2,
+  "first_page_complete": false,
+  "resources_created": [],
+  "cleanup": "NOT_REQUIRED_READ_ONLY",
+  "limits": [
+    "Small collection in one observation window; no atomic snapshot isolation",
+    "No concurrent mutation, rate-limit recovery, private visibility or search-index coverage",
+    "First page or forbidden/truncated output cannot prove absence or a full set"
+  ]
+}

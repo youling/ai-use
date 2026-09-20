@@ -46,6 +46,7 @@
 | `verification` / L2 | Architect/Verifier/Incident；verification policy ambiguity / Incident / governance conflict；同时读取 exact requirements / current verification contract | [CONSTITUTION.md](CONSTITUTION.md) §7–8 |
 | `cold-start-check` / L2 | all；public cold-start / Kernel ABI / recovery regression 验证 | [40_GUIDES/PUBLIC_COLD_START_CHECKLIST.md](40_GUIDES/PUBLIC_COLD_START_CHECKLIST.md) |
 | `human-collaboration` / L2 | Human collaborator；Human 明确指定二脑协作 / Depositor；project 类型本身不触发 | [human/README.md](human/README.md) |
+| `capability-lab` / L2 | Architect/Research；需要可复用 GitHub capability evidence 或当前 canary；仅证据 discovery，普通项目工作不默认读取 | [docs/research/github-capability-lab/README.md](docs/research/github-capability-lab/README.md) |
 | `history` / L3 | all；明确需要 rationale / historical provenance / Incident deep-dive，默认跳过 | [90_HISTORY/README.md](90_HISTORY/README.md) |
 
 ## Artifact shapes（仅生成对应 artifact 时）

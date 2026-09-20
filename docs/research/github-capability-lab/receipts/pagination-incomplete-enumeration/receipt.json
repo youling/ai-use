@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "capability_id": "pagination-incomplete-enumeration",
+  "origin": "LAB_CANARY",
+  "observed_at": "2026-09-20T16:32:52.979728+00:00",
+  "description": "R4 fresh bounded read-only labels pagination；不重用旧 observation 时间。",
+  "artifacts": [
+    {
+      "path": "docs/research/github-capability-lab/receipts/pagination-incomplete-enumeration/observation.json",
+      "sha256": "cb02a7b57e94361ff324ae07b55a179606062334fafd62ccd88f29fbc09234ac",
+      "git_revision": null
+    },
+    {
+      "path": "docs/research/github-capability-lab/fixtures/pagination-incomplete-enumeration/pagination_probe.py",
+      "sha256": "b59b843717b43ce809a4eca8bda9399206b7797b8cb28ca9415c3724311a21e7",
+      "git_revision": null
+    }
+  ],
+  "exact_sources": [
+    "https://github.com/youling/ai-use/issues/82#issuecomment-5751120055"
+  ],
+  "limits": [
+    "Small collection in one observation window; no atomic snapshot isolation",
+    "No concurrent mutation, rate-limit recovery, private visibility or search-index coverage",
+    "First page or forbidden/truncated output cannot prove absence or a full set",
+    "不刷新旧 search.incomplete 观察；本次没有调用搜索。",
+    "当前性只限本次 observation window；REST/GraphQL 一致不是事务快照证明。"
+  ]
+}

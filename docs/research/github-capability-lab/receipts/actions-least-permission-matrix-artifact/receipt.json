@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0.0",
+  "capability_id": "actions-least-permission-matrix-artifact",
+  "origin": "HISTORICAL_DONOR",
+  "observed_at": "2026-09-20T11:07:00Z",
+  "description": "Reuse #69/#70 exact historical Actions receipt; R4 readback is custody/adequacy evidence only.",
+  "artifacts": [
+    {
+      "path": "docs/research/astra-audit-69/evidence/actions-receipt.json",
+      "sha256": "35564bb2f8548e39cbb36a1371eb1020779feee11c7fe7b38bf2dced6bc73a50",
+      "git_revision": "1524699479bf741d9d801e8053ee0825dd6df5fe"
+    },
+    {
+      "path": "docs/research/github-capability-lab/receipts/actions-least-permission-matrix-artifact/donor-adequacy.json",
+      "sha256": "edffbb316d110f074d355cf0c91ca8668cd20f510fa0b21d7988912f501095d2",
+      "git_revision": null
+    },
+    {
+      "path": "docs/research/astra-audit-69/evidence/inventory.json",
+      "sha256": "9c850e1cacc87245fbe972e7b78b95798f9f85d3081f7fe981a7d505aae7cffe",
+      "git_revision": "1524699479bf741d9d801e8053ee0825dd6df5fe"
+    },
+    {
+      "path": "docs/research/astra-audit-69/evidence/measurements.json",
+      "sha256": "dbb5ba066cd215eff60e4b1469cf0acd3d17bd2005861b1114051eb032fc69b5",
+      "git_revision": "1524699479bf741d9d801e8053ee0825dd6df5fe"
+    },
+    {
+      "path": "docs/research/astra-audit-69/evidence/links.json",
+      "sha256": "3443839f5ce71a228cf9d65ccce4bb91a4325261c84e3da5caf95b3e9fc2ef59",
+      "git_revision": "1524699479bf741d9d801e8053ee0825dd6df5fe"
+    }
+  ],
+  "exact_sources": [
+    "https://github.com/youling/ai-use/actions/runs/35506914634",
+    "https://github.com/youling/ai-use/blob/53ba1c2092aa5226bb5fd32b0839dfd2912ce34b/.github/workflows/audit-69.yml",
+    "https://github.com/youling/ai-use/blob/53ba1c2092aa5226bb5fd32b0839dfd2912ce34b/.github/workflows/audit-69-reusable.yml",
+    "https://github.com/youling/ai-use/blob/53ba1c2092aa5226bb5fd32b0839dfd2912ce34b/tools/audit_69_token_probe.py",
+    "https://github.com/youling/ai-use/blob/53ba1c2092aa5226bb5fd32b0839dfd2912ce34b/tools/audit_69.py"
+  ],
+  "limits": [
+    "One run / 3 jobs, not statistical reliability",
+    "Artifact envelope digests differ because Linux adds token receipt",
+    "No attestation, cache, concurrency-contention, fork event, merge guard or production proof",
+    "7-day artifacts are not long-term custody; small JSON payloads are retained in Git",
+    "R4 只 readback/下载对账旧 run 与 artifacts；没有重新执行 Actions 或刷新旧 observed time。",
+    "github_token 仅此 job/event/head 的 contents:read；其他 omitted permissions 的边界不能推广到所有 token。",
+    "新 recipe 的 UNKNOWN/意外写入恢复是明确合约，未进行故障注入。"
+  ]
+}

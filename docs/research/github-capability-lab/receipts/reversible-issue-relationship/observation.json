@@ -1,0 +1,48 @@
+{
+  "receipt_version": "1.0.0",
+  "repository": "youling/ai-use",
+  "visibility": "public",
+  "namespace": "r82-subissue-20260920-1619",
+  "fixture_sha256": "37c9503ad4eae418aa2357652e1b59418e6ce47cdcf79c396e6b55f026731939",
+  "source_kind": "non-Git live synthetic Issue metadata; IDs and time window below",
+  "git_context_revision": "51e9bf4ea08aa7675ea670b7ec039bee29bad4fd",
+  "started_at": "2026-09-20T16:30:15Z",
+  "finished_at": "2026-09-20T16:31:21Z",
+  "environment": {
+    "creation_and_close_principal": "existing authorized native GitHub connector",
+    "relationship_principal": "existing authenticated GitHub CLI session",
+    "permission_class": "existing repository Issue write; no scope expansion",
+    "relationship_api_version": "2026-03-10",
+    "connector_api_version": "not exposed by wrapper",
+    "plan": "unknown"
+  },
+  "parent": {"number": 84, "id": 5519044895, "url": "https://github.com/youling/ai-use/issues/84"},
+  "child": {"number": 85, "id": 5519044978, "url": "https://github.com/youling/ai-use/issues/85"},
+  "observed": {
+    "before_parent_subissue_count": 0,
+    "before_child_parent_http": 404,
+    "add_request_succeeded": true,
+    "parent_subissues_readback_ids": [5519044978],
+    "child_parent_readback_id": 5519044895,
+    "remove_request_succeeded": true,
+    "after_parent_subissue_count": 0,
+    "after_child_parent_http": 404,
+    "parent_closed_at": "2026-09-20T16:31:19Z",
+    "child_closed_at": "2026-09-20T16:31:21Z",
+    "closed_states_read_back": true,
+    "cleanup_failed": false,
+    "unknown_failure_injected": false
+  },
+  "durable_checkpoints": {
+    "before_mutation_plan": "https://github.com/youling/ai-use/issues/82#issuecomment-5751090707",
+    "created_resources_before_edge": "https://github.com/youling/ai-use/issues/82#issuecomment-5751094451",
+    "readback_before_cleanup": "https://github.com/youling/ai-use/issues/82#issuecomment-5751096530",
+    "cleanup": "https://github.com/youling/ai-use/issues/82#issuecomment-5751098687"
+  },
+  "limits": [
+    "One synthetic same-public-repository sub-issue edge; two Issues remain closed historical evidence",
+    "No dependency edge, cross-repository/private, cycle, scheduling, lifecycle or production capability claim",
+    "404 parent was interpreted alongside readable exact fixture Issues and complete parent list, not as a universal absence rule",
+    "UNKNOWN recovery is prescribed by the pre-execution fixture; no timeout or fault-injection behavior was experimentally exercised"
+  ]
+}

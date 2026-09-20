@@ -1,0 +1,111 @@
+{
+  "schema_version": "1.0.0",
+  "capability_id": "reversible-issue-relationship",
+  "question": "同一 public repo 的合成 sub-issue 能否添加、双向读回、移除并完成可见 cleanup/recovery 记录？",
+  "owner": "youling/ai-use#68",
+  "status": "CURRENT",
+  "evidence_classes": [
+    "DOCUMENTED_CAPABILITY",
+    "SYNTHETIC_CANARY",
+    "OBSERVED_AVAILABLE"
+  ],
+  "promotion_status": "REVIEWED_EVIDENCE",
+  "environment": {
+    "repository": "youling/ai-use",
+    "visibility": "public",
+    "principal_type": "existing native GitHub connector for create/close; authenticated gh for relationship",
+    "permission_class": "existing repository Issues write; no expansion",
+    "plan": "unknown",
+    "api_version": "relationship REST 2026-03-10; connector version not exposed",
+    "toolchain": [
+      "Existing native GitHub connector for create/close; authenticated gh REST for relationships."
+    ],
+    "runner": [
+      "本地已有 connector + gh；版本未完整暴露。"
+    ],
+    "configuration": [
+      "只使用新建 r82-subissue-20260920-1619 synthetic Issues #84/#85。",
+      "不使用 replace_parent；不改变真实业务关系；按 durable pre-execution plan 执行。"
+    ]
+  },
+  "source_revision": {
+    "kind": "LIVE_API",
+    "repository": "youling/ai-use",
+    "commit": null,
+    "meaning": "非 Git synthetic Issue metadata；exact IDs、双向读回与观测窗口在 receipt。51e9bf4ea08aa7675ea670b7ec039bee29bad4fd 是 git_context_revision，不能充当 Issue metadata revision。",
+    "receipt_path": "docs/research/github-capability-lab/receipts/reversible-issue-relationship/observation.json"
+  },
+  "fixture_revision": {
+    "path": "docs/research/github-capability-lab/fixtures/reversible-issue-relationship/recipe.json",
+    "sha256": "37c9503ad4eae418aa2357652e1b59418e6ce47cdcf79c396e6b55f026731939",
+    "execution": "EXECUTED",
+    "meaning": "执行前 frozen recipe，SHA256 与 fresh receipt 的 fixture_sha256 相同；recipe 是人工/API 步骤定义，不冒充独立保存的 mutation script。"
+  },
+  "official_sources": [
+    {
+      "url": "https://docs.github.com/en/rest/issues/sub-issues",
+      "use": "sub-issue endpoint、读回与移除语义；官方页面已于 2026-09-20 UTC 按 donor adequacy 复核，未记录精确取回时刻。",
+      "retrieved_at": null
+    }
+  ],
+  "verified_at": "2026-09-20T16:31:21Z",
+  "observed": [
+    "添加 #84 → #85 sub-issue 后，parent list 精确返回 child ID 5519044978，child parent 返回 5519044895。",
+    "移除后 parent list=0、child parent HTTP=404，且精确 Issues 可读取；两个 synthetic Issues 随后均关闭并 readback。",
+    "执行前计划、已建资源、mutation/readback、cleanup 四个 checkpoints 持久保留；unknown_failure_injected=false。"
+  ],
+  "proves": [
+    "本次同 public repo、现有权限中的单个 sub-issue happy path 和清理成功，精确 effect/readback 可追溯。",
+    "执行前已定义 UNKNOWN reconcile/retry 与 cleanup failure 保留合约；实际本次未发生该故障分支。"
+  ],
+  "does_not_prove": [
+    "不证明 dependency edges、cycles、cross-repository/private permissions、事件投递、调度/lifecycle/production 能力。",
+    "不证明 timeout/UNKNOWN recovery 的运行效果；没有诱发故障。单独 404 不能证明 absence。"
+  ],
+  "receipts": [
+    {
+      "path": "docs/research/github-capability-lab/receipts/reversible-issue-relationship/receipt.json",
+      "sha256": "1fe900edb04ba481d5ba5c788a4db47982f367639238fbd937e3b9598b04e04e"
+    }
+  ],
+  "limits": [
+    "One synthetic same-public-repository sub-issue edge; two Issues remain closed historical evidence",
+    "No dependency edge, cross-repository/private, cycle, scheduling, lifecycle or production capability claim",
+    "404 parent was interpreted alongside readable exact fixture Issues and complete parent list, not as a universal absence rule",
+    "UNKNOWN recovery is prescribed by the pre-execution fixture; no timeout or fault-injection behavior was experimentally exercised",
+    "connector create/close 的底层 API 版本未暴露；gh relationship API 显式 2026-03-10。",
+    "旧 #71/#72 dependency happy path 仅历史 donor，不作为本次 fresh dependency 证明。"
+  ],
+  "invalidated_by": [
+    "与本记录精确范围相矛盾的可复核观测。",
+    "相关 API 行为、权限/visibility/plan、fixture/source 或配置发生实质变化。"
+  ],
+  "revalidate_before": [
+    "目标仓库、principal/token、权限、plan、visibility、API/tool/runner/config 与此记录不同时。",
+    "采用依赖 does_not_prove/limits 中未覆盖维度，或出现相反证据、fixture/source 变更时。"
+  ],
+  "adoption_delta": [
+    "先确认所需能力语义与本 claim 匹配；重新核对目标环境、权限与触发条件。",
+    "核对目标关系类型及当前写权限；若采用依赖中断/UNKNOWN 恢复，另在 owner-local 安全 fixture 验证该分支，不把本次 happy path 当故障恢复证明。",
+    "只测试尚未覆盖的 owner-local delta，并保留该 owner 的 cleanup/recovery 与验收证据。",
+    "由 downstream owner 作最终采用/生产决定；Lab evidence/promotion 不授予 authority。"
+  ],
+  "cleanup_recovery": {
+    "mode": "MUTATING",
+    "possible_resources": [
+      "r82-subissue-20260920-1619",
+      "两个 synthetic Issues #84/#85、一个临时 sub-issue edge、Work plan/checkpoint comments。"
+    ],
+    "cleanup_action": "仅移除该 created edge、关闭两个 exact synthetic Issues；保留 Issues/timeline/Work receipts，不删除历史。",
+    "replay_idempotency": "不重新打开 donor Issues。新实验用新 namespace；create/add UNKNOWN 时先按已知 ID 或 bounded complete namespace enumeration reconcile，再记录 receipt 才能 retry。",
+    "unknown_result": "停止依赖 mutation；live-read 精确 ID、namespace 和完整关系结果后 reconcile。incomplete/forbidden/ambiguous 保持 UNKNOWN，不能据此断言 absence 或盲 retry。",
+    "receipt_before_retry": "先在 Work Issue 保留操作意图、已知资源 ID、最后结果、UNKNOWN 与必要 reconcile readback，不保存凭据。",
+    "observed_cleanup": "edge 已移除、parent list 为空、child parent 404 与可读 fixture IDs 一起核对；两 Issues closed，cleanup_failed=false。"
+  },
+  "review": [
+    {
+      "path": "docs/research/github-capability-lab/receipts/reversible-issue-relationship/semantic-review.json",
+      "content_sha256": "a8858f1189c02bff2f08ec2c168c434d17d8ddefc5fcb80ea243a5755bfc8911"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "fixture_version": "1.0.0",
+  "kind": "synthetic-public-subissue-roundtrip",
+  "repository": "youling/ai-use",
+  "required_visibility": "public",
+  "api_version": "2026-03-10",
+  "required_permission": "existing Issues write; no scope expansion",
+  "namespace": "r82-subissue-20260920-1619",
+  "resources": ["two newly created explicitly synthetic Issues", "one temporary parent-to-child sub-issue edge", "durable plan/checkpoint comments on Work Issue"],
+  "steps": [
+    "Write durable plan before any mutation; never use pre-existing business Issues as fixtures.",
+    "Create namespaced parent and child Issues once, preserving exact returned IDs and URLs; bodies specify cleanup and no real work.",
+    "Write exact created IDs to durable Work checkpoint before adding the edge.",
+    "Live-read parent sub-issues and child parent; reject unexpected existing relationship or visibility/marker mismatch.",
+    "POST /repos/{owner}/{repo}/issues/{parent_number}/sub_issues with sub_issue_id={child_id}, never replace_parent.",
+    "GET parent sub-issues and child parent; prove exact edge in both directions.",
+    "Write mutation/readback receipt to durable Work before cleanup.",
+    "DELETE /repos/{owner}/{repo}/issues/{parent_number}/sub_issue with sub_issue_id={child_id}; read back parent list and child parent.",
+    "Close both exact fixture Issues, preserve history/timeline, read back states and record durable cleanup receipt."
+  ],
+  "cleanup": "Remove only the created sub-issue edge, then close the two created Issues. Keep plan, receipts and timeline; no deletion or history rewrite.",
+  "replay": "Do not repeat create/add blindly. For a deliberate new experiment use a fresh namespace and new Issues; never reopen donor fixtures.",
+  "unknown_result": "Stop dependent mutations. Live-read exact IDs and relationship endpoints; if a create response is lost, reconcile exact namespace through bounded complete issue enumeration and durable plan before retry. Incomplete/forbidden/ambiguous results stay UNKNOWN; no absence claim or retry.",
+  "durable_receipt_before_retry": "Work Issue checkpoint with exact known resources, last known operation/result, uncertainty and reconciliation reads.",
+  "cleanup_failure": "Keep resources identifiable and failure visible; write durable partial cleanup receipt before any separately justified retry. Do not erase failure evidence.",
+  "limits": ["One same-public-repo sub-issue edge only", "No dependency edges, cycles, cross-repository/private behavior or production lifecycle", "No induced network failure; UNKNOWN recovery path is a prescribed safety contract, not an executed fault injection"]
+}
