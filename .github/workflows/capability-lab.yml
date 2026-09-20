@@ -1,0 +1,45 @@
+name: Capability Lab offline contract
+on:
+  pull_request:
+  push:
+    branches: [main, 'codex/r82-*']
+permissions:
+  contents: read
+concurrency:
+  group: capability-lab-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate exact checkout and required negative cases
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          EVENT_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BRANCH_BASE: ${{ github.event.repository.default_branch }}
+          WORK_BRANCH: ${{ github.head_ref || github.ref_name }}
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          base="$EVENT_BASE"
+          if [[ -z "$base" || "$base" =~ ^0+$ ]]; then
+            base="$(git merge-base HEAD "origin/$BRANCH_BASE")"
+          fi
+          args=()
+          if [[ "$WORK_BRANCH" == codex/r82-* ]]; then
+            args+=(--r4-acceptance)
+          fi
+          python tools/capability_lab.py --check --base-ref "$base" "${args[@]}"
+          python tools/test_capability_lab.py
+      - name: Verify generated routing
+        run: python tools/routing.py --check
