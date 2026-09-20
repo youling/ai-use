@@ -192,6 +192,32 @@
       "public": false
     },
     {
+      "id": "owner-instance-boundary",
+      "layer": "30",
+      "reading_level": "L2",
+      "roles": [
+        "all"
+      ],
+      "when": "semantic owner / storage / private instance-overlay / pointer-projection / secret reference-value 边界需要判断；仅按当前任务相关范围读取",
+      "home": "30_PROTOCOLS/OWNER_INSTANCE_BOUNDARY.md",
+      "section": "",
+      "templates": [],
+      "public": true
+    },
+    {
+      "id": "github-native-first",
+      "layer": "30",
+      "reading_level": "L2",
+      "roles": [
+        "Architect"
+      ],
+      "when": "提出自建 GitHub-hosted collaboration/control/work/release/event/read/query/navigation/metadata subsystem，或 material architecture 依赖 GitHub platform behavior；普通 bugfix / Hot Resume / 确定性维护 / 已冻结窄实现不触发 mandatory scan",
+      "home": "30_PROTOCOLS/GITHUB_NATIVE_FIRST.md",
+      "section": "",
+      "templates": [],
+      "public": true
+    },
+    {
       "id": "diagram",
       "layer": "30",
       "reading_level": "L2",

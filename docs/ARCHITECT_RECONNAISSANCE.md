@@ -34,6 +34,7 @@ MUST 触发：
 - material new-domain、major capability 选择或 major architecture pivot；
 - 已有 durable core / 生产使用的项目，准备直接引入新的外部 framework/runtime/subsystem 或重型依赖；
 - provider/API/toolchain/OSS/protocol 生态快速变化，可能改变架构方向；
+- 为 GitHub-hosted 项目提出自建 collaboration/control/work/release/event/read/query/navigation/metadata subsystem，或 material architecture 明确依赖 GitHub platform behavior；此时按 §3.1 做 targeted pass；
 - current durable path 出现明显 stale / superseded signal。
 
 默认不触发：ordinary Hot Resume、小 bug、确定性维护、已冻结方案下的窄实现，或已有同 scope 且 live revalidate 后仍 current 的 reconnaissance。不设固定 freshness TTL，也不按项目运行天数机械判定成熟度。
@@ -55,6 +56,31 @@ Targeted 回答：
 快速变化事实不得仅凭模型记忆判定 current。外部来源只是 evidence，不是 authority。
 
 **调研目标不是最大化依赖数量。** Greenfield 可以广泛寻找可复用 artifact；成熟项目调研外部代码时，默认也要把它当 `prior art / reference implementation` 阅读，提取 problem framing、状态机、算法、retry/fencing、failure handling、protocol、测试策略等知识，而不是自动升级为 dependency candidate。
+
+### 3.1 Targeted GitHub platform pass
+
+仅当 §2 的 GitHub-platform trigger 命中时，在 ARCH-0A 中按 [GitHub Native First](../30_PROTOCOLS/GITHUB_NATIVE_FIRST.md) 回答：
+
+```text
+Has GitHub already solved the generic part?
+Has ai-use already canaried this exact capability class?
+What plan/account/auth/admin limits remain?
+```
+
+只调查当前 architecture dependency 或 proposed subsystem 相关的 native primitive、API/权限与实际缺口，不扩大成全平台能力盘点。平台 capability claim 区分下列 evidence classes，并记录 source、target/environment、观察范围与 evidence window：
+
+| Evidence class | 可支持的结论 |
+| --- | --- |
+| `DOCUMENTED_CAPABILITY` | current official docs/API 定义的能力及条件；不证明目标已可用。 |
+| `OBSERVED_AVAILABLE` | 在所记录 target/account/auth/config 下已观察可用；不产生 mutation authority。 |
+| `OBSERVED_BLOCKED` | 观察到具体 plan/permission/config 等阻断；不推导所有环境都不可用。 |
+| `MEASURED` | 在明确方法、范围、数据与环境下的测量；synthetic 结果不自动外推生产。 |
+| `ASSUMPTION` | 尚未证实的假设；不得当作必需 capability 的已满足 evidence。 |
+| `UNKNOWN` | 缺证据或无法确定；记录 targeted gap，不能声明可用或不存在。 |
+
+同一 claim 可有 documented 与 observed evidence，但二者不互相替代。已有 audit/canary 可在 current、同 capability class、环境适用时作为 donor evidence；它不成为 normative authority、production acceptance 或 Lab promotion。没有 canary 本身不制造通用 blocker，是否需要补测取决于本次真实架构依赖与风险。
+
+输出并入现有 reconnaissance report，引用 native-first decision 与剩余 gate，不建新的 mandatory report/schema。普通 bugfix、Hot Resume、确定性维护、已冻结窄实现仍无 mandatory platform scan；live revalidation 足够时复用既有结果。
 
 ## 4. ARCH-0B — Project / Repo Reconciliation
 
