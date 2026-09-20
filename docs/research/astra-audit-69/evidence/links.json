@@ -1,0 +1,386 @@
+[
+  {
+    "source": "20_ROLES/README.md",
+    "target": "../CONSTITUTION.md",
+    "resolved": "CONSTITUTION.md",
+    "exists": true
+  },
+  {
+    "source": "20_ROLES/README.md",
+    "target": "../README.md",
+    "resolved": "README.md",
+    "exists": true
+  },
+  {
+    "source": "40_GUIDES/README.md",
+    "target": "../00_KERNEL/LANGUAGE_POLICY.md",
+    "resolved": "00_KERNEL/LANGUAGE_POLICY.md",
+    "exists": true
+  },
+  {
+    "source": "40_GUIDES/README.md",
+    "target": "../AGENTS.md",
+    "resolved": "AGENTS.md",
+    "exists": true
+  },
+  {
+    "source": "50_TEMPLATES/CONTEXT_MODE_SEED.md",
+    "target": "../docs/AGENT_INTERFACE.md",
+    "resolved": "docs/AGENT_INTERFACE.md",
+    "exists": true
+  },
+  {
+    "source": "50_TEMPLATES/CONTEXT_MODE_SEED.md",
+    "target": "../docs/SESSION_LIFECYCLE.md",
+    "resolved": "docs/SESSION_LIFECYCLE.md",
+    "exists": true
+  },
+  {
+    "source": "50_TEMPLATES/DISPATCH_PAIR.md",
+    "target": "CONTEXT_MODE_SEED.md",
+    "resolved": "50_TEMPLATES/CONTEXT_MODE_SEED.md",
+    "exists": true
+  },
+  {
+    "source": "50_TEMPLATES/README.md",
+    "target": "DISPATCH_PAIR.md",
+    "resolved": "50_TEMPLATES/DISPATCH_PAIR.md",
+    "exists": true
+  },
+  {
+    "source": "50_TEMPLATES/README.md",
+    "target": "CONTEXT_MODE_SEED.md",
+    "resolved": "50_TEMPLATES/CONTEXT_MODE_SEED.md",
+    "exists": true
+  },
+  {
+    "source": "50_TEMPLATES/README.md",
+    "target": "CHANGE_LIFECYCLE.md",
+    "resolved": "50_TEMPLATES/CHANGE_LIFECYCLE.md",
+    "exists": true
+  },
+  {
+    "source": "50_TEMPLATES/README.md",
+    "target": "DIAGRAM_AS_CODE.md",
+    "resolved": "50_TEMPLATES/DIAGRAM_AS_CODE.md",
+    "exists": true
+  },
+  {
+    "source": "50_TEMPLATES/README.md",
+    "target": "HUMAN_WORKSPACE_BOOTSTRAP.md",
+    "resolved": "50_TEMPLATES/HUMAN_WORKSPACE_BOOTSTRAP.md",
+    "exists": true
+  },
+  {
+    "source": "50_TEMPLATES/README.md",
+    "target": "bootstrap_check_request.md",
+    "resolved": "50_TEMPLATES/bootstrap_check_request.md",
+    "exists": true
+  },
+  {
+    "source": "50_TEMPLATES/README.md",
+    "target": "capability_self_check.md",
+    "resolved": "50_TEMPLATES/capability_self_check.md",
+    "exists": true
+  },
+  {
+    "source": "50_TEMPLATES/README.md",
+    "target": "architect_handoff_check.md",
+    "resolved": "50_TEMPLATES/architect_handoff_check.md",
+    "exists": true
+  },
+  {
+    "source": "50_TEMPLATES/README.md",
+    "target": "architect_handoff_transaction.md",
+    "resolved": "50_TEMPLATES/architect_handoff_transaction.md",
+    "exists": true
+  },
+  {
+    "source": "50_TEMPLATES/README.md",
+    "target": "pointer_response.md",
+    "resolved": "50_TEMPLATES/pointer_response.md",
+    "exists": true
+  },
+  {
+    "source": "50_TEMPLATES/README.md",
+    "target": "../docs/AGENT_INTERFACE.md",
+    "resolved": "docs/AGENT_INTERFACE.md",
+    "exists": true
+  },
+  {
+    "source": "50_TEMPLATES/README.md",
+    "target": "CONTEXT_MODE_SEED.md",
+    "resolved": "50_TEMPLATES/CONTEXT_MODE_SEED.md",
+    "exists": true
+  },
+  {
+    "source": "50_TEMPLATES/README.md",
+    "target": "../30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+    "resolved": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+    "exists": true
+  },
+  {
+    "source": "50_TEMPLATES/README.md",
+    "target": "../30_PROTOCOLS/DIAGRAM_AS_CODE.md",
+    "resolved": "30_PROTOCOLS/DIAGRAM_AS_CODE.md",
+    "exists": true
+  },
+  {
+    "source": "50_TEMPLATES/architect_handoff_check.md",
+    "target": "architect_handoff_transaction.md",
+    "resolved": "50_TEMPLATES/architect_handoff_transaction.md",
+    "exists": true
+  },
+  {
+    "source": "90_HISTORY/README.md",
+    "target": "ADR-0001_DOCS_AS_CODE_CHANGE_LIFECYCLE.md",
+    "resolved": "90_HISTORY/ADR-0001_DOCS_AS_CODE_CHANGE_LIFECYCLE.md",
+    "exists": true
+  },
+  {
+    "source": "90_HISTORY/README.md",
+    "target": "ADR-0002_CONTEXT_LIFECYCLE_V0_1.md",
+    "resolved": "90_HISTORY/ADR-0002_CONTEXT_LIFECYCLE_V0_1.md",
+    "exists": true
+  },
+  {
+    "source": "NAMESPACE.md",
+    "target": "AGENTS.md",
+    "resolved": "AGENTS.md",
+    "exists": true
+  },
+  {
+    "source": "NAMESPACE.md",
+    "target": "CONSTITUTION.md",
+    "resolved": "CONSTITUTION.md",
+    "exists": true
+  },
+  {
+    "source": "NAMESPACE.md",
+    "target": "docs/PROGRESSIVE_CONTEXT_BOOT.md",
+    "resolved": "docs/PROGRESSIVE_CONTEXT_BOOT.md",
+    "exists": true
+  },
+  {
+    "source": "NAMESPACE.md",
+    "target": "CONSTITUTION.md",
+    "resolved": "CONSTITUTION.md",
+    "exists": true
+  },
+  {
+    "source": "NAMESPACE.md",
+    "target": "README.md",
+    "resolved": "README.md",
+    "exists": true
+  },
+  {
+    "source": "NAMESPACE.md",
+    "target": "docs/AGENT_INTERFACE.md",
+    "resolved": "docs/AGENT_INTERFACE.md",
+    "exists": true
+  },
+  {
+    "source": "NAMESPACE.md",
+    "target": "docs/SESSION_LIFECYCLE.md",
+    "resolved": "docs/SESSION_LIFECYCLE.md",
+    "exists": true
+  },
+  {
+    "source": "README.md",
+    "target": "START_HERE.md",
+    "resolved": "START_HERE.md",
+    "exists": true
+  },
+  {
+    "source": "README.md",
+    "target": "AGENTS.md",
+    "resolved": "AGENTS.md",
+    "exists": true
+  },
+  {
+    "source": "README.md",
+    "target": "START_HERE.md",
+    "resolved": "START_HERE.md",
+    "exists": true
+  },
+  {
+    "source": "README.md",
+    "target": "CONSTITUTION.md",
+    "resolved": "CONSTITUTION.md",
+    "exists": true
+  },
+  {
+    "source": "README.md",
+    "target": "READING_MAP.md",
+    "resolved": "READING_MAP.md",
+    "exists": true
+  },
+  {
+    "source": "README.md",
+    "target": "NAMESPACE.md",
+    "resolved": "NAMESPACE.md",
+    "exists": true
+  },
+  {
+    "source": "README.md",
+    "target": "AGENTS.md",
+    "resolved": "AGENTS.md",
+    "exists": true
+  },
+  {
+    "source": "README.md",
+    "target": "human/README.md",
+    "resolved": "human/README.md",
+    "exists": true
+  },
+  {
+    "source": "README.md",
+    "target": "docs/SESSION_LIFECYCLE.md",
+    "resolved": "docs/SESSION_LIFECYCLE.md",
+    "exists": true
+  },
+  {
+    "source": "README.md",
+    "target": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+    "resolved": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+    "exists": true
+  },
+  {
+    "source": "README.md",
+    "target": "10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md",
+    "resolved": "10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md",
+    "exists": true
+  },
+  {
+    "source": "README.md",
+    "target": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+    "resolved": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+    "exists": true
+  },
+  {
+    "source": "README.md",
+    "target": "00_KERNEL/LANGUAGE_POLICY.md",
+    "resolved": "00_KERNEL/LANGUAGE_POLICY.md",
+    "exists": true
+  },
+  {
+    "source": "README.md",
+    "target": "LICENSE",
+    "resolved": "LICENSE",
+    "exists": true
+  },
+  {
+    "source": "START_HERE.md",
+    "target": "AGENTS.md",
+    "resolved": "AGENTS.md",
+    "exists": true
+  },
+  {
+    "source": "START_HERE.md",
+    "target": "NAMESPACE.md",
+    "resolved": "NAMESPACE.md",
+    "exists": true
+  },
+  {
+    "source": "START_HERE.md",
+    "target": "READING_MAP.md",
+    "resolved": "READING_MAP.md",
+    "exists": true
+  },
+  {
+    "source": "START_HERE.md",
+    "target": "README.md",
+    "resolved": "README.md",
+    "exists": true
+  },
+  {
+    "source": "START_HERE.md",
+    "target": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+    "resolved": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+    "exists": true
+  },
+  {
+    "source": "START_HERE.md",
+    "target": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+    "resolved": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+    "exists": true
+  },
+  {
+    "source": "START_HERE.md",
+    "target": "docs/AGENT_INTERFACE.md",
+    "resolved": "docs/AGENT_INTERFACE.md",
+    "exists": true
+  },
+  {
+    "source": "START_HERE.md",
+    "target": "10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md",
+    "resolved": "10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md",
+    "exists": true
+  },
+  {
+    "source": "START_HERE.md",
+    "target": "50_TEMPLATES/HUMAN_WORKSPACE_BOOTSTRAP.md",
+    "resolved": "50_TEMPLATES/HUMAN_WORKSPACE_BOOTSTRAP.md",
+    "exists": true
+  },
+  {
+    "source": "docs/AGENT_INTERFACE.md",
+    "target": "SESSION_LIFECYCLE.md",
+    "resolved": "docs/SESSION_LIFECYCLE.md",
+    "exists": true
+  },
+  {
+    "source": "docs/AGENT_INTERFACE.md",
+    "target": "../50_TEMPLATES/CONTEXT_MODE_SEED.md",
+    "resolved": "50_TEMPLATES/CONTEXT_MODE_SEED.md",
+    "exists": true
+  },
+  {
+    "source": "docs/AGENT_INTERFACE.md",
+    "target": "../50_TEMPLATES/CONTEXT_MODE_SEED.md",
+    "resolved": "50_TEMPLATES/CONTEXT_MODE_SEED.md",
+    "exists": true
+  },
+  {
+    "source": "docs/AGENT_INTERFACE.md",
+    "target": "../50_TEMPLATES/CONTEXT_MODE_SEED.md",
+    "resolved": "50_TEMPLATES/CONTEXT_MODE_SEED.md",
+    "exists": true
+  },
+  {
+    "source": "docs/AGENT_INTERFACE.md",
+    "target": "SESSION_LIFECYCLE.md",
+    "resolved": "docs/SESSION_LIFECYCLE.md",
+    "exists": true
+  },
+  {
+    "source": "docs/AGENT_INTERFACE.md",
+    "target": "../50_TEMPLATES/DISPATCH_PAIR.md",
+    "resolved": "50_TEMPLATES/DISPATCH_PAIR.md",
+    "exists": true
+  },
+  {
+    "source": "docs/AGENT_INTERFACE.md",
+    "target": "../50_TEMPLATES/DISPATCH_PAIR.md",
+    "resolved": "50_TEMPLATES/DISPATCH_PAIR.md",
+    "exists": true
+  },
+  {
+    "source": "docs/AGENT_INTERFACE.md",
+    "target": "../50_TEMPLATES/CONTEXT_MODE_SEED.md",
+    "resolved": "50_TEMPLATES/CONTEXT_MODE_SEED.md",
+    "exists": true
+  },
+  {
+    "source": "docs/SESSION_LIFECYCLE.md",
+    "target": "AGENT_INTERFACE.md",
+    "resolved": "docs/AGENT_INTERFACE.md",
+    "exists": true
+  },
+  {
+    "source": "docs/SESSION_LIFECYCLE.md",
+    "target": "../50_TEMPLATES/CONTEXT_MODE_SEED.md",
+    "resolved": "50_TEMPLATES/CONTEXT_MODE_SEED.md",
+    "exists": true
+  }
+]

@@ -1,0 +1,32 @@
+name: Audit 69 public synthetic canary
+on:
+  push:
+    branches: ['audit/astra-69-*']
+    paths: ['tools/audit_69*.py', '.github/workflows/audit-69*.yml']
+permissions:
+  contents: read
+concurrency:
+  group: audit-69-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  inventory:
+    uses: ./.github/workflows/audit-69-reusable.yml
+  compare:
+    needs: inventory
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: audit-69-*
+          path: restored
+      - name: Cross-platform artifact round trip
+        shell: python
+        run: |
+          import hashlib, pathlib
+          root=pathlib.Path('restored')
+          for name in ('inventory.json','measurements.json','links.json'):
+              a=(root/'audit-69-Linux'/name).read_bytes()
+              b=(root/'audit-69-Windows'/name).read_bytes()
+              assert a==b, name+' differs across platforms'
+              print(name, hashlib.sha256(a).hexdigest())

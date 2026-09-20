@@ -1,0 +1,223 @@
+{
+  "evidence_class": "MEASURED",
+  "sample": "All 8 merged PRs from change-lifecycle adoption #50 through baseline #65",
+  "rows": [
+    {
+      "pr": 50,
+      "url": "https://github.com/youling/ai-use/pull/50",
+      "observed_at": "2026-09-20T11:01:05.373016+00:00",
+      "head": "2bdc5d89749a5692f5202f2e1f2b248c17820d36",
+      "merged_at": "2026-09-11T15:25:19Z",
+      "checks_count": 0,
+      "adr_files": [
+        "90_HISTORY/ADR-0001_DOCS_AS_CODE_CHANGE_LIFECYCLE.md"
+      ],
+      "exact_premerge_reviews": [
+        {
+          "state": "COMMENTED",
+          "commit": "2bdc5d89749a5692f5202f2e1f2b248c17820d36",
+          "submitted_at": "2026-09-11T15:25:11Z",
+          "body_contains_full_head": true
+        }
+      ],
+      "review_urls": [
+        "https://github.com/youling/ai-use/pull/50#pullrequestreview-5180400184"
+      ],
+      "timeline_page_lengths": [
+        10
+      ],
+      "independent_context": "UNKNOWN; GitHub principal or APPROVED state does not prove fresh cognition",
+      "expected_head_merge_request": "UNKNOWN; public review intent does not expose actual REST merge request parameters",
+      "rationale_issue": "https://github.com/youling/ai-use/issues/49"
+    },
+    {
+      "pr": 52,
+      "url": "https://github.com/youling/ai-use/pull/52",
+      "observed_at": "2026-09-20T11:01:05.924078+00:00",
+      "head": "4b8c556d1189f15884d5ed682f6a4018cd0531f7",
+      "merged_at": "2026-09-11T15:30:33Z",
+      "checks_count": 0,
+      "adr_files": [],
+      "exact_premerge_reviews": [
+        {
+          "state": "COMMENTED",
+          "commit": "4b8c556d1189f15884d5ed682f6a4018cd0531f7",
+          "submitted_at": "2026-09-11T15:30:20Z",
+          "body_contains_full_head": true
+        }
+      ],
+      "review_urls": [
+        "https://github.com/youling/ai-use/pull/52#pullrequestreview-5180461165"
+      ],
+      "timeline_page_lengths": [
+        4
+      ],
+      "independent_context": "UNKNOWN; GitHub principal or APPROVED state does not prove fresh cognition",
+      "expected_head_merge_request": "UNKNOWN; public review intent does not expose actual REST merge request parameters",
+      "rationale_issue": "https://github.com/youling/ai-use/issues/51"
+    },
+    {
+      "pr": 54,
+      "url": "https://github.com/youling/ai-use/pull/54",
+      "observed_at": "2026-09-20T11:01:06.601242+00:00",
+      "head": "bbd8c747547f132c607fe1b5ee65b9d97290c2da",
+      "merged_at": "2026-09-13T18:45:33Z",
+      "checks_count": 0,
+      "adr_files": [],
+      "exact_premerge_reviews": [
+        {
+          "state": "COMMENTED",
+          "commit": "bbd8c747547f132c607fe1b5ee65b9d97290c2da",
+          "submitted_at": "2026-09-13T18:45:26Z",
+          "body_contains_full_head": true
+        }
+      ],
+      "review_urls": [
+        "https://github.com/youling/ai-use/pull/54#pullrequestreview-5191788342"
+      ],
+      "timeline_page_lengths": [
+        7
+      ],
+      "independent_context": "UNKNOWN; GitHub principal or APPROVED state does not prove fresh cognition",
+      "expected_head_merge_request": "UNKNOWN; public review intent does not expose actual REST merge request parameters",
+      "rationale_issue": "https://github.com/youling/ai-use/issues/53"
+    },
+    {
+      "pr": 56,
+      "url": "https://github.com/youling/ai-use/pull/56",
+      "observed_at": "2026-09-20T11:01:07.265174+00:00",
+      "head": "d22f9b0f66d6c1651c5446b30d01fa538d5a3f13",
+      "merged_at": "2026-09-13T19:41:01Z",
+      "checks_count": 0,
+      "adr_files": [],
+      "exact_premerge_reviews": [
+        {
+          "state": "COMMENTED",
+          "commit": "d22f9b0f66d6c1651c5446b30d01fa538d5a3f13",
+          "submitted_at": "2026-09-13T19:40:52Z",
+          "body_contains_full_head": true
+        }
+      ],
+      "review_urls": [
+        "https://github.com/youling/ai-use/pull/56#pullrequestreview-5191982991"
+      ],
+      "timeline_page_lengths": [
+        5
+      ],
+      "independent_context": "UNKNOWN; GitHub principal or APPROVED state does not prove fresh cognition",
+      "expected_head_merge_request": "UNKNOWN; public review intent does not expose actual REST merge request parameters",
+      "rationale_issue": "https://github.com/youling/ai-use/issues/55"
+    },
+    {
+      "pr": 58,
+      "url": "https://github.com/youling/ai-use/pull/58",
+      "observed_at": "2026-09-20T11:01:08.099551+00:00",
+      "head": "d863a959106da3492868474e2105d187f9c95a51",
+      "merged_at": "2026-09-14T12:57:08Z",
+      "checks_count": 0,
+      "adr_files": [],
+      "exact_premerge_reviews": [
+        {
+          "state": "COMMENTED",
+          "commit": "d863a959106da3492868474e2105d187f9c95a51",
+          "submitted_at": "2026-09-14T12:56:54Z",
+          "body_contains_full_head": true
+        }
+      ],
+      "review_urls": [
+        "https://github.com/youling/ai-use/pull/58#pullrequestreview-5197934147"
+      ],
+      "timeline_page_lengths": [
+        6
+      ],
+      "independent_context": "UNKNOWN; GitHub principal or APPROVED state does not prove fresh cognition",
+      "expected_head_merge_request": "UNKNOWN; public review intent does not expose actual REST merge request parameters",
+      "rationale_issue": "https://github.com/youling/ai-use/issues/57"
+    },
+    {
+      "pr": 61,
+      "url": "https://github.com/youling/ai-use/pull/61",
+      "observed_at": "2026-09-20T11:01:08.555346+00:00",
+      "head": "a2a689bc8c932cd520e89dc46d684be6fab338fc",
+      "merged_at": "2026-09-15T14:58:46Z",
+      "checks_count": 0,
+      "adr_files": [
+        "90_HISTORY/ADR-0002_CONTEXT_LIFECYCLE_V0_1.md"
+      ],
+      "exact_premerge_reviews": [
+        {
+          "state": "APPROVED",
+          "commit": "a2a689bc8c932cd520e89dc46d684be6fab338fc",
+          "submitted_at": "2026-09-15T14:58:34Z",
+          "body_contains_full_head": true
+        }
+      ],
+      "review_urls": [
+        "https://github.com/youling/ai-use/pull/61#pullrequestreview-5210913953",
+        "https://github.com/youling/ai-use/pull/61#pullrequestreview-5210917887",
+        "https://github.com/youling/ai-use/pull/61#pullrequestreview-5211750188"
+      ],
+      "timeline_page_lengths": [
+        7
+      ],
+      "independent_context": "UNKNOWN; GitHub principal or APPROVED state does not prove fresh cognition",
+      "expected_head_merge_request": "UNKNOWN; public review intent does not expose actual REST merge request parameters",
+      "rationale_issue": "https://github.com/youling/ai-use/issues/60"
+    },
+    {
+      "pr": 63,
+      "url": "https://github.com/youling/ai-use/pull/63",
+      "observed_at": "2026-09-20T11:01:09.219810+00:00",
+      "head": "30b59c9a85830d2148b3456b6afba43d59d794ee",
+      "merged_at": "2026-09-15T18:34:45Z",
+      "checks_count": 0,
+      "adr_files": [
+        "90_HISTORY/ADR-0003_STAGE_AWARE_REUSE.md"
+      ],
+      "exact_premerge_reviews": [
+        {
+          "state": "COMMENTED",
+          "commit": "30b59c9a85830d2148b3456b6afba43d59d794ee",
+          "submitted_at": "2026-09-15T18:34:30Z",
+          "body_contains_full_head": true
+        }
+      ],
+      "review_urls": [
+        "https://github.com/youling/ai-use/pull/63#pullrequestreview-5214272432"
+      ],
+      "timeline_page_lengths": [
+        6
+      ],
+      "independent_context": "UNKNOWN; GitHub principal or APPROVED state does not prove fresh cognition",
+      "expected_head_merge_request": "UNKNOWN; public review intent does not expose actual REST merge request parameters",
+      "rationale_issue": "https://github.com/youling/ai-use/issues/62"
+    },
+    {
+      "pr": 65,
+      "url": "https://github.com/youling/ai-use/pull/65",
+      "observed_at": "2026-09-20T11:01:09.948553+00:00",
+      "head": "0497ffe145b10847e4c820e8130957dca725b563",
+      "merged_at": "2026-09-19T20:22:45Z",
+      "checks_count": 0,
+      "adr_files": [],
+      "exact_premerge_reviews": [
+        {
+          "state": "COMMENTED",
+          "commit": "0497ffe145b10847e4c820e8130957dca725b563",
+          "submitted_at": "2026-09-19T20:22:42Z",
+          "body_contains_full_head": true
+        }
+      ],
+      "review_urls": [
+        "https://github.com/youling/ai-use/pull/65#pullrequestreview-5257513697"
+      ],
+      "timeline_page_lengths": [
+        6
+      ],
+      "independent_context": "UNKNOWN; GitHub principal or APPROVED state does not prove fresh cognition",
+      "expected_head_merge_request": "UNKNOWN; public review intent does not expose actual REST merge request parameters",
+      "rationale_issue": "https://github.com/youling/ai-use/issues/64"
+    }
+  ],
+  "limits": "Readiness/authority is assessed separately. Review binding is observed, not an independent re-review of historical original requirements. No retroactive ADR obligation before #50."
+}

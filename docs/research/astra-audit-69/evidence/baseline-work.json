@@ -1,0 +1,61 @@
+{
+  "observed_at": "2026-09-20T11:00:55.746275+00:00",
+  "issue_and_pr_objects_returned": 68,
+  "pr_objects_returned": 39,
+  "page_size": 100,
+  "open_issues": [
+    {
+      "number": 69,
+      "url": "https://github.com/youling/ai-use/issues/69",
+      "title": "[Audit][Astra] ai-use 宪法仓全量审计 + GitHub Native 重设计评估"
+    },
+    {
+      "number": 68,
+      "url": "https://github.com/youling/ai-use/issues/68",
+      "title": "[Program][R&D] GitHub Capability Lab — public synthetic canaries + reusable adoption"
+    },
+    {
+      "number": 67,
+      "url": "https://github.com/youling/ai-use/issues/67",
+      "title": "[Governance][L2] GitHub-native operational plane / reuse-before-build doctrine"
+    },
+    {
+      "number": 66,
+      "url": "https://github.com/youling/ai-use/issues/66",
+      "title": "[Governance][L2] Reusable ownership / instance-storage boundary"
+    },
+    {
+      "number": 40,
+      "url": "https://github.com/youling/ai-use/issues/40",
+      "title": "【治理预研】Agent 规范持续执行：Artifact 生命周期与 Active Constraint Frame 设计"
+    },
+    {
+      "number": 38,
+      "url": "https://github.com/youling/ai-use/issues/38",
+      "title": "Human SSOT: add post-hoc write-only Depositor ingress protocol"
+    },
+    {
+      "number": 37,
+      "url": "https://github.com/youling/ai-use/issues/37",
+      "title": "[治理][Bootstrap] Architect Capability Observation 冷启动回写钩子"
+    },
+    {
+      "number": 33,
+      "url": "https://github.com/youling/ai-use/issues/33",
+      "title": "[治理][P1] Public cold-start portability audit hardening"
+    }
+  ],
+  "open_prs": [
+    {
+      "number": 47,
+      "url": "https://github.com/youling/ai-use/pull/47",
+      "head": "07561d336e0355de6993d17560f57b6627daedf4"
+    },
+    {
+      "number": 43,
+      "url": "https://github.com/youling/ai-use/pull/43",
+      "head": "1045f0ee0b3ebba6098622f3906de3c1dc38a389"
+    }
+  ],
+  "limitations": "Captured before #70-72 audit fixtures. Under 100 returned per collection; source can mutate after snapshot."
+}

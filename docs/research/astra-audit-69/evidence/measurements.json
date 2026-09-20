@@ -1,0 +1,238 @@
+{
+  "schema_version": "1.0.0",
+  "evidence_class": "MEASURED",
+  "source_revision": "345184f19bc5e1546c86e6c9e234d5c653437747",
+  "method": "Git blob bytes; manual file-role rubric; syntactic references; no model token counter",
+  "file_count": 47,
+  "markdown_count": 46,
+  "total_bytes": 313278,
+  "class_counts": {
+    "L2_NORMATIVE_OR_PLAYBOOK": 24,
+    "NAVIGATION_MIXED": 10,
+    "L2_TEST_REFERENCE": 4,
+    "L3_HISTORY": 7,
+    "L0_KERNEL": 1,
+    "LICENSE_OR_OTHER": 1
+  },
+  "markdown_links": 64,
+  "broken_markdown_links": [],
+  "path_mentions": 339,
+  "unresolved_path_mentions": [
+    {
+      "source": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+      "target": "NAMESPACE.md / README.md",
+      "relative_exists": false,
+      "root_exists": false
+    },
+    {
+      "source": "40_GUIDES/PUBLIC_COLD_START_CHECKLIST.md",
+      "target": "example-org/governance/AGENTS.md",
+      "relative_exists": false,
+      "root_exists": false
+    },
+    {
+      "source": "90_HISTORY/ADR-0002_CONTEXT_LIFECYCLE_V0_1.md",
+      "target": "DISPATCH_PAIR.md",
+      "relative_exists": false,
+      "root_exists": false
+    },
+    {
+      "source": "90_HISTORY/ADR-0002_CONTEXT_LIFECYCLE_V0_1.md",
+      "target": "DISPATCH_PAIR.md",
+      "relative_exists": false,
+      "root_exists": false
+    },
+    {
+      "source": "90_HISTORY/ADR-0002_CONTEXT_LIFECYCLE_V0_1.md",
+      "target": "CONTEXT_MODE_SEED.md",
+      "relative_exists": false,
+      "root_exists": false
+    },
+    {
+      "source": "90_HISTORY/ADR-0002_CONTEXT_LIFECYCLE_V0_1.md",
+      "target": "SESSION_LIFECYCLE.md",
+      "relative_exists": false,
+      "root_exists": false
+    },
+    {
+      "source": "NAMESPACE.md",
+      "target": "HUMAN_WORKSPACE_BOOTSTRAP.md",
+      "relative_exists": false,
+      "root_exists": false
+    },
+    {
+      "source": "docs/AGENT_INTERFACE.md",
+      "target": "CONTEXT_MODE_SEED.md",
+      "relative_exists": false,
+      "root_exists": false
+    },
+    {
+      "source": "docs/DeepSeekPP-github-mcp-usage.md",
+      "target": "re/README.md",
+      "relative_exists": false,
+      "root_exists": false
+    },
+    {
+      "source": "docs/DeepSeekPP-github-mcp-usage.md",
+      "target": "re/AGENTS.md",
+      "relative_exists": false,
+      "root_exists": false
+    },
+    {
+      "source": "docs/SESSION_LIFECYCLE.md",
+      "target": "ai-use/AGENTS.md",
+      "relative_exists": false,
+      "root_exists": false
+    },
+    {
+      "source": "docs/SESSION_LIFECYCLE.md",
+      "target": "ai-use/AGENTS.md",
+      "relative_exists": false,
+      "root_exists": false
+    },
+    {
+      "source": "docs/SESSION_LIFECYCLE.md",
+      "target": "DISPATCH_PAIR.md",
+      "relative_exists": false,
+      "root_exists": false
+    },
+    {
+      "source": "docs/SESSION_LIFECYCLE.md",
+      "target": "DISPATCH_PAIR.md",
+      "relative_exists": false,
+      "root_exists": false
+    },
+    {
+      "source": "docs/SESSION_LIFECYCLE.md",
+      "target": "DISPATCH_PAIR.md",
+      "relative_exists": false,
+      "root_exists": false
+    },
+    {
+      "source": "docs/SESSION_LIFECYCLE.md",
+      "target": "CONTEXT_MODE_SEED.md",
+      "relative_exists": false,
+      "root_exists": false
+    },
+    {
+      "source": "docs/SESSION_LIFECYCLE.md",
+      "target": "CONTEXT_MODE_SEED.md",
+      "relative_exists": false,
+      "root_exists": false
+    },
+    {
+      "source": "docs/SESSION_LIFECYCLE.md",
+      "target": "DISPATCH_PAIR.md",
+      "relative_exists": false,
+      "root_exists": false
+    }
+  ],
+  "reachable_files": 31,
+  "not_reached": [
+    "10_BOOT/README.md",
+    "40_GUIDES/README.md",
+    "50_TEMPLATES/README.md",
+    "50_TEMPLATES/pointer_response.md",
+    "90_HISTORY/ADR-0001_DOCS_AS_CODE_CHANGE_LIFECYCLE.md",
+    "90_HISTORY/ADR-0002_CONTEXT_LIFECYCLE_V0_1.md",
+    "90_HISTORY/ADR-0003_STAGE_AWARE_REUSE.md",
+    "90_HISTORY/README.md",
+    "docs/DeepSeekPP-github-mcp-usage.md",
+    "docs/issue-26-mcp-injection-truncation-root-cause.md",
+    "human/DEPOSITOR_PROMPT.md",
+    "human/DEPOSITOR_PROMPT_v0.1.md",
+    "human/PROMPT_VERSIONING.md",
+    "human/tests/DEPOSITOR_TEST_CASE_001_prompt_only_scope_confusion.md",
+    "human/tests/DEPOSITOR_TEST_CASE_002_control_plane_misclassified_as_external_knowledge.md",
+    "human/tests/DEPOSITOR_TEST_CASE_003_v0.1.2_prompt_self_capture_and_transport.md"
+  ],
+  "exact_duplicate_lines": [
+    {
+      "text": "`NATURAL_LANGUAGE_SEED_NORMALIZATION != AUTHORITY_INFERENCE`。",
+      "files": [
+        "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+        "START_HERE.md"
+      ]
+    },
+    {
+      "text": "- Human 明确 cold-start-only -> `STOP_COLD_START_ONLY`；",
+      "files": [
+        "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+        "40_GUIDES/PUBLIC_COLD_START_CHECKLIST.md"
+      ]
+    },
+    {
+      "text": "- `30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md`（只存在聊天的确认不算数）",
+      "files": [
+        "50_TEMPLATES/architect_handoff_check.md",
+        "50_TEMPLATES/bootstrap_check_request.md",
+        "50_TEMPLATES/capability_self_check.md"
+      ]
+    },
+    {
+      "text": "5. Bootstrap Check —— `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`",
+      "files": [
+        "50_TEMPLATES/architect_handoff_transaction.md",
+        "START_HERE.md"
+      ]
+    }
+  ],
+  "reading_paths": {
+    "kernel_only": {
+      "files": [
+        "AGENTS.md"
+      ],
+      "file_count": 1,
+      "bytes": 7430,
+      "characters": 7416,
+      "limits": "whole-file upper-bound scenario, excludes owner-local rules and Work Order; not a measured fresh-agent run"
+    },
+    "kernel_and_router": {
+      "files": [
+        "AGENTS.md",
+        "NAMESPACE.md",
+        "READING_MAP.md"
+      ],
+      "file_count": 3,
+      "bytes": 27568,
+      "characters": 22911,
+      "limits": "whole-file upper-bound scenario, excludes owner-local rules and Work Order; not a measured fresh-agent run"
+    },
+    "fresh_executor": {
+      "files": [
+        "AGENTS.md",
+        "NAMESPACE.md",
+        "READING_MAP.md",
+        "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+        "docs/AGENT_INTERFACE.md"
+      ],
+      "file_count": 5,
+      "bytes": 59993,
+      "characters": 47102,
+      "limits": "whole-file upper-bound scenario, excludes owner-local rules and Work Order; not a measured fresh-agent run"
+    },
+    "material_architect": {
+      "files": [
+        "AGENTS.md",
+        "NAMESPACE.md",
+        "READING_MAP.md",
+        "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+        "docs/AGENT_INTERFACE.md",
+        "docs/ARCHITECT_RECONNAISSANCE.md",
+        "CONSTITUTION.md",
+        "30_PROTOCOLS/CHANGE_LIFECYCLE.md"
+      ],
+      "file_count": 8,
+      "bytes": 91176,
+      "characters": 69033,
+      "limits": "whole-file upper-bound scenario, excludes owner-local rules and Work Order; not a measured fresh-agent run"
+    }
+  },
+  "limits": [
+    "No anchor validation",
+    "Backtick mentions may be illustrative/root-relative",
+    "Reachability is not mandatory reading",
+    "Historical documents may include former normative text",
+    "No semantic or secret-clearance verdict"
+  ]
+}

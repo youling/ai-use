@@ -1,0 +1,514 @@
+{
+  "schema_version": "0.1.0-audit-prototype",
+  "authority": "NON_NORMATIVE",
+  "work_order": "https://github.com/youling/ai-use/issues/69",
+  "audited_main": "345184f19bc5e1546c86e6c9e234d5c653437747",
+  "status": "AUDIT_ONLY_UNREVIEWED",
+  "lab_68_established": false,
+  "coverage": "Eight representative records, not the complete feature matrix; REPORT.md sections 7 and 23 include untested/deferred/admin-gated capabilities.",
+  "path_resolution": "Receipt paths are relative to this evidence directory; fragments are JSON member names for humans, not a JSON Pointer API.",
+  "currentness_policy": "Frozen observations do not expire into falsehood but stop proving changed environments. Do not refresh verified_at without new evidence; no universal TTL. Official sources are dated live references, not locally preserved documentation snapshots.",
+  "records": [
+    {
+      "owner": "ai-use audit #69; Global Architect review pending",
+      "promotion_status": "AUDIT_ONLY_UNREVIEWED",
+      "production_acceptance": null,
+      "adoption_delta": "Consuming owner must confirm authority, environment, currentness and acceptance; rerun only unresolved local properties.",
+      "capability_id": "git.exact-tree",
+      "question": "Does the recursive API tree match all frozen Git blobs?",
+      "evidence_classes": [
+        "MEASURED",
+        "REAL_REPO_CANARY"
+      ],
+      "environment": {
+        "repository": "youling/ai-use",
+        "visibility": "public",
+        "principal_type": "existing authenticated gh session",
+        "api_version": "gh default; no explicit version header in this probe",
+        "plan": "UNKNOWN",
+        "permission_class": "existing read capability; no scope expansion"
+      },
+      "verified_at": "2026-09-20T11:09:36.186606+00:00",
+      "source_revision": "345184f19bc5e1546c86e6c9e234d5c653437747",
+      "official_sources": [],
+      "fixture_revision": null,
+      "expected": {
+        "truncated": false,
+        "same_path_sha_set": true
+      },
+      "observed": {
+        "evidence_class": "MEASURED",
+        "truncated": false,
+        "blob_count": 47,
+        "matches_local_git": true
+      },
+      "receipts": [
+        "api-canaries.json#tree"
+      ],
+      "limits": [
+        "Only one exact tree; does not cover GitHub metadata, anchors or secret history."
+      ],
+      "invalidated_by": [
+        "Different source revision",
+        "Truncated tree",
+        "Blob mismatch"
+      ],
+      "revalidate_before": "Any new claim outside the recorded revision, time, permissions or fixture scope; before owner-local adoption.",
+      "recovery": "Fetch the frozen Git object and rerun tools/audit_69.py and tools/audit_69_api.py; retain old receipt."
+    },
+    {
+      "owner": "ai-use audit #69; Global Architect review pending",
+      "promotion_status": "AUDIT_ONLY_UNREVIEWED",
+      "production_acceptance": null,
+      "adoption_delta": "Consuming owner must confirm authority, environment, currentness and acceptance; rerun only unresolved local properties.",
+      "capability_id": "api.pagination-labels",
+      "question": "Do REST and GraphQL enumerate the same complete label set?",
+      "evidence_classes": [
+        "REAL_REPO_CANARY"
+      ],
+      "environment": {
+        "repository": "youling/ai-use",
+        "visibility": "public",
+        "principal_type": "existing authenticated gh session",
+        "api_version": "gh default; no explicit version header in this probe",
+        "plan": "UNKNOWN",
+        "permission_class": "existing read capability; no scope expansion"
+      },
+      "verified_at": "2026-09-20T11:09:36.186606+00:00",
+      "source_revision": null,
+      "official_sources": [],
+      "fixture_revision": null,
+      "expected": {
+        "same_unique_ids": true,
+        "first_page_complete": false
+      },
+      "observed": {
+        "evidence_class": "REAL_REPO_CANARY",
+        "scope": "public repository labels only",
+        "rest_pages": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          0
+        ],
+        "graphql_pages": [
+          {
+            "count": 2,
+            "hasNextPage": true
+          },
+          {
+            "count": 2,
+            "hasNextPage": true
+          },
+          {
+            "count": 2,
+            "hasNextPage": true
+          },
+          {
+            "count": 2,
+            "hasNextPage": true
+          },
+          {
+            "count": 2,
+            "hasNextPage": true
+          },
+          {
+            "count": 2,
+            "hasNextPage": true
+          },
+          {
+            "count": 2,
+            "hasNextPage": false
+          }
+        ],
+        "count": 14,
+        "ids_match": true,
+        "negative_first_page_is_complete": false,
+        "first_page_size": 2,
+        "limits": "Small stable collection; no concurrent mutation/rate-limit recovery/private ACL coverage"
+      },
+      "receipts": [
+        "api-canaries.json#pagination"
+      ],
+      "limits": [
+        "Small stable collection; no concurrent mutation/rate-limit recovery/private ACL coverage"
+      ],
+      "invalidated_by": [
+        "Concurrent mutation",
+        "Incomplete pageInfo/REST page sequence",
+        "GraphQL errors",
+        "Permission/filter drift"
+      ],
+      "revalidate_before": "Any new claim outside the recorded revision, time, permissions or fixture scope; before owner-local adoption.",
+      "recovery": "Restart bounded complete enumeration; compare unique IDs/counts and preserve incomplete state instead of claiming absence."
+    },
+    {
+      "owner": "ai-use audit #69; Global Architect review pending",
+      "promotion_status": "AUDIT_ONLY_UNREVIEWED",
+      "production_acceptance": null,
+      "adoption_delta": "Consuming owner must confirm authority, environment, currentness and acceptance; rerun only unresolved local properties.",
+      "capability_id": "api.etag",
+      "question": "Does an unchanged authenticated repository GET return 304 for its ETag?",
+      "evidence_classes": [
+        "REAL_REPO_CANARY"
+      ],
+      "environment": {
+        "repository": "youling/ai-use",
+        "visibility": "public",
+        "principal_type": "existing authenticated gh session",
+        "api_version": "gh default; no explicit version header in this probe",
+        "plan": "UNKNOWN",
+        "permission_class": "existing read capability; no scope expansion"
+      },
+      "verified_at": "2026-09-20T11:09:36.186606+00:00",
+      "source_revision": null,
+      "official_sources": [
+        {
+          "url": "https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api",
+          "checked_at": "2026-09-20",
+          "source_version": "live documentation; unversioned"
+        }
+      ],
+      "fixture_revision": null,
+      "expected": {
+        "conditional_http": 304
+      },
+      "observed": {
+        "evidence_class": "REAL_REPO_CANARY",
+        "conditional_http": 304,
+        "validator_sha256": "89a7a1b325ab8d066798ab46b0af20b593fb0b076b1fea7d09feec0363c49448",
+        "limits": "One identical authenticated repository metadata GET; not universal cache freshness proof"
+      },
+      "receipts": [
+        "api-canaries.json#etag"
+      ],
+      "limits": [
+        "One identical authenticated repository metadata GET; not universal cache freshness proof"
+      ],
+      "invalidated_by": [
+        "Changed resource/auth/representation/request target",
+        "Cached body missing",
+        "Validator mismatch"
+      ],
+      "revalidate_before": "Any new claim outside the recorded revision, time, permissions or fixture scope; before owner-local adoption.",
+      "recovery": "Keep validator with its exact cached representation; obtain a full GET if missing; interpret HTTP 304 independently of gh exit code."
+    },
+    {
+      "owner": "ai-use audit #69; Global Architect review pending",
+      "promotion_status": "AUDIT_ONLY_UNREVIEWED",
+      "production_acceptance": null,
+      "adoption_delta": "Consuming owner must confirm authority, environment, currentness and acceptance; rerun only unresolved local properties.",
+      "capability_id": "search.incomplete",
+      "question": "Can an empty native code-search result prove absence?",
+      "evidence_classes": [
+        "OBSERVED_AVAILABLE",
+        "UNKNOWN"
+      ],
+      "environment": {
+        "repository": "youling/ai-use",
+        "visibility": "public",
+        "principal_type": "existing authenticated gh session",
+        "api_version": "gh default; no explicit version header in this probe",
+        "plan": "UNKNOWN",
+        "permission_class": "existing read capability; no scope expansion"
+      },
+      "verified_at": "2026-09-20T11:09:36.186606+00:00",
+      "source_revision": "345184f19bc5e1546c86e6c9e234d5c653437747",
+      "official_sources": [
+        {
+          "url": "https://docs.github.com/en/rest/search/search",
+          "checked_at": "2026-09-20",
+          "source_version": "live documentation; unversioned"
+        }
+      ],
+      "fixture_revision": null,
+      "expected": {
+        "absence_claim_allowed_when_incomplete": false
+      },
+      "observed": {
+        "evidence_class": "OBSERVED_AVAILABLE",
+        "total_count": 0,
+        "incomplete_results": true,
+        "returned": 0,
+        "paths": [],
+        "limits": "Search index is a discovery aid, not exact Git tree or complete semantic inventory"
+      },
+      "receipts": [
+        "api-canaries.json#code_search"
+      ],
+      "limits": [
+        "The searched literal exists in frozen AGENTS.md; this does not establish why indexing was incomplete or private-search availability."
+      ],
+      "invalidated_by": [
+        "Index state changed",
+        "Different query/filter/credential",
+        "Result cap or incomplete flag"
+      ],
+      "revalidate_before": "Any new claim outside the recorded revision, time, permissions or fixture scope; before owner-local adoption.",
+      "recovery": "Use exact Git tree/blob inspection for inventory and absence; retry search only as discovery."
+    },
+    {
+      "owner": "ai-use audit #69; Global Architect review pending",
+      "promotion_status": "AUDIT_ONLY_UNREVIEWED",
+      "production_acceptance": null,
+      "adoption_delta": "Consuming owner must confirm authority, environment, currentness and acceptance; rerun only unresolved local properties.",
+      "capability_id": "actions.matrix-artifact",
+      "question": "Can a same-repo reusable matrix produce identical frozen inventory payloads?",
+      "evidence_classes": [
+        "SYNTHETIC_CANARY",
+        "MEASURED"
+      ],
+      "environment": {
+        "repository": "youling/ai-use",
+        "visibility": "public",
+        "principal_type": "ephemeral GITHUB_TOKEN",
+        "permission_class": "contents: read",
+        "runners": [
+          "ubuntu-latest",
+          "windows-latest"
+        ],
+        "image_version": "not retained in compact receipt; available in run setup logs",
+        "plan": "UNKNOWN"
+      },
+      "verified_at": "2026-09-20T11:07:00Z",
+      "source_revision": "345184f19bc5e1546c86e6c9e234d5c653437747",
+      "official_sources": [],
+      "fixture_revision": "53ba1c2092aa5226bb5fd32b0839dfd2912ce34b",
+      "expected": {
+        "jobs_success": 3,
+        "payloads_identical": true
+      },
+      "observed": {
+        "run": {
+          "id": 35506914634,
+          "head_sha": "53ba1c2092aa5226bb5fd32b0839dfd2912ce34b",
+          "event": "push",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-09-20T11:06:35Z",
+          "updated_at": "2026-09-20T11:07:00Z",
+          "html_url": "https://github.com/youling/ai-use/actions/runs/35506914634"
+        },
+        "payload_sha256": {
+          "inventory.json": "9c850e1cacc87245fbe972e7b78b95798f9f85d3081f7fe981a7d505aae7cffe",
+          "measurements.json": "dbb5ba066cd215eff60e4b1469cf0acd3d17bd2005861b1114051eb032fc69b5",
+          "links.json": "3443839f5ce71a228cf9d65ccce4bb91a4325261c84e3da5caf95b3e9fc2ef59"
+        },
+        "artifacts": [
+          {
+            "id": 10604011812,
+            "name": "audit-69-Linux",
+            "size_in_bytes": 8386,
+            "digest": "sha256:0bded0642ea83ac352a902cb556979b7a9d19bc1db32511709dc3bfcd75baf05",
+            "expired": false,
+            "expires_at": "2026-09-27T11:06:41Z"
+          },
+          {
+            "id": 10604001853,
+            "name": "audit-69-Windows",
+            "size_in_bytes": 8029,
+            "digest": "sha256:29121e87446e57162d32f4fde71efe6bf8ed6d309083bce1b72c1ee7ce11a222",
+            "expired": false,
+            "expires_at": "2026-09-27T11:06:49Z"
+          }
+        ],
+        "local_matches": true
+      },
+      "receipts": [
+        "actions-receipt.json"
+      ],
+      "limits": [
+        "One run / 3 jobs, not statistical reliability",
+        "Artifact envelope digests differ because Linux adds token receipt",
+        "No attestation, cache, concurrency-contention, fork event, merge guard or production proof",
+        "7-day artifacts are not long-term custody; small JSON payloads are retained in Git"
+      ],
+      "invalidated_by": [
+        "Workflow/script/action revision changes",
+        "Runner image changes",
+        "Artifact expiry",
+        "Different permissions/event"
+      ],
+      "revalidate_before": "Any new claim outside the recorded revision, time, permissions or fixture scope; before owner-local adoption.",
+      "recovery": "Run the pinned fixture on an authorized audit branch; rebuild frozen Git inventory. Git retains the three small JSON payloads and digests after seven-day artifacts expire."
+    },
+    {
+      "owner": "ai-use audit #69; Global Architect review pending",
+      "promotion_status": "AUDIT_ONLY_UNREVIEWED",
+      "production_acceptance": null,
+      "adoption_delta": "Consuming owner must confirm authority, environment, currentness and acceptance; rerun only unresolved local properties.",
+      "capability_id": "actions.token-denial",
+      "question": "Does the explicitly read-only job token fail to create an audit commit status?",
+      "evidence_classes": [
+        "SYNTHETIC_CANARY"
+      ],
+      "environment": {
+        "repository": "youling/ai-use",
+        "visibility": "public",
+        "principal_type": "ephemeral GITHUB_TOKEN",
+        "permission_class": "contents: read",
+        "runners": [
+          "ubuntu-latest",
+          "windows-latest"
+        ],
+        "image_version": "not retained in compact receipt; available in run setup logs",
+        "plan": "UNKNOWN"
+      },
+      "verified_at": "2026-09-20T11:07:00Z",
+      "source_revision": null,
+      "official_sources": [],
+      "fixture_revision": "53ba1c2092aa5226bb5fd32b0839dfd2912ce34b",
+      "expected": {
+        "read_http": 200,
+        "write_status_http": 403
+      },
+      "observed": {
+        "evidence_class": "SYNTHETIC_CANARY",
+        "source_head": "53ba1c2092aa5226bb5fd32b0839dfd2912ce34b",
+        "read_http": 200,
+        "write_status_http": 403,
+        "expected": [
+          200,
+          403
+        ],
+        "limits": "Only this job token and audit branch; public read does not prove private read; no App/admin/production claim"
+      },
+      "receipts": [
+        "actions-receipt.json#token_probe"
+      ],
+      "limits": [
+        "Only this job token and audit branch; public read does not prove private read; no App/admin/production claim"
+      ],
+      "invalidated_by": [
+        "Token permission changes",
+        "Different endpoint/repo/event/actor"
+      ],
+      "revalidate_before": "Any new claim outside the recorded revision, time, permissions or fixture scope; before owner-local adoption.",
+      "recovery": "Rerun only on authorized synthetic audit HEAD; a successful unexpected status write fails the probe and requires reviewing permissions, not broadening them."
+    },
+    {
+      "owner": "ai-use audit #69; Global Architect review pending",
+      "promotion_status": "AUDIT_ONLY_UNREVIEWED",
+      "production_acceptance": null,
+      "adoption_delta": "Consuming owner must confirm authority, environment, currentness and acceptance; rerun only unresolved local properties.",
+      "capability_id": "issues.relationship-roundtrip",
+      "question": "Can same-repo sub-issue and blocking relationships be added, read and removed?",
+      "evidence_classes": [
+        "SYNTHETIC_CANARY"
+      ],
+      "environment": {
+        "repository": "youling/ai-use",
+        "visibility": "public",
+        "principal_type": "existing authenticated gh session",
+        "api_version": "gh default; no explicit version header in this probe",
+        "plan": "UNKNOWN",
+        "permission_class": "existing issue write capability; synthetic Issues only"
+      },
+      "verified_at": "2026-09-20T11:10:39.292380+00:00",
+      "source_revision": null,
+      "official_sources": [
+        {
+          "url": "https://docs.github.com/en/rest/issues/sub-issues",
+          "checked_at": "2026-09-20",
+          "source_version": "live documentation; unversioned"
+        },
+        {
+          "url": "https://docs.github.com/en/rest/issues/issue-dependencies",
+          "checked_at": "2026-09-20",
+          "source_version": "live documentation; unversioned"
+        }
+      ],
+      "fixture_revision": null,
+      "expected": {
+        "readback": true,
+        "relations_removed": true,
+        "fixtures_closed": true
+      },
+      "observed": {
+        "started_at": "2026-09-20T11:10:28.849040+00:00",
+        "parent": {
+          "number": 71,
+          "id": 5517455006,
+          "url": "https://github.com/youling/ai-use/issues/71"
+        },
+        "child": {
+          "number": 72,
+          "id": 5517455066,
+          "url": "https://github.com/youling/ai-use/issues/72"
+        },
+        "subissue_readback": true,
+        "subissue_removed": true,
+        "dependency_readback": true,
+        "dependency_removed": true,
+        "finished_at": "2026-09-20T11:10:39.292380+00:00",
+        "fixtures_closed": true,
+        "evidence_class": "SYNTHETIC_CANARY",
+        "limits": "Same public repository, two synthetic issues, existing authenticated CLI. Does not prove cross-repository/private permissions, dependency-cycle handling, event delivery, scheduling authority or recovery of original IDs."
+      },
+      "receipts": [
+        "relationships.json"
+      ],
+      "limits": [
+        "Same public repository, two synthetic issues, existing authenticated CLI. Does not prove cross-repository/private permissions, dependency-cycle handling, event delivery, scheduling authority or recovery of original IDs."
+      ],
+      "invalidated_by": [
+        "Different repository/permission/relationship semantics",
+        "Missing readback or cleanup receipt"
+      ],
+      "revalidate_before": "Any new claim outside the recorded revision, time, permissions or fixture scope; before owner-local adoption.",
+      "recovery": "Inspect fixtures #71/#72 and receipt; use NEW explicitly namespaced synthetic Issues for a new run, then remove both edge kinds and close fixtures. Do not mutate production work relationships."
+    },
+    {
+      "owner": "ai-use audit #69; Global Architect review pending",
+      "promotion_status": "AUDIT_ONLY_UNREVIEWED",
+      "production_acceptance": null,
+      "adoption_delta": "Consuming owner must confirm authority, environment, currentness and acceptance; rerun only unresolved local properties.",
+      "capability_id": "projects.v2-read",
+      "question": "Can the existing CLI credential read user Projects V2?",
+      "evidence_classes": [
+        "OBSERVED_BLOCKED"
+      ],
+      "environment": {
+        "repository": "youling/ai-use",
+        "visibility": "public",
+        "principal_type": "existing authenticated gh session",
+        "api_version": "gh default; no explicit version header in this probe",
+        "plan": "UNKNOWN",
+        "permission_class": "existing read capability; no scope expansion"
+      },
+      "verified_at": "2026-09-20T11:01:11Z",
+      "source_revision": null,
+      "official_sources": [
+        {
+          "url": "https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/using-the-api-to-manage-projects",
+          "checked_at": "2026-09-20",
+          "source_version": "live documentation; unversioned"
+        }
+      ],
+      "fixture_revision": null,
+      "expected": {
+        "unavailable_scope_classification": "AUTH_SCOPE_REQUIRED"
+      },
+      "observed": {
+        "error": "INSUFFICIENT_SCOPES",
+        "required_scope": "read:project",
+        "scope_expanded": false
+      },
+      "receipts": [
+        "platform-snapshot.json"
+      ],
+      "limits": [
+        "Does not prove no Projects exist, plan availability, field/view/write capability, or other credential behavior."
+      ],
+      "invalidated_by": [
+        "Credential scope or target changed"
+      ],
+      "revalidate_before": "Any new claim outside the recorded revision, time, permissions or fixture scope; before owner-local adoption.",
+      "recovery": "Keep UNKNOWN for project contents. An explicitly authorized future scope change may enable a two-item synthetic field/reconcile canary."
+    }
+  ]
+}

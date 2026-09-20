@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0.0",
+  "started_at": "2026-09-20T11:09:24.846987+00:00",
+  "finished_at": "2026-09-20T11:09:36.186606+00:00",
+  "tree": {
+    "evidence_class": "MEASURED",
+    "truncated": false,
+    "blob_count": 47,
+    "matches_local_git": true
+  },
+  "pagination": {
+    "evidence_class": "REAL_REPO_CANARY",
+    "scope": "public repository labels only",
+    "rest_pages": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      0
+    ],
+    "graphql_pages": [
+      {
+        "count": 2,
+        "hasNextPage": true
+      },
+      {
+        "count": 2,
+        "hasNextPage": true
+      },
+      {
+        "count": 2,
+        "hasNextPage": true
+      },
+      {
+        "count": 2,
+        "hasNextPage": true
+      },
+      {
+        "count": 2,
+        "hasNextPage": true
+      },
+      {
+        "count": 2,
+        "hasNextPage": true
+      },
+      {
+        "count": 2,
+        "hasNextPage": false
+      }
+    ],
+    "count": 14,
+    "ids_match": true,
+    "negative_first_page_is_complete": false,
+    "first_page_size": 2,
+    "limits": "Small stable collection; no concurrent mutation/rate-limit recovery/private ACL coverage"
+  },
+  "etag": {
+    "evidence_class": "REAL_REPO_CANARY",
+    "conditional_http": 304,
+    "validator_sha256": "89a7a1b325ab8d066798ab46b0af20b593fb0b076b1fea7d09feec0363c49448",
+    "limits": "One identical authenticated repository metadata GET; not universal cache freshness proof"
+  },
+  "code_search": {
+    "evidence_class": "OBSERVED_AVAILABLE",
+    "total_count": 0,
+    "incomplete_results": true,
+    "returned": 0,
+    "paths": [],
+    "limits": "Search index is a discovery aid, not exact Git tree or complete semantic inventory"
+  }
+}
