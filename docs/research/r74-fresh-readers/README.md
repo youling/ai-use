@@ -1,8 +1,10 @@
 # R74 isolated fresh-reader evidence
 
-Artifact Version: 1.0.0
+Artifact Version: 1.1.0
 
 这是 [#74](https://github.com/youling/ai-use/issues/74) 的非规范性合成阅读实验。它检验 R1/R2 的当前入口与恢复语义能否被无此前任务对话的 reader 找到；不是生产项目执行、Global Architect Review 或 Lab establishment。
+
+证据范围：本目录原始 observations、measurements、scoring、changed-files 和 candidate-source-manifest 保留初次候选 / 交付 `39ae29dd682978dacafe36cf8c0db34a89be0128` 的事实。后续 [Review repair](https://github.com/youling/ai-use/pull/75#pullrequestreview-5260592093) 改动了部分输入并合入已接受的 Local Engineering Gate；旧 manifest 的 final binding 只适用于那次初始交付。没有重跑或改写旧 reader 答案；[当前 build report](BUILD_REPORT.md) 和 [repair delta](repair-delta.json) 单独界定新 head 与原证据的差别。
 
 ## 输入与独立性
 

@@ -1,7 +1,9 @@
 """Small offline routing catalog compiler/checker (Python standard library).
 
-Borrowed #69's bounded Markdown-link/backtick scan and Git-blob baseline method;
-no network, provider probe, Lab or repository mutation except explicit --write.
+Borrowed #69's bounded Markdown-link/backtick scan and Git-blob comparison method.
+No network/provider probe. --write changes projections; a new-branch comparison
+may materialize the empty tree object in Git metadata. No historical L0/anchor
+baseline is imposed here; opt-in tranche proofs belong to migration tooling.
 Checks prove structural consistency, not semantic correctness or secret clearance.
 """
 import argparse
@@ -17,11 +19,18 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 CATALOG = "ROUTING_CATALOG.yaml"
 PROJECTIONS = {"human": "START_HERE.md", "reading": "READING_MAP.md",
                "compatibility": "NAMESPACE.md", "index": "docs/ROUTING_INDEX.md"}
-BASE = "e6de9acdafbc3b9d12802ecf8de25f444074553b"
 
 
-def git(*args):
-    return subprocess.check_output(["git", *args], cwd=ROOT)
+def git(*args, input=None):
+    return subprocess.check_output(["git", *args], cwd=ROOT, input=input)
+
+
+def resolve_base_ref(value):
+    """Event/explicit base, local HEAD by default; a zero before means new branch."""
+    if value and set(value) == {"0"}:
+        return git("hash-object", "-w", "-t", "tree", "--stdin", input=b"").decode().strip()
+    return git("rev-parse", "--verify", "--end-of-options",
+               (value or "HEAD") + "^{commit}").decode().strip()
 
 
 def require(condition, message):
@@ -177,26 +186,19 @@ def check_public(path, text):
     require(not re.search(r"(?:gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----)", text), "credential-like content in " + path)
 
 
-def check_previous_anchors(base):
-    for path in ["docs/SESSION_LIFECYCLE.md", "docs/DeepSeekPP-github-mcp-usage.md",
-                 "50_TEMPLATES/CONTEXT_MODE_SEED.md", "50_TEMPLATES/DISPATCH_PAIR.md",
-                 "50_TEMPLATES/architect_handoff_check.md", "50_TEMPLATES/architect_handoff_transaction.md",
-                 "50_TEMPLATES/capability_self_check.md"]:
-        old = git("show", base + ":" + path).decode("utf-8")
-        new = (ROOT / path).read_text(encoding="utf-8")
-        require(anchors(old) <= anchors(new), "old compatibility anchor removed: " + path)
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--write", action="store_true")
     parser.add_argument("--check", action="store_true")
-    configured_base = os.environ.get("ROUTING_BASE_REF", "")
-    parser.add_argument("--base-ref", default=configured_base if configured_base and set(configured_base) != {"0"} else BASE)
+    parser.add_argument("--check-whitespace", action="store_true",
+                        help="Check the same event/current-base diff with git diff --check")
+    parser.add_argument("--base-ref", default=os.environ.get("ROUTING_BASE_REF"),
+                        help="Diff/previous-catalog base; env ROUTING_BASE_REF, otherwise local HEAD. Zero before uses an empty tree.")
     a = parser.parse_args()
+    base = resolve_base_ref(a.base_ref)
     c = json.loads((ROOT / CATALOG).read_text(encoding="utf-8"))
-    old_paths = git("ls-tree", "-r", "--name-only", a.base_ref).decode().splitlines()
-    previous = json.loads(git("show", a.base_ref + ":" + CATALOG)) if CATALOG in old_paths else None
+    old_paths = git("ls-tree", "-r", "--name-only", base).decode().splitlines()
+    previous = json.loads(git("show", base + ":" + CATALOG)) if CATALOG in old_paths else None
     validate_catalog(c, previous)
     views = render(c)
     if a.write:
@@ -204,8 +206,7 @@ def main():
             (ROOT / path).write_text(value, encoding="utf-8", newline="\n")
     for path, value in views.items():
         require((ROOT / path).read_text(encoding="utf-8") == value, "projection drift: " + path)
-    require((ROOT / "AGENTS.md").read_bytes().replace(b"\r\n", b"\n") == git("show", BASE + ":AGENTS.md").replace(b"\r\n", b"\n"), "L0 changed")
-    changed = set(git("diff", "--name-only", a.base_ref, "--").decode().splitlines())
+    changed = set(git("diff", "--name-only", base, "--").decode().splitlines())
     changed |= set(git("ls-files", "--others", "--exclude-standard").decode().splitlines())
     checked = sorted(p for p in changed if p.endswith(".md") and (ROOT / p).is_file())
     for path in checked:
@@ -215,10 +216,13 @@ def main():
                      *(p.relative_to(ROOT).as_posix() for p in (ROOT / "50_TEMPLATES").glob("*.md"))})
     for path in public:
         check_public(path, (ROOT / path).read_text(encoding="utf-8"))
-    check_previous_anchors(BASE)
+    if a.check_whitespace:
+        subprocess.run(["git", "diff", "--check", base, "--"], cwd=ROOT, check=True)
     print(json.dumps({"catalog": CATALOG, "route_ids": len(c["entries"]), "projections": len(views),
+                      "base_ref": base,
                       "changed_markdown_checked": checked, "copyable_surfaces_checked": len(public),
-                      "l0": "UNCHANGED", "compatibility_anchors": "PRESERVED", "result": "PASS"}, ensure_ascii=False))
+                      "l0_routing": "KERNEL_ONLY", "compatibility": "CURRENT_POINTERS_VALID",
+                      "whitespace": "PASS" if a.check_whitespace else "NOT_REQUESTED", "result": "PASS"}, ensure_ascii=False))
 
 
 if __name__ == "__main__":

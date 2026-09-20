@@ -1,94 +1,85 @@
 # ASTRA_AI_USE_R1_R2_BUILD_REPORT
 
-Artifact Version: 1.0.0
+Artifact Version: 1.1.0
 Work: [#74](https://github.com/youling/ai-use/issues/74)
 Decision: [#73 freeze](https://github.com/youling/ai-use/issues/73#issuecomment-5749622582)
+Repair: [Review 5260592093](https://github.com/youling/ai-use/pull/75#pullrequestreview-5260592093) / [dispatch](https://github.com/youling/ai-use/issues/74#issuecomment-5749879372)
 
-本文件记录 R1/R2 实现和证据。最终交付状态、exact final head、最后一次 Actions 收据由 #74 的同名报告评论绑定；文件本身不自证 Global acceptance。Global Architect 的 exact-head semantic Review 仍是后续边界。
+本版本记录同 lineage 的两项 MAJOR repair 与必要上游对账，替代初次交付的 current-head 声明。[旧报告](https://github.com/youling/ai-use/blob/39ae29dd682978dacafe36cf8c0db34a89be0128/docs/research/r74-fresh-readers/BUILD_REPORT.md)及[初次回执](https://github.com/youling/ai-use/issues/74#issuecomment-5749847951)保留历史事实。新的 exact final head / CI 收据由 #74 同名报告评论绑定；Global acceptance 仍需新 head Review。
 
-## 1. Base
+## 1. Bases and current authority
 
-`e6de9acdafbc3b9d12802ecf8de25f444074553b`。施工前 native current L0/Work/ruling 读取、live-fetch、隔离 clone 和迁移计划已记入[修改前 checkpoint](https://github.com/youling/ai-use/issues/74#issuecomment-5749653022)。最终报告前再核对 main 与 ruling，未发生源语义漂移。
+R74 原始 dispatch base：`e6de9acdafbc3b9d12802ecf8de25f444074553b`。已审查旧 head：`39ae29dd682978dacafe36cf8c0db34a89be0128`。本次 live main / 合入的上游：`3198450f97607c4317498a34bac79523b4e850e9`。
+
+main 已通过 #77/#79 接受 #76 Local Engineering Gate，#73 要求消费该现有组件。修复前读取 current native L0/ruling 并核对 branch/head；[delta plan](https://github.com/youling/ai-use/issues/74#issuecomment-5750577175)记录 Gate 和 scope。Windows adapter 0.1.1 在 clean task-private clone 返回 READY_WITH_WARNINGS：必要能力通过，仅 pwsh/gh stable-version 更新提示；本 Work 无 RequireLatest、Codex/OpenCode CLI 或 device probe 要求。
 
 ## 2. Exact-head binding
 
-核心候选 commit：`d38cb8aa6c74cc6a5b5f4a49ea39c3f51cf9674d`，tree：`5d811690041acf9c5d2aa652ddcce1cccfad174b`。
+新报告评论绑定实际 pushed head、两个父提交与 PR head。feature branch 合入 accepted upstream 保留 ancestry，不重写 published history，也不修改 main。机械检查针对新 tree / exact head。
 
-五类 candidate readers 使用该冻结源码。最后的 evidence commit 只增加本实验目录和读取器；[source manifest](candidate-source-manifest.json) 列出候选全部 73 个文件的 SHA-256。最终验证逐文件确认这些 Git blobs 与交付 head 相同。readers 没有重读后来加入的报告，不把这些新增文件伪称 reader-tested governance。最终完整 SHA 及 CI 绑定在 #74 评论，避免 Git 文件自引用 commit hash。
+原五类 reader 的 source commit 是 `d38cb8aa6c74cc6a5b5f4a49ea39c3f51cf9674d`，tree `5d811690041acf9c5d2aa652ddcce1cccfad174b`；[原 73 文件 manifest](candidate-source-manifest.json)只证明初次交付的输入一致性。[repair delta](repair-delta.json)列出变化的原输入及新增上游文件，不再声称旧 manifest 与新 head 全部相同。
 
-## 3. Branch / PR / execution lineage
+## 3. Branch / PR / lineage
 
-Published branch：`codex/r74-recovery-routing`；唯一交付 PR：[#75](https://github.com/youling/ai-use/pull/75)。
-
-Fresh Builder 使用无父对话继承的独立上下文，源文件在 task-private clone 中批量实现。协调上下文保留 #69 历史，负责实验、对账和发布，不伪称 Fresh Builder 或 Global Reviewer。Builder 的本地核心 tree 与 native GitHub 发布的核心 tree 一致；没有强推或重写历史。已有 native GitHub 能力完成含 workflow 的提交，无 credential scope、App、组织或平台设置扩张。
+同一 published branch `codex/r74-recovery-routing`，唯一 PR [#75](https://github.com/youling/ai-use/pull/75)。本次 WARM_RESUME / REPAIR 由原协调施工 lineage 执行，没有创建新 Fresh Builder 或自称 Global reviewer。原 Builder / readers 的独立性记录不变。
 
 ## 4. ADR
 
-[ADR-0004](../../../90_HISTORY/ADR-0004_RECOVERY_ROUTING_SINGLE_SOURCE.md) 在编号复核后文件化 #73 的长期语义、取舍、阶段与回滚边界。状态明确为 frozen decision materialized / exact-head semantic Review pending。
+[ADR-0004](../../../90_HISTORY/ADR-0004_RECOVERY_ROUTING_SINGLE_SOURCE.md)仍承载原冻结裁决。Review 接受架构方向、三分支恢复、模板瘦身、preflight relocation、provider retirement、实验边界及 L0 不变。repair 使实现符合原裁决，不新增 unrelated Constitution 裁决。
 
 ## 5. Changed-file map
 
-核心改动共 31 个文件，逐文件列表在 [changed-files.json](changed-files.json)；最后只追加实验观察、计量、报告和标准库读取器。
+[repair-delta.json](repair-delta.json)给出对旧 reviewed head 的改动、对新 main 的完整 PR 文件表、旧 reader source 中受影响的文件。原 [60 文件表](changed-files.json)仅保留初次快照。
 
-| 分组 | 改动 |
+| 分组 | Delta |
 | --- | --- |
-| R1 语义 | 新 Recovery protocol；Bootstrap、Agent Interface、Durable Trace 的必要 relocation / current-state fallback |
-| R1 形态与兼容 | Context Mode Seed、Dispatch Pair、handoff check/transaction、capability self check；Session、旧 provider guide 和旧 Human 入口 forward |
-| R2 单源 | Routing Catalog；完整生成的 START_HERE、READING_MAP、NAMESPACE、ROUTING_INDEX |
-| 消费者入口 | README、00/10/40/50/90 indices、Progressive Context、public cold-start checklist、human README |
-| 迁移与验证 | ADR、migration map、routing generator/validator、15 项结构测试、只读 Linux / Windows CI |
-| 实验证据 | 本目录、10 份原始 reader 结果及对应 read logs、source manifest、计量/人工评分；[读取器](../../../tools/fresh_reader_io.py) |
+| MAJOR 1 | routing.py / workflow 移除固定 R74 base；新增 opt-in migration proof；独立 Git history regression |
+| MAJOR 2 | 仅 Constitution §10、README、Kernel README 的 routing ownership/pointer 表述归一 |
+| Accepted upstream | 合入 Gate contract/adapter/workflow；保全 Bootstrap/Interface 内容；catalog 新增 targeted route，生成 views |
+| Evidence | 本报告、实验 README、migration map 与 repair delta 区分旧观察和新源码/验证 |
 
 ## 6. Recovery semantic migration
 
-完整表见 [migration map](../../migrations/R74_RECOVERY_ROUTING.md#semantic-relocation-map)。
+[原 relocation map](../../migrations/R74_RECOVERY_ROUTING.md#semantic-relocation-map)保持成立：Recovery §1–3 拥有恰好三个 recovery_kind；§4–5 保全 context 枚举与 independence/delegation，§7 保全 project reproducibility。Interface 仍拥有 continuation/repair/completion，Bootstrap §4 拥有 targeted preflight，Trace 缺旧 checkpoint 时使用 current state。
 
-- Recovery §1–3 是唯一 current recovery/handoff 语义 owner，恰分 planned transfer、crash/old-context-unavailable、hot/warm resume。当前 durable authority/state 足够时，旧方产物或新 Human prompt 不作为 crash 的额外门；真实 authority/access/currentness/primary/independence/writeback gate 保留。
-- Session / Context Mode Seed 的 Work Context、六个正交维度全部既有枚举、fresh independence、delegation 和 durable-before-fragile 迁入 Recovery §4–5。Session §11 的项目可复现要求迁入 §7；无新增 storage doctrine。
-- continuation、ordinary repair、PREMATURE_YIELD 和 acceptance-derived completion 留在 Agent Interface；Dispatch 的最小 seed / fallback 语义归其 §3。
-- capability preflight 语义归 Bootstrap §4，模板只给形态；没有建立 Capability Lab。Durable Trace 仍拥有 checkpoint mechanics，缺旧 checkpoint 时显式使用 current-state reconstruction。
+本次不改 Recovery protocol、templates 或 provider forward。Bootstrap 1.3.0 保留上游 BOOT-3A.1 Gate 和 R1 relocation；Interface 2.6.0 保留上游 2.5.0 Gate 与 R1 指针，解决并行版本号冲突。Gate contract / adapter / Gate workflow 与新 main 完全相同。
 
-## 7. Routing catalog / projections
+## 7. Routing and current prose
 
-[ROUTING_CATALOG.yaml](../../../ROUTING_CATALOG.yaml) 采用 JSON-compatible YAML 1.2，18 个初始稳定 ID；只拥有 scene、reading/role、home、compatibility / projection metadata。四份完整生成投影是 [START_HERE](../../../START_HERE.md)、[READING_MAP](../../../READING_MAP.md)、[NAMESPACE](../../../NAMESPACE.md)、[ROUTING_INDEX](../../ROUTING_INDEX.md)。投影导航足够时无需再通读 catalog；协议 mechanics 不进入路由源。
+[Routing Catalog](../../../ROUTING_CATALOG.yaml)为 19 个 ID：原 18 个不变，新增 local-engineering-gate 指向已接受的 L2 contract，只表达场景/home，不复制 mechanics。四个完整生成投影保持。
 
-标准库工具检查 schema/唯一与稳定 IDs、home 路径、L0 边界、四份投影逐字一致、相关 links/anchors 和有限公开形态。生成命令 `python tools/routing.py --write`，验证命令 `python tools/routing.py --check`。
+Constitution §10、README、Kernel README 的旧“Namespace/Reading Map 决定语义”表述改为 catalog 拥有 routing/applicability interpretation，投影供直接选路；不改 `AGENTS.md`，不作其它 Constitution 清理。
 
-## 8. Compatibility / forward pointers
+## 8. Compatibility and one-time proof
 
-旧路径没有删除：Session 原章节 anchors 转 Recovery；Context Mode Seed / handoff / capability 等模板保留原 anchors 并指向 canonical semantics。DeepSeek provider guide 标为 retired-forward，导向 Bootstrap / Interface / Change Lifecycle。human README 改为当前入口；旧 Depositor v0.1 加 historical/current forward，current Depositor 0.1.3 原样保留。
+current compatibility records / paths 保留，七个旧入口 anchors 在本 tranche 通过独立证明。常规 validator 验证当前 pointers，不冻结历史 anchors 或 AGENTS blob。
 
-完整[兼容说明](../../migrations/R74_RECOVERY_ROUTING.md#compatibility-and-provenance)及 catalog compatibility records 可对账。旧 Session/provider/template 正文仍能由 frozen base Git blob 追溯；没有改写旧 Git/ADR，也没有把 #26 / #69 历史 evidence 提升为 authority。
+[check_r74_migration.py](../../../tools/check_r74_migration.py)显式接收 migration base / candidate head，仅供 #74 验收，对两个 Git revisions 比较 L0 bytes 和七份旧入口 anchors。常规 CI 不自动调用它；未来迁移不会被本次历史基线永久约束。旧历史/observations 不改写。
 
-## 9. Local checks and Actions
+## 9. Checks and Actions
 
-- `python tools/routing.py --check`：18 routes、4 deterministic projections、changed Markdown links/pointers、18 copyable surfaces、旧入口 anchors 与 L0 equality 通过。
-- `python tools/test_routing.py`：15 项结构测试通过，含正向与负向 fixtures；不是 15 项全部为负向测试。
-- `git diff --check` 对完整基线 diff 通过；Python AST、改动 JSON/JSONL、catalog JSON/YAML 等价、workflow YAML 及只读 permissions 可解析并核对。
-- 每份 read log 的 source hash、文件长度、源行范围、计量总数对 frozen Git blobs 复核；logs 与七份 result 逐字保存，两份 result 仅 CRLF 转 LF。decision candidate 的 source_snapshot 本地 transport path 替换为 inert placeholder，其余观察不改；measurements 记录变换和原始/发布摘要。执行读取器与发布读取器逐字一致。
-- 核心 exact-head Actions 已通过：[push](https://github.com/youling/ai-use/actions/runs/35510209226)、[pull_request](https://github.com/youling/ai-use/actions/runs/35510210499)，每次均为 Linux / Windows 两个 job。最终 evidence commit 的 exact-head Actions 收据另在 #74 报告绑定，不能用核心 head 的绿灯代替。
+常规命令：`python tools/routing.py --check --check-whitespace --base-ref <current-base-ref>`。检查 19 routes、4 deterministic projections、changed links/anchors、18 copyable surfaces、current compatibility pointers、kernel-only L0 route、当前 diff whitespace。CI 使用 PR base / push before；CLI 显式 base 优先，其次 env，本地默认 HEAD；零 before 使用 empty tree。没有 R74 SHA fallback。
 
-## 10. Five fresh-reader results
+`python tools/test_routing.py` 共 20 项结构测试，包含独立新 Git history 中接受未来 L0/旧锚点迁移、拒绝 event-base 后的 committed whitespace / bad links、CLI override、invalid/zero base、opt-in proof 边界。
 
-[RESULTS](RESULTS.md) 给出五组前后对照、每类 files/bytes/hops/blockers/current-home accuracy/crash outcome、source ambiguities 和评分理由。[measurements.json](measurements.json) 是从源行与日志复算的计量；[scoring.json](scoring.json) 是协调者按预定规则做的人工判读，两者不混为模型自证。
+本轮另执行 `python tools/check_r74_migration.py --base-ref e6de9acdafbc3b9d12802ecf8de25f444074553b --head-ref <new-head>`。新/改 machine-readable 文件 parse，Gate self-test、Git source/evidence blobs 对账。具体结果、final SHA 与新的 Linux/Windows Actions 由 #74 repair receipt 记录，不用旧 head 绿灯代替。
 
-基线五类都能恢复，不能声称本轮把 recovery 从失败改成成功。实验判断是否更直接找到 current owner 并保留真实 gates。每格一个独立模型观察、synthetic verified 项目输入、部分工具截断/补读，均不是生产验收、tokens、延迟或一般成功率。旧 #69 whole-file 路径数值不是等价基线。
+## 10. Five-reader evidence scope
+
+[原 RESULTS](RESULTS.md)、[measurements](measurements.json)、[scoring](scoring.json)与十份 observations/logs 原样保留：25/25→25/25 canonical topics、五类均可恢复、无 adopted false blocker；合计 emitted bytes 599,317→490,471。
+
+Review 接受该 synthetic evidence 的设计/限制，以及 infrastructure +1.59% emitted-byte 差异不是 blocker。本次不重跑或伪造新五类观察；新 prose / upstream Gate 对实际 reader 成本的影响未复测。原结果仅适用于 recorded source，不能外推为新 head 的阅读成功率。scoped repair 以结构回归和新 exact-head semantic Review 验收。
 
 ## 11. L0 semantic diff
 
-`AGENTS.md` 的基线与最终 Git blob 完全相同，源文件 SHA-256 为 `5e1a4885d56fe20ee233ac7a461138054afe8c8f1281b0c9c04fde2170de72e0`。L0 不新增任何路由、recovery、GitHub native、Lab、Current Read 或 Diagram mechanics。CONSTITUTION、Change Lifecycle、Reconnaissance、Durable Data、Diagram、current Depositor 与 #69 审计历史也未改动。
+`AGENTS.md` 相对 dispatch base、reviewed head、合入 main 均无 Git blob 变化，SHA-256 仍为 `5e1a4885d56fe20ee233ac7a461138054afe8c8f1281b0c9c04fde2170de72e0`。这是 #74 delivery proof，不是 generic validator 对未来 L0 的永久约束。Constitution 仅 §10 一句 correction，其余内容不变；R3/R4/R5 doctrine 不改。
 
-## 12. Remaining risks / debt
+## 12. Remaining limits
 
-- 合成读者单样本对比只提供方向性观察；不能证明所有后续项目的阅读成本下降。Infrastructure 的含重读字节有小幅回归，详见 RESULTS，按 freeze 将该冲突留给 Review，不扩大 scope 或选择性删除样本。
-- L0 的 NAMESPACE + READING_MAP 指针与 Bootstrap 的 scene-based NAMESPACE 表述仍有轻微阅读顺序张力；本次读者没有因此阻塞。保留 L0，不能借迁移改其语义。
-- ARCH-0 / L1–L2 仍须由实际 material decision 和 owner-local contract 判断；本实验没有提供真实项目设计或 production acceptance。独立 Global semantic Review 尚未完成。
-- 公开示例 guard 是有限 surface / triple-backtick fixture 和明显 credential shape 检查，不是全仓 secret scanner。人工复核改动的 current shapes；历史 Git、旧 Issue/PR 文本仍保留 provenance，并未作历史清除承诺。
-- 初始稳定 IDs、兼容 anchors、L0 equality 使用本次 migration baseline；未来经授权的 schema/L0/compatibility migration 应明确更新这些校验，不能静默删 ID 或改变源语义。
-- 更完整 ownership/storage doctrine、GitHub capability adoption/promotion、Lab、平台执行 canary 与旧历史文本治理仍归原工单，不在本次报告中推定完成。
+结构校验不替代 semantic Review，也不自动批准未来 L0/compatibility 改动。public guard 仍为有限集合，不声称全仓 secret scan/历史清除。原模型实验为单样本 synthetic evidence，受截断/补读影响，未重测 repair 后成本；实际项目 authority/currentness/production acceptance 不能由模型观察推定。L0 保持消费 Namespace/Reading Map 的指针，下层明确其 catalog 投影身份。Global Architect 必须对新 exact head 重新 Review。
 
-## 13. Explicit scope / stop confirmation
+## 13. Stop and scope confirmation
 
-R1/R2 only。R3/R4/R5、#66/#67/#68 substantive work、App/PAT/OAuth/Organization、main protection/rulesets/admin settings 未修改；没有 merge，没有 history rewrite，没有向公共仓导入真实私有实例或 deployment topology。
+R1/R2 repair + necessary accepted-upstream reconciliation only。R3/R4/R5、#66/#67/#68 substantive work、App/PAT/OAuth/Organization、main protection/rulesets/admin settings 未修改。无 PR merge、无 history rewrite、无真实私有 topology 导入。
 
-最终 pushed head 的机械检查与回执完成后，#74 声明 `READY_FOR_GLOBAL_REVIEW`。后续动作是 Global Architect 对精确 head 进行语义 Review；本 executor 不自批、不合并、不关闭 #73/#74，也不进入后续 tranche。
+新 pushed-head 验证及 #74 回执完成后停止于 `READY_FOR_GLOBAL_REVIEW`；不自行接受 finding resolution、不关闭 #73/#74，也不进入后续 tranche。

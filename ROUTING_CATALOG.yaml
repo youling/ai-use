@@ -87,6 +87,19 @@
       "public": true
     },
     {
+      "id": "local-engineering-gate",
+      "layer": "10",
+      "reading_level": "L2",
+      "roles": [
+        "all"
+      ],
+      "when": "本地 / 本地+设备或明确依赖 local toolchain 的 execution preflight",
+      "home": "10_BOOT/LOCAL_ENGINEERING_GATE.md",
+      "section": "",
+      "templates": [],
+      "public": true
+    },
+    {
       "id": "workspace",
       "layer": "10",
       "reading_level": "L2",

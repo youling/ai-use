@@ -25,6 +25,7 @@ flowchart TD
 | `kernel` / L0 | all；execution / recovery / takeover 的第一份 normative rules | [AGENTS.md](../AGENTS.md) |
 | `language` / L2 | all；Human-facing language / override 存在歧义 | [00_KERNEL/LANGUAGE_POLICY.md](../00_KERNEL/LANGUAGE_POLICY.md) |
 | `bootstrap` / L2 | all；startup / recovery / access / live-state gate | [10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md) |
+| `local-engineering-gate` / L2 | all；本地 / 本地+设备或明确依赖 local toolchain 的 execution preflight | [10_BOOT/LOCAL_ENGINEERING_GATE.md](../10_BOOT/LOCAL_ENGINEERING_GATE.md) |
 | `workspace` / L2 | Global Architect/Human；仅 workspace 初始化 / role registration；普通项目执行不触发 | [10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md](../10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md) |
 | `roles` / L2 | all；current role / authority boundary 尚不明确 | [CONSTITUTION.md](../CONSTITUTION.md) §2 |
 | `execution` / L2 | all；mutation / workspace hygiene、DIRECT/DELEGATE、dispatch / review / repair / continuation / completion / Maintenance Lane | [docs/AGENT_INTERFACE.md](AGENT_INTERFACE.md) §1–4 |

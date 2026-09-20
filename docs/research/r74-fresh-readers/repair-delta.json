@@ -1,0 +1,443 @@
+{
+  "artifact_version": "1.0.0",
+  "authority": "NON_NORMATIVE_REPAIR_EVIDENCE",
+  "review": "https://github.com/youling/ai-use/pull/75#pullrequestreview-5260592093",
+  "original_dispatch_base": "e6de9acdafbc3b9d12802ecf8de25f444074553b",
+  "reviewed_head": "39ae29dd682978dacafe36cf8c0db34a89be0128",
+  "integrated_main": "3198450f97607c4317498a34bac79523b4e850e9",
+  "new_head_binding": "Exact published merge commit, parents, CI and readback are bound by the #74 repair report comment.",
+  "changes_from_reviewed_head": [
+    {
+      "status": "A",
+      "path": ".github/workflows/local-engineering-gate.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/routing.yml"
+    },
+    {
+      "status": "M",
+      "path": "00_KERNEL/README.md"
+    },
+    {
+      "status": "M",
+      "path": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md"
+    },
+    {
+      "status": "A",
+      "path": "10_BOOT/LOCAL_ENGINEERING_GATE.md"
+    },
+    {
+      "status": "M",
+      "path": "CONSTITUTION.md"
+    },
+    {
+      "status": "M",
+      "path": "READING_MAP.md"
+    },
+    {
+      "status": "M",
+      "path": "README.md"
+    },
+    {
+      "status": "M",
+      "path": "ROUTING_CATALOG.yaml"
+    },
+    {
+      "status": "M",
+      "path": "START_HERE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/AGENT_INTERFACE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ROUTING_INDEX.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/research/r74-fresh-readers/BUILD_REPORT.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/research/r74-fresh-readers/README.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/repair-delta.json"
+    },
+    {
+      "status": "A",
+      "path": "tools/check_r74_migration.py"
+    },
+    {
+      "status": "A",
+      "path": "tools/local_engineering_gate.ps1"
+    },
+    {
+      "status": "M",
+      "path": "tools/routing.py"
+    },
+    {
+      "status": "M",
+      "path": "tools/test_routing.py"
+    }
+  ],
+  "pr_changes_against_current_main": [
+    {
+      "status": "A",
+      "path": ".github/workflows/routing.yml"
+    },
+    {
+      "status": "M",
+      "path": "00_KERNEL/README.md"
+    },
+    {
+      "status": "M",
+      "path": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md"
+    },
+    {
+      "status": "M",
+      "path": "10_BOOT/README.md"
+    },
+    {
+      "status": "M",
+      "path": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md"
+    },
+    {
+      "status": "A",
+      "path": "30_PROTOCOLS/RECOVERY_HANDOFF.md"
+    },
+    {
+      "status": "M",
+      "path": "40_GUIDES/PUBLIC_COLD_START_CHECKLIST.md"
+    },
+    {
+      "status": "M",
+      "path": "40_GUIDES/README.md"
+    },
+    {
+      "status": "M",
+      "path": "50_TEMPLATES/CONTEXT_MODE_SEED.md"
+    },
+    {
+      "status": "M",
+      "path": "50_TEMPLATES/DISPATCH_PAIR.md"
+    },
+    {
+      "status": "M",
+      "path": "50_TEMPLATES/README.md"
+    },
+    {
+      "status": "M",
+      "path": "50_TEMPLATES/architect_handoff_check.md"
+    },
+    {
+      "status": "M",
+      "path": "50_TEMPLATES/architect_handoff_transaction.md"
+    },
+    {
+      "status": "M",
+      "path": "50_TEMPLATES/capability_self_check.md"
+    },
+    {
+      "status": "A",
+      "path": "90_HISTORY/ADR-0004_RECOVERY_ROUTING_SINGLE_SOURCE.md"
+    },
+    {
+      "status": "M",
+      "path": "90_HISTORY/README.md"
+    },
+    {
+      "status": "M",
+      "path": "CONSTITUTION.md"
+    },
+    {
+      "status": "M",
+      "path": "NAMESPACE.md"
+    },
+    {
+      "status": "M",
+      "path": "READING_MAP.md"
+    },
+    {
+      "status": "M",
+      "path": "README.md"
+    },
+    {
+      "status": "A",
+      "path": "ROUTING_CATALOG.yaml"
+    },
+    {
+      "status": "M",
+      "path": "START_HERE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/AGENT_INTERFACE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DeepSeekPP-github-mcp-usage.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/PROGRESSIVE_CONTEXT_BOOT.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/ROUTING_INDEX.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/SESSION_LIFECYCLE.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/BUILD_REPORT.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/README.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/RESULTS.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/candidate-source-manifest.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/changed-files.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/evaluation-plan.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/measurements.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-archive/reads.jsonl"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-archive/result.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-decision/reads.jsonl"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-decision/result.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-infrastructure/reads.jsonl"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-infrastructure/result.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-product/reads.jsonl"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-product/result.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-research/reads.jsonl"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-research/result.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-archive/reads.jsonl"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-archive/result.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-decision/reads.jsonl"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-decision/result.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-infrastructure/reads.jsonl"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-infrastructure/result.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-product/reads.jsonl"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-product/result.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-research/reads.jsonl"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-research/result.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/repair-delta.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/scoring.json"
+    },
+    {
+      "status": "M",
+      "path": "human/DEPOSITOR_PROMPT_v0.1.md"
+    },
+    {
+      "status": "M",
+      "path": "human/README.md"
+    },
+    {
+      "status": "A",
+      "path": "tools/check_r74_migration.py"
+    },
+    {
+      "status": "A",
+      "path": "tools/fresh_reader_io.py"
+    },
+    {
+      "status": "A",
+      "path": "tools/routing.py"
+    },
+    {
+      "status": "A",
+      "path": "tools/test_routing.py"
+    }
+  ],
+  "upstream_files_preserved_byte_for_byte": [
+    "10_BOOT/LOCAL_ENGINEERING_GATE.md",
+    "tools/local_engineering_gate.ps1",
+    ".github/workflows/local-engineering-gate.yml"
+  ],
+  "accepted_recovery_template_sources_unchanged": [
+    "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+    "docs/DeepSeekPP-github-mcp-usage.md",
+    "docs/SESSION_LIFECYCLE.md",
+    "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+    "50_TEMPLATES/CHANGE_LIFECYCLE.md",
+    "50_TEMPLATES/CONTEXT_MODE_SEED.md",
+    "50_TEMPLATES/DIAGRAM_AS_CODE.md",
+    "50_TEMPLATES/DISPATCH_PAIR.md",
+    "50_TEMPLATES/HUMAN_WORKSPACE_BOOTSTRAP.md",
+    "50_TEMPLATES/README.md",
+    "50_TEMPLATES/architect_handoff_check.md",
+    "50_TEMPLATES/architect_handoff_transaction.md",
+    "50_TEMPLATES/bootstrap_check_request.md",
+    "50_TEMPLATES/capability_self_check.md",
+    "50_TEMPLATES/pointer_response.md"
+  ],
+  "original_reader_source_commit": "d38cb8aa6c74cc6a5b5f4a49ea39c3f51cf9674d",
+  "original_reader_source_files": 73,
+  "changed_original_reader_sources": [
+    {
+      "path": ".github/workflows/routing.yml",
+      "original_sha256": "57fc0d58315a368ba6adfaa9d9738986646b86cb543f3ef6499af803cc212a7a",
+      "repair_sha256": "bb37f1c07104ba9367aaf166d1b244b835d9f1efc043887d5279f021c506f77b"
+    },
+    {
+      "path": "00_KERNEL/README.md",
+      "original_sha256": "36bbbab2d3a432bc83df4f775686f73d91bb95362b00a51e0bb2575ba54b2b1e",
+      "repair_sha256": "de683d2303301713796a2183b54a9dc4890727cdeb258f7d6709b15b0b3aad74"
+    },
+    {
+      "path": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+      "original_sha256": "4ba5688daad969e191ba5980fa3ecda4dfcd53dba5538714a4878a31050531a0",
+      "repair_sha256": "31a63af44bc958bc06dd21c2d89cd3f1090d6aa96f1ee731c89828814c535280"
+    },
+    {
+      "path": "CONSTITUTION.md",
+      "original_sha256": "8b8f05735a798a8adfdf1f7144ffbe82a1b9b1bdb57f9f65d9a16e50f5adb626",
+      "repair_sha256": "99ed478f3341e62a20c3e2f35b312e89bf31a33b4dd7c93448dde23926e295b4"
+    },
+    {
+      "path": "READING_MAP.md",
+      "original_sha256": "6bc527e2227e66910a8f2c151dd855ca7d65fe656449048e567263ea9d1ceaf5",
+      "repair_sha256": "202570e0d3607aebc177ed60fcb32cf3b23c3ae9debd5fdfbc678d17ad6e5ad9"
+    },
+    {
+      "path": "README.md",
+      "original_sha256": "d07332df1e345bc7c54db8d1f8667f7c957a3dc360be9cf1e62024e12c7a1724",
+      "repair_sha256": "1e1dd4cc6476a6e144f57778e0c078b7d98ee4b50862d8bff08d4eb2a889b209"
+    },
+    {
+      "path": "ROUTING_CATALOG.yaml",
+      "original_sha256": "12cc6a7d51f3a3b2cd34d5dc6a4bb6b3b5dcf9eb8ade7ed3037dee660cca5b6a",
+      "repair_sha256": "42043a7a0d574ef668c87becf0944c819d83961c202a85eb03319f11e8ab100e"
+    },
+    {
+      "path": "START_HERE.md",
+      "original_sha256": "4cac496c787cd01007c728fb335b23fe863a6e31da616bd4d3ae29feb5567448",
+      "repair_sha256": "8d7e9d790319b39af3d6f48bf7441bc6cc1f0884cf8dbe54177e5369de2d0217"
+    },
+    {
+      "path": "docs/AGENT_INTERFACE.md",
+      "original_sha256": "0fe9a0a61ce418be5d017c23f8ca7d2ba9041179a411c5bd848c7561d56d88bd",
+      "repair_sha256": "bc448ad25e8bc8172bfd7406b8f40e30b9de918bcc9eed62adce93711344af3b"
+    },
+    {
+      "path": "docs/ROUTING_INDEX.md",
+      "original_sha256": "c0bcf79bf5fe895d2d41a97d68bbc5b843f13aecc37ded99c3afa930399b2a78",
+      "repair_sha256": "124927bc18feae359a1631fafdfab212838673e388725ad75b518ba0d6d27c72"
+    },
+    {
+      "path": "docs/migrations/R74_RECOVERY_ROUTING.md",
+      "original_sha256": "e93e3ad051f26f0256897b7afdd50b80f61e5338c980f963fd5d75eadbb544f6",
+      "repair_sha256": "e53bbb870c38218e981ebdf13f1ec95fd4985bdb3e2bd15408fda33c1d3c0a67"
+    },
+    {
+      "path": "tools/routing.py",
+      "original_sha256": "6c8d1ca7472134b78e798a8954a2b0af4b4153009f702d61964d3ba7af1e558d",
+      "repair_sha256": "8eafc59e152e00d659075d52310e17a22b405525c1f0c9e1103db6010c934105"
+    },
+    {
+      "path": "tools/test_routing.py",
+      "original_sha256": "57eecab0af03d2f9fe7f9887a732744c0f552d3e3eb05f77d1cd5d2c6c11b1b8",
+      "repair_sha256": "90bc662afd053320451be8105ccd442dc37c5c45a28d82f716513bbe09c3c2f1"
+    }
+  ],
+  "reader_evidence_status": "Original observations/measurements/scoring/manifests preserved; no fresh-reader rerun. Original whole-source binding does not apply to repair.",
+  "l0_blob_unchanged_against": [
+    "e6de9acdafbc3b9d12802ecf8de25f444074553b",
+    "39ae29dd682978dacafe36cf8c0db34a89be0128",
+    "3198450f97607c4317498a34bac79523b4e850e9"
+  ],
+  "scope": "Two MAJOR R1/R2 repairs and accepted-upstream integration; no R3/R4/R5, admin/main settings, PR merge or history rewrite."
+}

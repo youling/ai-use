@@ -78,7 +78,7 @@ Human
 | [`30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md`](30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) | 所有执行 Agent | 需要留痕/返回 pointer 时（L2 按需） |
 | [`00_KERNEL/LANGUAGE_POLICY.md`](00_KERNEL/LANGUAGE_POLICY.md) | 所有执行 Agent | 人类可见输出默认简体中文（L2 按需） |
 
-一句话版：**不要通读整个仓库。** `START_HERE` 只做导航；执行/恢复/接管时先加载 `AGENTS.md` L0，随后由 `NAMESPACE.md` 给出 zero-prompt 下一跳、由 `READING_MAP.md` 判断当前层 `NEXT | SKIP | STOP_*` 并 targeted expansion。普通执行者通常只需要 L0 + 自己的精确任务 + 项目本地上下文。
+一句话版：**不要通读整个仓库。** `START_HERE` 只做导航；执行/恢复/接管时先加载 `AGENTS.md` L0，随后通过 [Routing Catalog](ROUTING_CATALOG.yaml) 的生成投影选路：`NAMESPACE.md` 展示 zero-prompt 下一跳，`READING_MAP.md` 展示当前层 `NEXT | SKIP | STOP_*` 与 targeted homes。routing / applicability interpretation 归 catalog，投影不另立解释源。普通执行者通常只需要 L0 + 自己的精确任务 + 项目本地上下文。
 
 ---
 

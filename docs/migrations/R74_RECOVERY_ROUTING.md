@@ -1,11 +1,13 @@
 # R74 Recovery / Routing Migration
 
-**Artifact Version: 1.0.0**
+**Artifact Version: 1.1.0**
 Base：`e6de9acdafbc3b9d12802ecf8de25f444074553b`
 Target branch：`codex/r74-recovery-routing`
 Change level：L2 / STRICT_DOCS_AS_CODE
 Authority：[frozen decision](https://github.com/youling/ai-use/issues/73#issuecomment-5749622582) · [Work Order](https://github.com/youling/ai-use/issues/74)
 Pre-edit durable plan：[migration/Bootstrap checkpoint](https://github.com/youling/ai-use/issues/74#issuecomment-5749653022)
+
+Repair：[Review 5260592093](https://github.com/youling/ai-use/pull/75#pullrequestreview-5260592093)；[repair delta plan](https://github.com/youling/ai-use/issues/74#issuecomment-5750577175)。本轮在原分支合入 current main `3198450f97607c4317498a34bac79523b4e850e9` 的 #76/#77/#79 既有 Local Engineering Gate，仅把它的 targeted route 编译进 catalog，不重写 gate adapter。
 
 ## Goal and non-goal
 
@@ -51,7 +53,11 @@ human/README 的自起链改为 current L0/catalog/Bootstrap pointer；旧 Depos
 
 阶段：live base + durable plan → 独立 clone/branch → R1/R2 bulk edits → deterministic checks → isolated fresh-reader snapshots → 少量逻辑 commits → 一个 published PR/exact-head CI → #74 final report → Global Review。
 
-机械验证：`python tools/routing.py --check`、`python tools/test_routing.py`、`git diff --check`；machine-readable 文件 parse；changed-current links/anchors、old anchor preservation、inert copyable surfaces、L0 equality。catalog/projection 改动运行 `python tools/routing.py --write` 后再 check。负向 fixtures 不代表真实 Agent 行为；readers 的 files/bytes/hops/blockers/canonical accuracy/crash outcome 独立记录在 #74 report/evidence。
+常规结构验证：`python tools/routing.py --check --check-whitespace --base-ref <current-base-ref>`、`python tools/test_routing.py`；machine-readable 文件 parse；changed-current links/anchors、inert copyable surfaces、当前 compatibility pointers 与 kernel-only L0 route。CLI 的显式 base 优先，其次 `ROUTING_BASE_REF`，本地未提供时取 `HEAD` 检查工作副本差异；CI 使用 PR base / push before，零 before 用 empty tree 检查首次创建的内容，不回退 R74 历史 SHA。catalog/projection 改动运行 `python tools/routing.py --write` 后再 check。
+
+本轮一次性证明由 [check_r74_migration.py](../../tools/check_r74_migration.py) 单独承担：显式执行 `python tools/check_r74_migration.py --base-ref e6de9acdafbc3b9d12802ecf8de25f444074553b --head-ref <candidate-sha>`，比较 R74 的 L0 Git blob 与七个旧入口 anchors。base 取自本工单 authority，不是常规校验器/CI 的永久规则；未来迁移不能把本脚本冒充通用 L0/compatibility 治理。generic regression 使用独立新 Git history，证明不依赖该 SHA，且未来 L0/anchor 改动只在显式 R74 proof 下被拒绝。
+
+结构 fixtures 不代表真实 Agent 行为；原五类 readers 的 files/bytes/hops/blockers/canonical accuracy/crash outcome 是初次候选的冻结证据。本次 repair 未重跑模型读者，source delta 与新的 exact-head 机械证明由 #74 repair report 分别记录。
 
 Rollback boundary：仅 feature branch，可由后续 current authority revert/supersede；兼容路径保留，不重写历史。若语义 single-source 或实际 reader 成本/正确性无法满足，停在 Review boundary 报 exact conflict。
 

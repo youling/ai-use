@@ -19,6 +19,7 @@ ai-use 是可复用的人机协作治理与协议。体系概览见 [README.md](
 | --- | --- | --- |
 | `kernel` / L0 | all；execution / recovery / takeover 的第一份 normative rules | [AGENTS.md](AGENTS.md) |
 | `bootstrap` / L2 | all；startup / recovery / access / live-state gate | [10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md](10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md) |
+| `local-engineering-gate` / L2 | all；本地 / 本地+设备或明确依赖 local toolchain 的 execution preflight | [10_BOOT/LOCAL_ENGINEERING_GATE.md](10_BOOT/LOCAL_ENGINEERING_GATE.md) |
 | `workspace` / L2 | Global Architect/Human；仅 workspace 初始化 / role registration；普通项目执行不触发 | [10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md](10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md) |
 | `execution` / L2 | all；mutation / workspace hygiene、DIRECT/DELEGATE、dispatch / review / repair / continuation / completion / Maintenance Lane | [docs/AGENT_INTERFACE.md](docs/AGENT_INTERFACE.md) §1–4 |
 | `recovery` / L2 | all；planned transfer / crash takeover / old context unavailable / hot or warm resume；context modes / independence / delegation | [30_PROTOCOLS/RECOVERY_HANDOFF.md](30_PROTOCOLS/RECOVERY_HANDOFF.md) §1–5 |

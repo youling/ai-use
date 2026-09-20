@@ -50,4 +50,4 @@ Kernel 层是 zero-prompt cold-start chain 的第一个逻辑阶段，也是 low
 - lower layer 与 L0 冲突时，先判 currentness/authority/applicability，再 `SKIP | isolate | supersede | STOP_BLOCKED`；
 - 只有 Kernel 本身无法 current-load / 校验时，才属于 cold-start root failure。
 
-本目录不替代 `AGENTS.md`。Namespace 决定默认下一跳，Reading Map 决定当前层 `NEXT | SKIP | STOP_*`。
+本目录不替代 `AGENTS.md`。routing / applicability interpretation 归 [Routing Catalog](../ROUTING_CATALOG.yaml)；Namespace 与 Reading Map 是生成的兼容 / 阅读投影，分别展示默认下一跳和当前层 `NEXT | SKIP | STOP_*`，不另立解释源。

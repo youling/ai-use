@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** 仅在启动 / 派发 / 恢复场景触发时读取。
 
-**Protocol Version: 1.2.0**
+**Protocol Version: 1.3.0**
 
 恢复/交接先按 [Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md#1-恢复分类) 识别场景；本协议仍是 ordered applicability 与 execution gate 的唯一 owner。
 
@@ -146,6 +146,18 @@ Fresh/takeover Architect role cold-start 没有 explicit Work Coordinate 时，�
 
 `Capability != Authority`。
 
+### BOOT-3A.1 Local Engineering Human Gate（按需）
+
+当 current Work Order 的运行位置为 **本地 / 本地+设备**，或任务明确依赖本地 toolchain / process / private-network capability 时，在进入高成本本地施工前执行 [`LOCAL_ENGINEERING_GATE.md`](LOCAL_ENGINEERING_GATE.md)。
+
+该 gate 只证明当前 Human-selected execution environment 是否满足任务假设，不产生 authority。优先使用当前 execution platform 的脚本化 adapter；Windows reference 为 `tools/local_engineering_gate.ps1`，Linux/Android 后续使用原生 adapter，不共享 PowerShell implementation。
+
+结果为 `READY | READY_WITH_WARNINGS | BLOCKED | UNKNOWN`。required capability 为 `BLOCKED/UNKNOWN` 时不得进入 effectful execution。缺凭据时只报告 capability gap，由 Human 通过 provider/native login flow 修复；禁止把 password/token/private key 交给 Agent。
+
+项目私有 remote/node/device 健康通过 owner-provided probe adapter 检查；公共 ai-use 不保存 endpoint/topology/credential。repo-only task 可把 remote probe 作为 informational，真正 NODE/DEVICE task 则由 Work Order 标记为 required。
+
+`LOCAL_ENGINEERING_GATE != AUTHORITY`。
+
 ### BOOT-3B Live State
 
 live-read 与当前角色/任务**直接相关**的：
@@ -163,7 +175,7 @@ live-read 与当前角色/任务**直接相关**的：
 
 ### BOOT-3C Bootstrap Conclusion + Durable Writeback
 
-只有 `BOOT-1A -> BOOT-3B` 全部通过，才可形成最终 Bootstrap 结论。
+只有 `BOOT-1A -> BOOT-3B` 全部通过，并且适用的 Local Engineering Gate 未处于 required `BLOCKED/UNKNOWN`，才可形成最终 Bootstrap 结论。
 
 对 Fresh/takeover Architect，**durable writeback 是声称 cold-start complete / `EXECUTION_ALLOWED` 的完成 gate**：必须先把 `ARCHITECT_BOOTSTRAP_REPORT` / Bootstrap Check Report 写回 current 可写 durable authority/bootstrap anchor/dispatch source。
 
@@ -179,6 +191,7 @@ governance_repo: <current governance owner/repo>
 control_plane_repo: <workspace_registry.control_plane.repo | explicit durable pointer | none>
 authority_evidence: <durable pointer / current Human direction as applicable>
 access_route: <validated route>
+local_engineering_gate: <READY | READY_WITH_WARNINGS | BLOCKED | UNKNOWN | NOT_APPLICABLE>
 live_head: <exact current ref if relevant>
 current_graph: <targeted active/ready/blocker facts, not architecture direction>
 execution_gate: EXECUTION_ALLOWED | EXECUTION_NOT_ALLOWED
