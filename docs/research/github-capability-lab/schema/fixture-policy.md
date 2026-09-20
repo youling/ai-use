@@ -1,12 +1,14 @@
 # Capability Lab fixture policy
 
-**Policy version: 1.0.0** · scope: R4 public evidence fixtures
+**Policy version: 1.1.0** · scope: public evidence fixtures
 
 此 policy 实现 [frozen R4](https://github.com/youling/ai-use/issues/73#issuecomment-5750977205)，不授予执行者新权限。每次运行先确认 current Work、明确的 public repo、已有权限、碰撞安全的 synthetic 名称和最小 fixture；执行前持久记录计划。工具能调用 endpoint 不等于允许调用。
 
 ## 允许的最小实验
 
 仅限 synthetic、reversible、repo-contained 的 branches/commits、PR、Issues/comments/labels/可逆关系、标准 GitHub-hosted Actions least permissions、bounded REST/GraphQL reads、理解 retention/cleanup 的 repo artifacts/caches。draft/test tag 或 release 还须明确非生产、collision-safe、无生产消费者混淆且可清理。
+
+ai-use 是 public Lab。generic GitHub 行为需要 Actions canary 时，优先在这里用最小充分的 **standard GitHub-hosted runner** 一次性证明公共可复用部分；不因为下游是 PRIVATE/INTERNAL repo 就在那里重复同类 hosted-runner canary。下游只验证 unresolved owner-local delta。即使 public standard runner 当前不消耗私仓 hosted-runner 配额，也仍避免重复 workflow、无必要矩阵、heartbeat 和无变化 canary 重跑；larger runner 不属于默认免费实验面。
 
 App 注册/安装、OAuth/PAT 扩权、组织/账户/plan 变化、Projects 创建/配置、ruleset/protection/bypass、外部 provider/cloud credentials、private repo 访问扩展、public canary 接触 private nodes/resources、production mutation 均要求独立 current Human/admin gate；R4 不运行这些 canary。当前 fixture coordinate allowlist 仅 `youling/ai-use`，不得默认为任何同 owner 仓库已获授权或公开。
 
