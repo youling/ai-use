@@ -1,0 +1,501 @@
+[
+  {
+    "path": "00_KERNEL/LANGUAGE_POLICY.md",
+    "blob_sha": "313e255d3f69cc5127f98c1d37e7ef43cf2db819",
+    "sha256": "0e8fe90e96428438f637bfda88ee394bb4a455d21d7c6543d88f5dc83a3ee6d9",
+    "bytes": 2386,
+    "characters": 1468,
+    "lines": 65,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": []
+  },
+  {
+    "path": "00_KERNEL/README.md",
+    "blob_sha": "4a0040a9841b573b381a0485d0899c0f06fa0356",
+    "sha256": "0d06a1b0123594dd1a581ce368fd62a0518fee0c8dfad083f0d9e85354a21847",
+    "bytes": 2743,
+    "characters": 2117,
+    "lines": 52,
+    "class": "NAVIGATION_MIXED",
+    "version_headers": []
+  },
+  {
+    "path": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+    "blob_sha": "473177bcd309f306158d60434efc88fc29aaced5",
+    "sha256": "6ea905aab90701ba2955fcfe2aa94b013d73ab4d639f28779243087bd42ced13",
+    "bytes": 12335,
+    "characters": 9431,
+    "lines": 233,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": [
+      "**Protocol Version: 1.1.0**"
+    ]
+  },
+  {
+    "path": "10_BOOT/README.md",
+    "blob_sha": "fc521461622f3ed851f980dcaf2ef44e3a091529",
+    "sha256": "12e4e6642ec4c15d839ce742637c30637c726a8c1869bc9ea1818596b455b652",
+    "bytes": 340,
+    "characters": 226,
+    "lines": 15,
+    "class": "NAVIGATION_MIXED",
+    "version_headers": []
+  },
+  {
+    "path": "10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md",
+    "blob_sha": "327c76ebe9f429523c324eb6d1171abdee181ab6",
+    "sha256": "a09416777c695a6fd67d181bf271c92b090671938cc31e6d17e134c45fa8e575",
+    "bytes": 6155,
+    "characters": 4381,
+    "lines": 137,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": [
+      "**Protocol Version: 1.1.0**"
+    ]
+  },
+  {
+    "path": "20_ROLES/README.md",
+    "blob_sha": "282a58ad5d2c67d222410783940f2a05f3a1c367",
+    "sha256": "94b84c3519a5763572c6f294584e48451cfcfb9dde39ea0f3cee1f1cc6f4af70",
+    "bytes": 256,
+    "characters": 181,
+    "lines": 10,
+    "class": "NAVIGATION_MIXED",
+    "version_headers": []
+  },
+  {
+    "path": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+    "blob_sha": "f98f2f71826d3548bf30de826da16b9577305037",
+    "sha256": "173ed1c3b5e28af01f24071780d98bfb2f219170f1b58691de4a6e4d52b6be4b",
+    "bytes": 10652,
+    "characters": 6857,
+    "lines": 306,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": [
+      "**Protocol Version: 0.2.0**"
+    ]
+  },
+  {
+    "path": "30_PROTOCOLS/DIAGRAM_AS_CODE.md",
+    "blob_sha": "9d1d607463e9fde3e18c10a92e7d406274841631",
+    "sha256": "2cea113ada9d47c4b8657eb23b97ed610383c0f65ee94d0524b69b5babd4c3f7",
+    "bytes": 15464,
+    "characters": 9712,
+    "lines": 499,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": [
+      "**Protocol Version: 0.3.0**  "
+    ]
+  },
+  {
+    "path": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+    "blob_sha": "fef60e940fa5357bd9c7d7adf0febc1be7dd06d6",
+    "sha256": "d21a3a1703d14676f894c124c3fca24315d12b4c77453ad43f5d6db3dd6dce69",
+    "bytes": 4710,
+    "characters": 2988,
+    "lines": 95,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": []
+  },
+  {
+    "path": "40_GUIDES/PUBLIC_COLD_START_CHECKLIST.md",
+    "blob_sha": "91a9c7facf5dd4b23441fb702db642b95edadb95",
+    "sha256": "1bff24820579915d90db5918be7a61b0a9fd2adfb26a7d1879c4c553a10af4a4",
+    "bytes": 15747,
+    "characters": 12917,
+    "lines": 331,
+    "class": "L2_TEST_REFERENCE",
+    "version_headers": []
+  },
+  {
+    "path": "40_GUIDES/README.md",
+    "blob_sha": "2485c0d83fae47efcc4f846e7aa70e2432800a39",
+    "sha256": "b13dcbf73300a414471eb727f0aed4ad8b1f230d7f16f0072cc00ac7e2ff2e08",
+    "bytes": 247,
+    "characters": 175,
+    "lines": 7,
+    "class": "NAVIGATION_MIXED",
+    "version_headers": []
+  },
+  {
+    "path": "50_TEMPLATES/CHANGE_LIFECYCLE.md",
+    "blob_sha": "1df28ce9acef9770fc6dddc921eb128317da4a1d",
+    "sha256": "566b3deac8dc5367d981175e2c8967a9d1fc636e6747422250c48f4ee3414570",
+    "bytes": 5813,
+    "characters": 4051,
+    "lines": 245,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": [
+      "**版本：0.2.0**"
+    ]
+  },
+  {
+    "path": "50_TEMPLATES/CONTEXT_MODE_SEED.md",
+    "blob_sha": "14d35d4e36cb5b72428c1835058e5be96d9d52ce",
+    "sha256": "6f15245469891b00890c505ccabdab1b95d4c0f3bb9caf173ce62ea09bdfa6d1",
+    "bytes": 10108,
+    "characters": 7578,
+    "lines": 173,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": [
+      "**版本：0.1.0**"
+    ]
+  },
+  {
+    "path": "50_TEMPLATES/DIAGRAM_AS_CODE.md",
+    "blob_sha": "571315ea83d528b004066f7f6f55ae4247eae9e9",
+    "sha256": "b4ec966c8f2fe7b00ad4f8f9d2fbf51e8adf53e22df02c6d495d85b8b6702551",
+    "bytes": 6089,
+    "characters": 4307,
+    "lines": 185,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": []
+  },
+  {
+    "path": "50_TEMPLATES/DISPATCH_PAIR.md",
+    "blob_sha": "45ecf0cccc77197856930be2fb318e85627910b7",
+    "sha256": "2feb4b448848fa7256032aa1cf8db229159d77ca1b98babb8a5b66d5c27dfa6f",
+    "bytes": 7571,
+    "characters": 4437,
+    "lines": 159,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": [
+      "**版本：0.2.0**"
+    ]
+  },
+  {
+    "path": "50_TEMPLATES/HUMAN_WORKSPACE_BOOTSTRAP.md",
+    "blob_sha": "cfcfc6587914e8a50acc4d79f3344f8e0b18773f",
+    "sha256": "489c5ccc18ce230d28d31058aa65d6f4a44c5cb59dc9c34d38df5e42df6a3af4",
+    "bytes": 2240,
+    "characters": 1563,
+    "lines": 47,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": []
+  },
+  {
+    "path": "50_TEMPLATES/README.md",
+    "blob_sha": "fa31645733fb695b340239585fa9220c7bb5e2ce",
+    "sha256": "6a32b75f1a23cb9d3e7ba7d095ce86991ca563245f7eedb91629969daa07ef97",
+    "bytes": 2772,
+    "characters": 2068,
+    "lines": 28,
+    "class": "NAVIGATION_MIXED",
+    "version_headers": []
+  },
+  {
+    "path": "50_TEMPLATES/architect_handoff_check.md",
+    "blob_sha": "957720c66b9ce4291bfa17c1c4045072dfff4b42",
+    "sha256": "da1bb247e118a385739d6982baa514b1ec2b7d4d48fa1f4a8252e68f6e28b0ca",
+    "bytes": 3321,
+    "characters": 2210,
+    "lines": 63,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": []
+  },
+  {
+    "path": "50_TEMPLATES/architect_handoff_transaction.md",
+    "blob_sha": "0eddf621b2bef1f68be4cb909cf768e1e475f5eb",
+    "sha256": "f421df92b427cbb7fd77676a2c9d15aefc2d478bee2b95977b34b8f742e09280",
+    "bytes": 3649,
+    "characters": 2450,
+    "lines": 136,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": [
+      "版本:",
+      "版本:"
+    ]
+  },
+  {
+    "path": "50_TEMPLATES/bootstrap_check_request.md",
+    "blob_sha": "17ea203bce2ab14e8fba352a8864e49b316372c0",
+    "sha256": "4615561f7ca1781975a91c932aa00fafa7c1a1a5b377658204703335e9586092",
+    "bytes": 2492,
+    "characters": 1843,
+    "lines": 52,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": []
+  },
+  {
+    "path": "50_TEMPLATES/capability_self_check.md",
+    "blob_sha": "53d759ccdeddff14a6c8015ad42a1c1b6fe6c0ba",
+    "sha256": "442da28b902c052502be6e1fb3e79ac4276bd614ab32f89277ee0af660335b65",
+    "bytes": 3206,
+    "characters": 2179,
+    "lines": 80,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": []
+  },
+  {
+    "path": "50_TEMPLATES/pointer_response.md",
+    "blob_sha": "98bc5c2b0813f53889d6600f99ec6152eb65354b",
+    "sha256": "64ce7bf14604e4f1f79bcab0a6365f97171ebada430be9aa94484f1de15a2b9e",
+    "bytes": 1479,
+    "characters": 965,
+    "lines": 50,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": []
+  },
+  {
+    "path": "90_HISTORY/ADR-0001_DOCS_AS_CODE_CHANGE_LIFECYCLE.md",
+    "blob_sha": "fab14e4b8eb5f009b38e97f42fc087940d0f076e",
+    "sha256": "a29448c424b238ac5cb12448fbba37f989b1a0c1bdf02ea1090308fe61728629",
+    "bytes": 3172,
+    "characters": 1830,
+    "lines": 63,
+    "class": "L3_HISTORY",
+    "version_headers": []
+  },
+  {
+    "path": "90_HISTORY/ADR-0002_CONTEXT_LIFECYCLE_V0_1.md",
+    "blob_sha": "48bc4c7f02fb902394b8b70b27b283e2b4924e1f",
+    "sha256": "86143caf06815dd94b25c790ac451f121b98daf9de0bd09da66409fdf196c9d6",
+    "bytes": 8548,
+    "characters": 6296,
+    "lines": 73,
+    "class": "L3_HISTORY",
+    "version_headers": []
+  },
+  {
+    "path": "90_HISTORY/ADR-0003_STAGE_AWARE_REUSE.md",
+    "blob_sha": "0c960fc42ba0cbe85a40db05eab9cbbfecabd6e4",
+    "sha256": "e6bf82523462bb747f986cd2d4b4f2d61b94afb25caa5cf38a9bc7261328f977",
+    "bytes": 4517,
+    "characters": 2883,
+    "lines": 70,
+    "class": "L3_HISTORY",
+    "version_headers": []
+  },
+  {
+    "path": "90_HISTORY/README.md",
+    "blob_sha": "a13857b8c575fb49518b2918456aa64551e921b0",
+    "sha256": "2c6aa1b1161a285be2c692d32d733134fd15ad2f3a735dc0e63ec5f11d1fc43a",
+    "bytes": 499,
+    "characters": 345,
+    "lines": 10,
+    "class": "L3_HISTORY",
+    "version_headers": []
+  },
+  {
+    "path": "AGENTS.md",
+    "blob_sha": "895ac985494569f58e28264b010f9f3cccc32dc2",
+    "sha256": "5e1a4885d56fe20ee233ac7a461138054afe8c8f1281b0c9c04fde2170de72e0",
+    "bytes": 7430,
+    "characters": 7416,
+    "lines": 99,
+    "class": "L0_KERNEL",
+    "version_headers": [
+      "**Version: 3.0.0**"
+    ]
+  },
+  {
+    "path": "CONSTITUTION.md",
+    "blob_sha": "8bd19f7a64bdae65d5fa4a4ad07a8cf5cac26b30",
+    "sha256": "8b8f05735a798a8adfdf1f7144ffbe82a1b9b1bdb57f9f65d9a16e50f5adb626",
+    "bytes": 9409,
+    "characters": 7244,
+    "lines": 143,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": []
+  },
+  {
+    "path": "LICENSE",
+    "blob_sha": "261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64",
+    "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+    "bytes": 11357,
+    "characters": 11357,
+    "lines": 201,
+    "class": "LICENSE_OR_OTHER",
+    "version_headers": []
+  },
+  {
+    "path": "NAMESPACE.md",
+    "blob_sha": "7dd0e39c436f1038f1434464af22ce3540b3e2ff",
+    "sha256": "0f4d560f2ee1e25c998c407a3c7b457d126533a63052bde7a95b77892b6d5600",
+    "bytes": 8755,
+    "characters": 5802,
+    "lines": 139,
+    "class": "NAVIGATION_MIXED",
+    "version_headers": []
+  },
+  {
+    "path": "READING_MAP.md",
+    "blob_sha": "45bfc874ab085ca28870d6fca20b6940c61c4eee",
+    "sha256": "283858287c44318ecbda0cd9d7f45b678e6758d05fae0ed5e6cdbeb4176c3d83",
+    "bytes": 11383,
+    "characters": 9693,
+    "lines": 121,
+    "class": "NAVIGATION_MIXED",
+    "version_headers": []
+  },
+  {
+    "path": "README.md",
+    "blob_sha": "40225dc2314bf8c55bbbde536a25d553f81b98c2",
+    "sha256": "97bafc6737ca447ec782c437c014164668e9fa4ee7891a3374bf08ddf2ec31be",
+    "bytes": 6732,
+    "characters": 4154,
+    "lines": 101,
+    "class": "NAVIGATION_MIXED",
+    "version_headers": []
+  },
+  {
+    "path": "START_HERE.md",
+    "blob_sha": "0df917f6942c96d94b443fb8180ccd557e19e185",
+    "sha256": "75a43f4dbf2bc85156350b2a340ccd7f2a0d2537875cdb44dd25b404a91053f0",
+    "bytes": 9588,
+    "characters": 6903,
+    "lines": 235,
+    "class": "NAVIGATION_MIXED",
+    "version_headers": []
+  },
+  {
+    "path": "docs/AGENT_INTERFACE.md",
+    "blob_sha": "91e22cf45162d4053c91031fb2f004218f3060fd",
+    "sha256": "acbc5e7923861d7514a6a84514b54f3c4006d17d2561050781d57380447af669",
+    "bytes": 20090,
+    "characters": 14760,
+    "lines": 283,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": [
+      "**Protocol Version: 2.4.0**"
+    ]
+  },
+  {
+    "path": "docs/ARCHITECT_RECONNAISSANCE.md",
+    "blob_sha": "2e5a3aea09118572bcb34d7ce8562ef196baa10c",
+    "sha256": "ae4007b089184c7f7202bacb15ed3b3b82cb02bec20d13ad1a1eec7bd9adaf4c",
+    "bytes": 11122,
+    "characters": 7830,
+    "lines": 192,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": []
+  },
+  {
+    "path": "docs/DURABLE_DATA_DOCTRINE.md",
+    "blob_sha": "ae8bb9dc3488193197b26712bc933cf238a57715",
+    "sha256": "431a9c68fad019661b04c3a9eaa3fcb3bc8163a11049b76fa6fdf235e6684dd8",
+    "bytes": 4937,
+    "characters": 2915,
+    "lines": 117,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": [
+      "# Durable Data Doctrine v0.1"
+    ]
+  },
+  {
+    "path": "docs/DeepSeekPP-github-mcp-usage.md",
+    "blob_sha": "e99d8a1e04003a4ef45b39bc0a61965f1feb5f56",
+    "sha256": "27dbf534fd3e0d1d3d3b3bde2d9854eb0b529a82514aaf6ed025e816e29f38fd",
+    "bytes": 12715,
+    "characters": 8033,
+    "lines": 253,
+    "class": "L3_HISTORY",
+    "version_headers": []
+  },
+  {
+    "path": "docs/PROGRESSIVE_CONTEXT_BOOT.md",
+    "blob_sha": "17f423b46612518f4b0b75ccc65f2e3fad505ef9",
+    "sha256": "6aedbb8474e4c175fe1362404a096ddb0dd03e1316220cc56088944f5bbe8ef6",
+    "bytes": 2368,
+    "characters": 1528,
+    "lines": 53,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": []
+  },
+  {
+    "path": "docs/SESSION_LIFECYCLE.md",
+    "blob_sha": "387454aa5317dca0bb7cb1c50a069df373f304f8",
+    "sha256": "d47b366f915e1a7a7ce287681eaa5f130ffcef37ebb65bcb40cc4b74cf267efc",
+    "bytes": 19707,
+    "characters": 12555,
+    "lines": 387,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": [
+      "ai-use v2.1.0"
+    ]
+  },
+  {
+    "path": "docs/issue-26-mcp-injection-truncation-root-cause.md",
+    "blob_sha": "2a4e66ebe3a2101aba05c56dc99c1d493f19ff79",
+    "sha256": "c26e8ae93b023c8fdff9bfb17793399047eabad0c816b66b0e73991c284ef8d1",
+    "bytes": 3903,
+    "characters": 2752,
+    "lines": 98,
+    "class": "L3_HISTORY",
+    "version_headers": []
+  },
+  {
+    "path": "human/DEPOSITOR_PROMPT.md",
+    "blob_sha": "a3a372c9593d7079f48dbeca192a4384c4b9d5f7",
+    "sha256": "c90f3dfe94d170120a38699171b547da630e26a3be334ac432ebc431f6d347ea",
+    "bytes": 8835,
+    "characters": 4543,
+    "lines": 274,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": [
+      "每个 Deposit 必须记录生成它的协议版本："
+    ]
+  },
+  {
+    "path": "human/DEPOSITOR_PROMPT_v0.1.md",
+    "blob_sha": "5a82e969f134d913f20d8bb4a49ac024439b3846",
+    "sha256": "528e6e9fd5b613a00cac3a525fbbf272a4f1a6ad765767bd824b3a61acde4f6e",
+    "bytes": 3287,
+    "characters": 1877,
+    "lines": 143,
+    "class": "L3_HISTORY",
+    "version_headers": []
+  },
+  {
+    "path": "human/PROMPT_VERSIONING.md",
+    "blob_sha": "5a4f39176b72c25be113e51c148481f1172729c6",
+    "sha256": "f125b476bab72b7b5c42d1e5f16a7a1423b03f36500d8a4070b6c5af9f8225b4",
+    "bytes": 2490,
+    "characters": 1412,
+    "lines": 78,
+    "class": "L2_NORMATIVE_OR_PLAYBOOK",
+    "version_headers": []
+  },
+  {
+    "path": "human/README.md",
+    "blob_sha": "20c48bafb3c6ac0e90e5d93975d0346e5715c6c4",
+    "sha256": "a6e17fae4ed75eb92efee9fef1809581fe0d688e964f7d5084fdb897578c3d13",
+    "bytes": 12765,
+    "characters": 6789,
+    "lines": 449,
+    "class": "NAVIGATION_MIXED",
+    "version_headers": []
+  },
+  {
+    "path": "human/tests/DEPOSITOR_TEST_CASE_001_prompt_only_scope_confusion.md",
+    "blob_sha": "4a0785baa2a3b0e1e6b60b645d98c07d9352e7e4",
+    "sha256": "7762ee47228a90a9360b68a4211e8c8a0fb0ff4fc540a08be39f2f6022cdb529",
+    "bytes": 811,
+    "characters": 811,
+    "lines": 40,
+    "class": "L2_TEST_REFERENCE",
+    "version_headers": []
+  },
+  {
+    "path": "human/tests/DEPOSITOR_TEST_CASE_002_control_plane_misclassified_as_external_knowledge.md",
+    "blob_sha": "1285ec77c1056e8d6d01d60f3ba2159f32a4e948",
+    "sha256": "ecee66fce8aaa29159b5b83f9d1234f23fae30439c08edbd0e45ed55f0e4ec37",
+    "bytes": 3942,
+    "characters": 2666,
+    "lines": 116,
+    "class": "L2_TEST_REFERENCE",
+    "version_headers": [
+      "- Core Rules 在原有基础上标准化 provenance 元数据字段，强制记录协议版本：`depositor_prompt: name: Human SSOT Depositor Prompt version:0.1.1`，同时留存 model、transport、timestamp、source‑type 运行时信息。"
+    ]
+  },
+  {
+    "path": "human/tests/DEPOSITOR_TEST_CASE_003_v0.1.2_prompt_self_capture_and_transport.md",
+    "blob_sha": "8319eb527d7764ed95f36aa3ab901d212a1a51aa",
+    "sha256": "e997cd33a8fc5822ee8447089d1e64a3c83b6cd09385c1b2716143b6a3c0559b",
+    "bytes": 5141,
+    "characters": 2833,
+    "lines": 106,
+    "class": "L2_TEST_REFERENCE",
+    "version_headers": []
+  }
+]
