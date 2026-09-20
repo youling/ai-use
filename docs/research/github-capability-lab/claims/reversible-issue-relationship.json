@@ -9,7 +9,7 @@
     "SYNTHETIC_CANARY",
     "OBSERVED_AVAILABLE"
   ],
-  "promotion_status": "UNREVIEWED",
+  "promotion_status": "REVIEWED_EVIDENCE",
   "environment": {
     "repository": "youling/ai-use",
     "visibility": "public",
@@ -102,5 +102,10 @@
     "receipt_before_retry": "先在 Work Issue 保留操作意图、已知资源 ID、最后结果、UNKNOWN 与必要 reconcile readback，不保存凭据。",
     "observed_cleanup": "edge 已移除、parent list 为空、child parent 404 与可读 fixture IDs 一起核对；两 Issues closed，cleanup_failed=false。"
   },
-  "review": []
+  "review": [
+    {
+      "path": "docs/research/github-capability-lab/receipts/reversible-issue-relationship/semantic-review.json",
+      "content_sha256": "a8858f1189c02bff2f08ec2c168c434d17d8ddefc5fcb80ea243a5755bfc8911"
+    }
+  ]
 }

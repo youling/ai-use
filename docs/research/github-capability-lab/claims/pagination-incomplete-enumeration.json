@@ -9,7 +9,7 @@
     "OBSERVED_AVAILABLE",
     "REAL_REPO_CANARY"
   ],
-  "promotion_status": "UNREVIEWED",
+  "promotion_status": "REVIEWED_EVIDENCE",
   "environment": {
     "repository": "youling/ai-use",
     "visibility": "public",
@@ -96,5 +96,10 @@
     "receipt_before_retry": "先在 Work Issue 保留操作意图、已知资源 ID、最后结果、UNKNOWN 与必要 reconcile readback，不保存凭据。",
     "observed_cleanup": "NOT_REQUIRED_READ_ONLY；resources_created=[]。"
   },
-  "review": []
+  "review": [
+    {
+      "path": "docs/research/github-capability-lab/receipts/pagination-incomplete-enumeration/semantic-review.json",
+      "content_sha256": "fdfebdf88c6a7315b73f4a5e91b735b67d2240941674ad12f701db4ecbd3e32d"
+    }
+  ]
 }

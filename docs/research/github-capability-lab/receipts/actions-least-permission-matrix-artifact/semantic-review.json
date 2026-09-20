@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "kind": "SEMANTIC_EVIDENCE_REVIEW",
+  "decision": "ACCEPT",
+  "reviewed_by": "Independent no-history bounded Astra semantic Reviewer for R4 Work #82; separate from Fresh Builder and parent executor",
+  "review_scope": "Exact schema/policy/claim/fixtures/receipts plus original Actions workflow, token job and compare job logs: historical public read 200, status write 403 and three matching Linux/Windows payloads; old timestamp and RECIPE_ONLY distinction retained. Durable review: https://github.com/youling/ai-use/issues/82#issuecomment-5751229422",
+  "reviewed_head": "bc47a2674d2367c6c043c3f6081da8e1b037b444",
+  "content_sha256": "6e3b5496da7551bb4d821b6104d25a9c50b38e13d01bfb24ddbf8a065bfcbd35",
+  "limits": [
+    "No new Actions canary or artifact download by Reviewer; parent downloads remain identified as parent evidence.",
+    "One historical job-token/event/runner boundary; no changed-environment, private, production or exercised fault-recovery proof.",
+    "Evidence review only; not Global Architect acceptance, Lab establishment, normative authority, merge or downstream adoption."
+  ]
+}

@@ -9,7 +9,7 @@
         "OBSERVED_AVAILABLE",
         "OBSERVED_BLOCKED"
       ],
-      "promotion_status": "UNREVIEWED",
+      "promotion_status": "REVIEWED_EVIDENCE",
       "question": "contents:read job 能否完成 public read、拒绝 status write，并在 Linux/Windows 上往返同一小型 artifact payload？",
       "revalidate_before": [
         "目标仓库、principal/token、权限、plan、visibility、API/tool/runner/config 与此记录不同时。",
@@ -27,14 +27,14 @@
         "OBSERVED_AVAILABLE",
         "REAL_REPO_CANARY"
       ],
-      "promotion_status": "UNREVIEWED",
+      "promotion_status": "REVIEWED_EVIDENCE",
       "question": "分页第一屏或 incomplete/不可见输出能否证明 absence 或完整集合？",
       "revalidate_before": [
         "目标仓库、principal/token、权限、plan、visibility、API/tool/runner/config 与此记录不同时。",
         "采用依赖 does_not_prove/limits 中未覆盖维度，或出现相反证据、fixture/source 变更时。"
       ],
       "status": "CURRENT",
-      "use": "NOT_CURRENT_EVIDENCE",
+      "use": "REQUIRES_CLAIM_AND_TARGET_REVALIDATION",
       "verified_at": "2026-09-20T16:32:52.979728+00:00"
     },
     {
@@ -45,14 +45,14 @@
         "SYNTHETIC_CANARY",
         "OBSERVED_AVAILABLE"
       ],
-      "promotion_status": "UNREVIEWED",
+      "promotion_status": "REVIEWED_EVIDENCE",
       "question": "同一 public repo 的合成 sub-issue 能否添加、双向读回、移除并完成可见 cleanup/recovery 记录？",
       "revalidate_before": [
         "目标仓库、principal/token、权限、plan、visibility、API/tool/runner/config 与此记录不同时。",
         "采用依赖 does_not_prove/limits 中未覆盖维度，或出现相反证据、fixture/source 变更时。"
       ],
       "status": "CURRENT",
-      "use": "NOT_CURRENT_EVIDENCE",
+      "use": "REQUIRES_CLAIM_AND_TARGET_REVALIDATION",
       "verified_at": "2026-09-20T16:31:21Z"
     }
   ],

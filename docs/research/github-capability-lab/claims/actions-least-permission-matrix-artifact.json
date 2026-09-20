@@ -10,7 +10,7 @@
     "OBSERVED_AVAILABLE",
     "OBSERVED_BLOCKED"
   ],
-  "promotion_status": "UNREVIEWED",
+  "promotion_status": "REVIEWED_EVIDENCE",
   "environment": {
     "repository": "youling/ai-use",
     "visibility": "public",
@@ -109,5 +109,10 @@
     "receipt_before_retry": "先在 Work Issue 保留操作意图、已知资源 ID、最后结果、UNKNOWN 与必要 reconcile readback，不保存凭据。",
     "observed_cleanup": "历史收据证明 write 被拒绝；artifact retention/durable custody 已记录，R4 没有新 mutating Actions cleanup。"
   },
-  "review": []
+  "review": [
+    {
+      "path": "docs/research/github-capability-lab/receipts/actions-least-permission-matrix-artifact/semantic-review.json",
+      "content_sha256": "6e3b5496da7551bb4d821b6104d25a9c50b38e13d01bfb24ddbf8a065bfcbd35"
+    }
+  ]
 }
