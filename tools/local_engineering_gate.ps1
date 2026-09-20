@@ -23,7 +23,7 @@ $ErrorActionPreference="Stop"
 $ProgressPreference="SilentlyContinue"
 $ContractVersion="1.0.0"
 $AdapterId="windows-pwsh"
-$AdapterVersion="0.1.0"
+$AdapterVersion="0.1.1"
 $Platform="windows"
 $Checks=[System.Collections.Generic.List[object]]::new()
 
@@ -78,11 +78,66 @@ function Check-Patterns([string]$Prefix,[string]$Raw,[string[]]$Patterns,[bool]$
   }
 }
 
+function OpenCode-AuthSupportsJson([string]$HelpText){
+  if([string]::IsNullOrWhiteSpace($HelpText)){return $false}
+  return $HelpText -match '(?m)(^|\s)--format(?:\s|,|$)'
+}
+
+function OpenCode-AuthInventoryPresent([string]$Raw,[bool]$Structured){
+  if([string]::IsNullOrWhiteSpace($Raw)){return $false}
+  $text=$Raw.Trim()
+  if($Structured){
+    if($text -in @("[]","{}","null")){return $false}
+    try{
+      $parsed=$text | ConvertFrom-Json
+      if($null -eq $parsed){return $false}
+      if($parsed -is [System.Array]){return $parsed.Count -gt 0}
+      if($parsed -is [System.Collections.IDictionary]){return $parsed.Count -gt 0}
+      return $true
+    }catch{
+      return $false
+    }
+  }
+  if($text -match '(?i)\b(no\s+(authenticated\s+)?providers?|no\s+credentials?|0\s+(configured\s+)?(credentials?|providers?))\b'){return $false}
+  return $true
+}
+
+function Get-OpenCodeAuthInventory(){
+  $help=Run "opencode" @("auth","list","--help")
+  $supportsJson=($help.code -eq 0 -and (OpenCode-AuthSupportsJson $help.out))
+
+  if($supportsJson){
+    $json=Run "opencode" @("auth","list","--format","json")
+    if($json.code -eq 0 -and (OpenCode-AuthInventoryPresent $json.out $true)){
+      return [pscustomobject]@{state="PASS";mode="json";raw=$json.out;detail="OpenCode auth inventory established using supported JSON output."}
+    }
+    if($json.code -eq 0){
+      return [pscustomobject]@{state="BLOCKED";mode="json";raw=$json.out;detail="OpenCode auth inventory is empty."}
+    }
+  }
+
+  $plain=Run "opencode" @("auth","list")
+  if($plain.code -eq 0 -and (OpenCode-AuthInventoryPresent $plain.out $false)){
+    return [pscustomobject]@{state="PASS";mode="plain";raw=$plain.out;detail="OpenCode auth inventory established using documented plain-output fallback."}
+  }
+  if($plain.code -eq 0){
+    return [pscustomobject]@{state="BLOCKED";mode="plain";raw=$plain.out;detail="OpenCode auth inventory is empty."}
+  }
+
+  return [pscustomobject]@{state="UNKNOWN";mode="unavailable";raw="";detail="OpenCode auth inventory probe is unavailable or incompatible; credential absence is not proven."}
+}
+
 if($SelfTest){
   foreach($x in @(@("v1.2.3","1.2.3"),@("gh version 2.80.1","2.80.1"),@("rust-v0.154.0","0.154.0"))){
     $v=SemVer $x[0]
     if($null -eq $v -or $v.ToString() -ne $x[1]){throw "SelfTest failed"}
   }
+  if(-not (OpenCode-AuthSupportsJson "Usage --format json")){throw "OpenCode JSON support detection self-test failed"}
+  if(OpenCode-AuthSupportsJson "Usage --verbose"){throw "OpenCode fallback detection self-test failed"}
+  if(-not (OpenCode-AuthInventoryPresent '[{"provider":"synthetic"}]' $true)){throw "OpenCode JSON inventory self-test failed"}
+  if(OpenCode-AuthInventoryPresent '[]' $true){throw "OpenCode empty JSON inventory self-test failed"}
+  if(-not (OpenCode-AuthInventoryPresent "Zen Go" $false)){throw "OpenCode plain inventory self-test failed"}
+  if(OpenCode-AuthInventoryPresent "No credentials found" $false){throw "OpenCode empty plain inventory self-test failed"}
   [pscustomobject]@{gate_contract_version=$ContractVersion;adapter_id=$AdapterId;adapter_version=$AdapterVersion;platform=$Platform;self_test="PASS";authority_effect="NONE"} | ConvertTo-Json
   exit 0
 }
@@ -131,11 +186,15 @@ $ocVersion=""
 if($RequireOpenCode){
   if(Get-Command opencode -ErrorAction SilentlyContinue){
     $ov=Run "opencode" @("--version");$ocVersion=$ov.out;Add-Check "opencode.runtime" $true "PASS" "OpenCode present." $ocVersion ""
-    $oa=Run "opencode" @("auth","list","--format","json");$txt=$oa.out.Trim()
-    if($oa.code -eq 0 -and $txt -and $txt -notin @("[]","{}","null")){
-      Add-Check "opencode.auth" $true "PASS" "OpenCode reports configured provider credentials."
-      Check-Patterns "opencode.auth" $txt $RequiredOpenCodeAuthPattern $true
-    }else{Add-Check "opencode.auth" $true "BLOCKED" "No detectable OpenCode provider credentials."}
+    $oa=Get-OpenCodeAuthInventory
+    if($oa.state -eq "PASS"){
+      Add-Check "opencode.auth" $true "PASS" $oa.detail
+      Check-Patterns "opencode.auth" $oa.raw $RequiredOpenCodeAuthPattern $true
+    }elseif($oa.state -eq "BLOCKED"){
+      Add-Check "opencode.auth" $true "BLOCKED" $oa.detail
+    }else{
+      Add-Check "opencode.auth" $true "UNKNOWN" $oa.detail
+    }
     if($RequiredOpenCodeModelPattern.Count -gt 0){
       $om=Run "opencode" @("models","--refresh")
       if($om.code -eq 0){Add-Check "opencode.models" $true "PASS" "Model inventory refreshed without inference.";Check-Patterns "opencode.models" $om.out $RequiredOpenCodeModelPattern $true}

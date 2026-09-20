@@ -36,6 +36,6 @@ jobs:
           if ($json.self_test -ne 'PASS') { throw 'Gate self-test did not PASS.' }
           if ($json.gate_contract_version -ne '1.0.0') { throw 'Unexpected gate contract version.' }
           if ($json.adapter_id -ne 'windows-pwsh') { throw 'Unexpected adapter ID.' }
-          if ($json.adapter_version -ne '0.1.0') { throw 'Unexpected adapter version.' }
+          if ($json.adapter_version -ne '0.1.1') { throw 'Unexpected adapter version.' }
           if ($json.platform -ne 'windows') { throw 'Unexpected adapter platform.' }
           if ($json.authority_effect -ne 'NONE') { throw 'Authority effect must remain NONE.' }
