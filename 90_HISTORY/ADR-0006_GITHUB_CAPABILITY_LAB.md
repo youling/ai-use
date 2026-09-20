@@ -1,10 +1,11 @@
 # ADR-0006：GitHub Capability Lab
 
 **Artifact Version: 1.0.0**
-状态：Frozen decision materialized / exact-head semantic Review pending
+状态：Accepted / exact-head reviewed
 裁决：[Global Architect R4 freeze](https://github.com/youling/ai-use/issues/73#issuecomment-5750977205)
 语义 owner：[#68](https://github.com/youling/ai-use/issues/68#issuecomment-5750977380)
 实施：[R4 Work #82](https://github.com/youling/ai-use/issues/82)
+验收：[PR #86 Global Architect review 5261164668](https://github.com/youling/ai-use/pull/86#pullrequestreview-5261164668)
 
 ## Context
 

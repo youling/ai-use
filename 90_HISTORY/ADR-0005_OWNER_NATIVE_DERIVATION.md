@@ -1,10 +1,11 @@
 # ADR-0005：Owner / Native Capability / Derived Interpretation
 
 **Artifact Version: 1.0.0**
-状态：Frozen decision materialized / exact-head semantic Review pending
+状态：Accepted / exact-head reviewed
 裁决：[Global Architect R3 freeze](https://github.com/youling/ai-use/issues/73#issuecomment-5750762655)
 语义 owner：[#66](https://github.com/youling/ai-use/issues/66) / [#67](https://github.com/youling/ai-use/issues/67)
 实施：[R3 Work Order #80](https://github.com/youling/ai-use/issues/80)
+验收：[PR #81 Global Architect review 5261019854](https://github.com/youling/ai-use/pull/81#pullrequestreview-5261019854)
 
 ## Context
 
