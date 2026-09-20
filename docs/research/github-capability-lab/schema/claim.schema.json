@@ -1,0 +1,560 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/youling/ai-use/blob/main/docs/research/github-capability-lab/schema/claim.schema.json",
+  "title": "Capability Lab claim 1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "capability_id",
+    "question",
+    "owner",
+    "status",
+    "evidence_classes",
+    "promotion_status",
+    "environment",
+    "source_revision",
+    "fixture_revision",
+    "official_sources",
+    "verified_at",
+    "observed",
+    "proves",
+    "does_not_prove",
+    "receipts",
+    "limits",
+    "invalidated_by",
+    "revalidate_before",
+    "adoption_delta",
+    "cleanup_recovery",
+    "review"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "capability_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+    },
+    "question": {
+      "type": "string",
+      "minLength": 1
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": [
+        "CURRENT",
+        "HISTORICAL",
+        "STALE",
+        "INVALID",
+        "UNKNOWN"
+      ]
+    },
+    "evidence_classes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "DOCUMENTED_CAPABILITY",
+          "OBSERVED_AVAILABLE",
+          "OBSERVED_BLOCKED",
+          "SYNTHETIC_CANARY",
+          "MEASURED",
+          "REAL_REPO_CANARY",
+          "OWNER_LOCAL_PRODUCTION_EVIDENCE",
+          "UNKNOWN"
+        ]
+      }
+    },
+    "promotion_status": {
+      "enum": [
+        "UNREVIEWED",
+        "REVIEWED_EVIDENCE",
+        "REUSABLE_DONOR",
+        "SUPERSEDED",
+        "INVALIDATED"
+      ]
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "visibility",
+        "principal_type",
+        "permission_class",
+        "plan",
+        "api_version",
+        "toolchain",
+        "runner",
+        "configuration"
+      ],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "visibility": {
+          "const": "public"
+        },
+        "principal_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "permission_class": {
+          "type": "string",
+          "minLength": 1
+        },
+        "plan": {
+          "type": "string",
+          "minLength": 1
+        },
+        "api_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "toolchain": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "runner": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "configuration": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "source_revision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "repository",
+        "commit",
+        "meaning",
+        "receipt_path"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "GIT",
+            "LIVE_API"
+          ]
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "commit": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            }
+          ]
+        },
+        "meaning": {
+          "type": "string",
+          "minLength": 1
+        },
+        "receipt_path": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "fixture_revision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "execution",
+        "meaning"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "execution": {
+          "enum": [
+            "EXECUTED",
+            "RECIPE_ONLY"
+          ]
+        },
+        "meaning": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "official_sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "url",
+          "use",
+          "retrieved_at"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "use": {
+            "type": "string",
+            "minLength": 1
+          },
+          "retrieved_at": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string",
+                "format": "date-time"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "observed": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "proves": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "does_not_prove": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "receipts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/pointer"
+      }
+    },
+    "limits": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "invalidated_by": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "revalidate_before": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "adoption_delta": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "cleanup_recovery": {
+      "$ref": "#/$defs/cleanup"
+    },
+    "review": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "content_sha256"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "content_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "pointer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "cleanup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "possible_resources",
+        "cleanup_action",
+        "replay_idempotency",
+        "unknown_result",
+        "receipt_before_retry",
+        "observed_cleanup"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "READ_ONLY",
+            "MUTATING"
+          ]
+        },
+        "possible_resources": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "cleanup_action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "replay_idempotency": {
+          "type": "string",
+          "minLength": 1
+        },
+        "unknown_result": {
+          "type": "string",
+          "minLength": 1
+        },
+        "receipt_before_retry": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observed_cleanup": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "capability_id",
+        "origin",
+        "observed_at",
+        "description",
+        "artifacts",
+        "exact_sources",
+        "limits"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "capability_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "origin": {
+          "enum": [
+            "HISTORICAL_DONOR",
+            "LAB_CANARY",
+            "SANITIZED_OWNER_PROVIDED"
+          ]
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "sha256",
+              "git_revision"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "git_revision": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{40}$"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "exact_sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "limits": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "review_receipt": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "kind",
+        "decision",
+        "reviewed_by",
+        "review_scope",
+        "reviewed_head",
+        "content_sha256",
+        "limits"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "kind": {
+          "const": "SEMANTIC_EVIDENCE_REVIEW"
+        },
+        "decision": {
+          "const": "ACCEPT"
+        },
+        "reviewed_by": {
+          "type": "string",
+          "minLength": 1
+        },
+        "review_scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reviewed_head": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "content_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "limits": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

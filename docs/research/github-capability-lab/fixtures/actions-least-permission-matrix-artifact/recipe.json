@@ -1,0 +1,35 @@
+{
+  "fixture_version": "1.0.0",
+  "repository": "youling/ai-use",
+  "visibility": "public",
+  "execution": "RECIPE_ONLY",
+  "historical_executed_fixture_revision": "53ba1c2092aa5226bb5fd32b0839dfd2912ce34b",
+  "historical_source_revision": "345184f19bc5e1546c86e6c9e234d5c653437747",
+  "historical_files": [
+    ".github/workflows/audit-69.yml",
+    ".github/workflows/audit-69-reusable.yml",
+    "tools/audit_69_token_probe.py",
+    "tools/audit_69.py"
+  ],
+  "recipe": [
+    "Reconcile current authority, public repository, exact synthetic branch/head and the historical workflow before any new run. The old audit files remain immutable donors.",
+    "Use a new namespaced synthetic branch only if a separately current Work needs a rerun. Record branch/head, possible workflow run/artifacts/status effect, plan and receipts before execution.",
+    "GitHub-hosted Linux/Windows matrix with contents:read, credential persistence disabled, pinned Actions and bounded job timeout; compare small payload bytes after download.",
+    "Treat public contents GET=200 as bounded positive read, and status POST=403 as bounded negative write. Any unexpected write success is failure evidence and stops dependent execution.",
+    "Persist compact payloads/digests and exact run/artifact/head pointers before expiry. Record cleanup/readback before any retry."
+  ],
+  "cleanup": {
+    "possible_resources": [
+      "synthetic branch/commits and Actions run",
+      "two retention-limited artifacts",
+      "unexpected commit status if the negative write probe succeeds"
+    ],
+    "actions": "Expected historical write was denied, so no status was created. Preserve compact Git payloads. Artifacts expire after seven days. For a future authorized rerun remove only its owned synthetic branch after durable receipts. Commit statuses cannot be erased through an invented delete operation; keep unexpected status and failure receipt visible, no history rewrite.",
+    "replay": "UNKNOWN run/POST result requires exact run/head/status live-read before retry; never blind-replay a possibly successful POST.",
+    "durable_receipt_before_retry": "Current Work checkpoint with exact head/run/known resources, last result, UNKNOWN reconciliation and residual cleanup."
+  },
+  "limits": [
+    "This new policy wrapper has not run; historical executed workflow is linked by its exact Git revision.",
+    "No induced failure/UNKNOWN recovery, fork/private/plan/production or changed runner proof."
+  ]
+}

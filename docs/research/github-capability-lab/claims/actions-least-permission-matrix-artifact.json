@@ -1,0 +1,113 @@
+{
+  "schema_version": "1.0.0",
+  "capability_id": "actions-least-permission-matrix-artifact",
+  "question": "contents:read job 能否完成 public read、拒绝 status write，并在 Linux/Windows 上往返同一小型 artifact payload？",
+  "owner": "youling/ai-use#68",
+  "status": "HISTORICAL",
+  "evidence_classes": [
+    "DOCUMENTED_CAPABILITY",
+    "SYNTHETIC_CANARY",
+    "OBSERVED_AVAILABLE",
+    "OBSERVED_BLOCKED"
+  ],
+  "promotion_status": "UNREVIEWED",
+  "environment": {
+    "repository": "youling/ai-use",
+    "visibility": "public",
+    "principal_type": "GitHub Actions job GITHUB_TOKEN",
+    "permission_class": "workflow contents:read; no additional write permissions",
+    "plan": "unknown",
+    "api_version": "token probe REST 2022-11-28",
+    "toolchain": [
+      "Python stdlib; SHA-pinned hosted Actions; REST token probe."
+    ],
+    "runner": [
+      "ubuntu-latest / windows-latest at run 35506914634; immutable runner image version not retained."
+    ],
+    "configuration": [
+      "push event on audit/astra-69-*; exact workflow head 53ba1c2092aa5226bb5fd32b0839dfd2912ce34b",
+      "3 jobs；每个 job timeout 5 分钟；artifact retention 7 天。"
+    ]
+  },
+  "source_revision": {
+    "kind": "GIT",
+    "repository": "youling/ai-use",
+    "commit": "345184f19bc5e1546c86e6c9e234d5c653437747",
+    "meaning": "inventory/measurements/links 所测的 exact audited source baseline；workflow/token fixture 运行 head 在 receipt 中另记为 53ba1c2092aa5226bb5fd32b0839dfd2912ce34b。",
+    "receipt_path": "docs/research/astra-audit-69/evidence/actions-receipt.json"
+  },
+  "fixture_revision": {
+    "path": "docs/research/github-capability-lab/fixtures/actions-least-permission-matrix-artifact/recipe.json",
+    "sha256": "520acfb5da4bc83e70e630f1802d56656fc67f0b1ffdb68293564619280e35c1",
+    "execution": "RECIPE_ONLY",
+    "meaning": "新安全包装 recipe 的字节摘要，不冒充已执行。历史实际 fixture commit=53ba1c2092aa5226bb5fd32b0839dfd2912ce34b，原工作流与脚本精确 URLs 在 receipt。"
+  },
+  "official_sources": [
+    {
+      "url": "https://docs.github.com/en/actions/tutorials/authenticate-with-github_token",
+      "use": "job token 权限边界；官方页面已于 2026-09-20 UTC 按 donor adequacy 复核，未记录精确取回时刻。",
+      "retrieved_at": null
+    },
+    {
+      "url": "https://docs.github.com/en/actions/tutorials/store-and-share-data",
+      "use": "artifact 传递、保存与 retention；官方页面已于 2026-09-20 UTC 按 donor adequacy 复核，未记录精确取回时刻。",
+      "retrieved_at": null
+    }
+  ],
+  "verified_at": "2026-09-20T11:07:00Z",
+  "observed": [
+    "run 35506914634 / 3 jobs success；token public read_http=200、write_status_http=403。",
+    "Linux/Windows 下载后的 inventory.json、measurements.json、links.json 字节彼此相同且匹配 Git 中保留的 payload。",
+    "两个 artifact envelope digest 不同；Linux 额外含 token receipt。R4 readback 仍可下载不等于重新测量行为。"
+  ],
+  "proves": [
+    "此历史 fixture 的 public read 与 negative status-write 边界符合记录的 200/403。",
+    "此单次 Linux/Windows matrix 对三个指定小 payload 的生成、上传/下载与逐字节对比成功。"
+  ],
+  "does_not_prove": [
+    "不证明 private read、其他 principal/event/permission、当前 runner image、统计可靠性、cache/attestation/concurrency/fork/merge guard。",
+    "不证明故障恢复被执行、production acceptance 或平台强制治理已配置。"
+  ],
+  "receipts": [
+    {
+      "path": "docs/research/github-capability-lab/receipts/actions-least-permission-matrix-artifact/receipt.json",
+      "sha256": "064fe7ac4988cca10661ddb4cd4dde6b25e7bd895e5082a4e9b0456c3cecf17e"
+    }
+  ],
+  "limits": [
+    "One run / 3 jobs, not statistical reliability",
+    "Artifact envelope digests differ because Linux adds token receipt",
+    "No attestation, cache, concurrency-contention, fork event, merge guard or production proof",
+    "7-day artifacts are not long-term custody; small JSON payloads are retained in Git",
+    "R4 只 readback/下载对账旧 run 与 artifacts；没有重新执行 Actions 或刷新旧 observed time。",
+    "github_token 仅此 job/event/head 的 contents:read；其他 omitted permissions 的边界不能推广到所有 token。",
+    "新 recipe 的 UNKNOWN/意外写入恢复是明确合约，未进行故障注入。"
+  ],
+  "invalidated_by": [
+    "与本记录精确范围相矛盾的可复核观测。",
+    "相关 API 行为、权限/visibility/plan、fixture/source 或配置发生实质变化。"
+  ],
+  "revalidate_before": [
+    "目标仓库、principal/token、权限、plan、visibility、API/tool/runner/config 与此记录不同时。",
+    "采用依赖 does_not_prove/limits 中未覆盖维度，或出现相反证据、fixture/source 变更时。"
+  ],
+  "adoption_delta": [
+    "先确认所需能力语义与本 claim 匹配；重新核对目标环境、权限与触发条件。",
+    "在目标 event/token 权限与 runner 上核对需要的 read/write 边界、payload 复现和 retention/custody；只重测与历史 fixture 不同且采用依赖的维度。",
+    "只测试尚未覆盖的 owner-local delta，并保留该 owner 的 cleanup/recovery 与验收证据。",
+    "由 downstream owner 作最终采用/生产决定；Lab evidence/promotion 不授予 authority。"
+  ],
+  "cleanup_recovery": {
+    "mode": "MUTATING",
+    "possible_resources": [
+      "synthetic audit branch/commits、Actions run 与两个 7-day artifacts",
+      "负向 POST 若意外成功可能留下不可删除的 commit status。"
+    ],
+    "cleanup_action": "历史 POST=403，未创建 status；保留 Git payload/digests，artifacts 按 7-day retention 到期。未来意外成功 status 必须留作失败证据，不虚构删除 API/不重写历史。",
+    "replay_idempotency": "不在 R4 重跑。未来获授权运行先记录 exact head/run；UNKNOWN POST 必须先 live-read statuses，不能盲 retry。",
+    "unknown_result": "停止依赖 mutation；live-read 精确 ID、namespace 和完整关系结果后 reconcile。incomplete/forbidden/ambiguous 保持 UNKNOWN，不能据此断言 absence 或盲 retry。",
+    "receipt_before_retry": "先在 Work Issue 保留操作意图、已知资源 ID、最后结果、UNKNOWN 与必要 reconcile readback，不保存凭据。",
+    "observed_cleanup": "历史收据证明 write 被拒绝；artifact retention/durable custody 已记录，R4 没有新 mutating Actions cleanup。"
+  },
+  "review": []
+}

@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.0.0",
+  "capability_id": "pagination-incomplete-enumeration",
+  "question": "分页第一屏或 incomplete/不可见输出能否证明 absence 或完整集合？",
+  "owner": "youling/ai-use#68",
+  "status": "CURRENT",
+  "evidence_classes": [
+    "DOCUMENTED_CAPABILITY",
+    "OBSERVED_AVAILABLE",
+    "REAL_REPO_CANARY"
+  ],
+  "promotion_status": "UNREVIEWED",
+  "environment": {
+    "repository": "youling/ai-use",
+    "visibility": "public",
+    "principal_type": "existing authenticated GitHub CLI session",
+    "permission_class": "public repository read, no scope expansion",
+    "plan": "unknown",
+    "api_version": "2026-03-10; GraphQL unversioned",
+    "toolchain": [
+      "Python stdlib + existing authenticated gh; REST and GraphQL reads."
+    ],
+    "runner": [
+      "本地 Python stdlib + authenticated gh；receipt 未记录精确安装版本。"
+    ],
+    "configuration": [
+      "固定 public repository labels；per_page/first=2；每个 API 最多 20 页。"
+    ]
+  },
+  "source_revision": {
+    "kind": "LIVE_API",
+    "repository": "youling/ai-use",
+    "commit": null,
+    "meaning": "非 Git 的 live label metadata；版本边界为 observation 的时间窗口、去重 ID 集摘要与 exact fixture。main 51e9bf4ea08aa7675ea670b7ec039bee29bad4fd 仅施工上下文，不是 label revision。",
+    "receipt_path": "docs/research/github-capability-lab/receipts/pagination-incomplete-enumeration/observation.json"
+  },
+  "fixture_revision": {
+    "path": "docs/research/github-capability-lab/fixtures/pagination-incomplete-enumeration/pagination_probe.py",
+    "sha256": "b59b843717b43ce809a4eca8bda9399206b7797b8cb28ca9415c3724311a21e7",
+    "execution": "EXECUTED",
+    "meaning": "与 fresh receipt 内 fixture_sha256 完全相同的只读执行文件。"
+  },
+  "official_sources": [
+    {
+      "url": "https://docs.github.com/en/rest/using-the-rest-api/using-pagination-in-the-rest-api",
+      "use": "REST 分页及结果边界；官方页面已于 2026-09-20 UTC 按 donor adequacy 复核，未记录精确取回时刻。",
+      "retrieved_at": null
+    }
+  ],
+  "verified_at": "2026-09-20T16:32:52.979728+00:00",
+  "observed": [
+    "2026-09-20 本次窗口 REST 返回 8 页 [2,2,2,2,2,2,2,0]；GraphQL 返回 7 页，末页 has_next_page=false。",
+    "两个 API 去重 ID 集相同，共 14 个 label；第一屏只有 2 个，first_page_complete=false。"
+  ],
+  "proves": [
+    "这个公开、受限规模的集合中，第一屏确实不是完整集合。",
+    "先完整遍历且检查错误、预算、重复/数量/集合一致性，才能在该窗口支持有边界的枚举结论。"
+  ],
+  "does_not_prove": [
+    "不能把 incomplete、首屏、无权限或不可见结果转成不存在；本次未测试私有 ACL。",
+    "没有证明所有 endpoint、搜索索引、并发变化或 rate-limit/网络恢复。"
+  ],
+  "receipts": [
+    {
+      "path": "docs/research/github-capability-lab/receipts/pagination-incomplete-enumeration/receipt.json",
+      "sha256": "ecefc0993e390dd1422da326ce95717f8a95bf1dcac9d652391dc5af9c46d0ba"
+    }
+  ],
+  "limits": [
+    "Small collection in one observation window; no atomic snapshot isolation",
+    "No concurrent mutation, rate-limit recovery, private visibility or search-index coverage",
+    "First page or forbidden/truncated output cannot prove absence or a full set",
+    "不刷新旧 search.incomplete 观察；本次没有调用搜索。",
+    "当前性只限本次 observation window；REST/GraphQL 一致不是事务快照证明。"
+  ],
+  "invalidated_by": [
+    "与本记录精确范围相矛盾的可复核观测。",
+    "相关 API 行为、权限/visibility/plan、fixture/source 或配置发生实质变化。"
+  ],
+  "revalidate_before": [
+    "目标仓库、principal/token、权限、plan、visibility、API/tool/runner/config 与此记录不同时。",
+    "采用依赖 does_not_prove/limits 中未覆盖维度，或出现相反证据、fixture/source 变更时。"
+  ],
+  "adoption_delta": [
+    "先确认所需能力语义与本 claim 匹配；重新核对目标环境、权限与触发条件。",
+    "仅当采用需要时，证明目标 endpoint 的分页结束条件、目标可见性和必要并发一致性；本 label 集实验不代替这些 endpoint-specific 条件。",
+    "只测试尚未覆盖的 owner-local delta，并保留该 owner 的 cleanup/recovery 与验收证据。",
+    "由 downstream owner 作最终采用/生产决定；Lab evidence/promotion 不授予 authority。"
+  ],
+  "cleanup_recovery": {
+    "mode": "READ_ONLY",
+    "possible_resources": [],
+    "cleanup_action": "无远端 mutation；调用方必须使用新的本地输出路径，脚本本身不拒绝已有文件，write_text 会覆盖指定文件；不得用旧 evidence 路径重跑。",
+    "replay_idempotency": "只读重跑产生新的独立 observation；错误/页数预算耗尽必须保留 incomplete，不能拼成成功。",
+    "unknown_result": "停止依赖 mutation；live-read 精确 ID、namespace 和完整关系结果后 reconcile。incomplete/forbidden/ambiguous 保持 UNKNOWN，不能据此断言 absence 或盲 retry。",
+    "receipt_before_retry": "先在 Work Issue 保留操作意图、已知资源 ID、最后结果、UNKNOWN 与必要 reconcile readback，不保存凭据。",
+    "observed_cleanup": "NOT_REQUIRED_READ_ONLY；resources_created=[]。"
+  },
+  "review": []
+}

@@ -1,0 +1,4 @@
+# New Lab artifacts use byte-stable UTF-8/LF digests on every checkout.
+docs/research/github-capability-lab/** text eol=lf
+tools/capability_lab.py text eol=lf
+tools/test_capability_lab.py text eol=lf

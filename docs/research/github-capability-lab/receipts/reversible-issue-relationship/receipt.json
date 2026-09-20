@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "capability_id": "reversible-issue-relationship",
+  "origin": "LAB_CANARY",
+  "observed_at": "2026-09-20T16:31:21Z",
+  "description": "Fresh R4 one-edge sub-issue roundtrip with durable pre-execution plan and cleanup; no dependency/fault-injection rerun.",
+  "artifacts": [
+    {
+      "path": "docs/research/github-capability-lab/receipts/reversible-issue-relationship/observation.json",
+      "sha256": "86cffd1902f77ec3d9a44fc52a65875bd78c43a8e781b6d4f3cf4ef88dd4fb58",
+      "git_revision": null
+    },
+    {
+      "path": "docs/research/github-capability-lab/fixtures/reversible-issue-relationship/recipe.json",
+      "sha256": "37c9503ad4eae418aa2357652e1b59418e6ce47cdcf79c396e6b55f026731939",
+      "git_revision": null
+    }
+  ],
+  "exact_sources": [
+    "https://github.com/youling/ai-use/issues/82#issuecomment-5751090707",
+    "https://github.com/youling/ai-use/issues/82#issuecomment-5751094451",
+    "https://github.com/youling/ai-use/issues/82#issuecomment-5751096530",
+    "https://github.com/youling/ai-use/issues/82#issuecomment-5751098687",
+    "https://github.com/youling/ai-use/issues/84",
+    "https://github.com/youling/ai-use/issues/85"
+  ],
+  "limits": [
+    "One synthetic same-public-repository sub-issue edge; two Issues remain closed historical evidence",
+    "No dependency edge, cross-repository/private, cycle, scheduling, lifecycle or production capability claim",
+    "404 parent was interpreted alongside readable exact fixture Issues and complete parent list, not as a universal absence rule",
+    "UNKNOWN recovery is prescribed by the pre-execution fixture; no timeout or fault-injection behavior was experimentally exercised",
+    "connector create/close 的底层 API 版本未暴露；gh relationship API 显式 2026-03-10。",
+    "旧 #71/#72 dependency happy path 仅历史 donor，不作为本次 fresh dependency 证明。"
+  ]
+}
