@@ -32,6 +32,8 @@ flowchart TD
 | `recovery` / L2 | all；planned transfer / crash takeover / old context unavailable / hot or warm resume；context modes / independence / delegation | [30_PROTOCOLS/RECOVERY_HANDOFF.md](../30_PROTOCOLS/RECOVERY_HANDOFF.md) §1–5 |
 | `trace` / L2 | all；事实价值行为 / checkpoint / durable recovery evidence | [30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) |
 | `change` / L2 | Architect/Builder/Research/Repair；文档即代码、代码/文档变更分级、Issue/ADR/PR、repo-wide migration / bulk refactor；Builder/Research/Repair 仅派单要求治理 artifact 时 | [30_PROTOCOLS/CHANGE_LIFECYCLE.md](../30_PROTOCOLS/CHANGE_LIFECYCLE.md) §3–4.1 |
+| `owner-instance-boundary` / L2 | all；semantic owner / storage / private instance-overlay / pointer-projection / secret reference-value 边界需要判断；仅按当前任务相关范围读取 | [30_PROTOCOLS/OWNER_INSTANCE_BOUNDARY.md](../30_PROTOCOLS/OWNER_INSTANCE_BOUNDARY.md) |
+| `github-native-first` / L2 | Architect；提出自建 GitHub-hosted collaboration/control/work/release/event/read/query/navigation/metadata subsystem，或 material architecture 依赖 GitHub platform behavior；普通 bugfix / Hot Resume / 确定性维护 / 已冻结窄实现不触发 mandatory scan | [30_PROTOCOLS/GITHUB_NATIVE_FIRST.md](../30_PROTOCOLS/GITHUB_NATIVE_FIRST.md) |
 | `diagram` / L2 | Architect/Builder/Research/Repair；复杂 topology / workflow / sequence / lifecycle / diagram drift；Builder/Research/Repair 仅派单要求 diagram 时 | [30_PROTOCOLS/DIAGRAM_AS_CODE.md](../30_PROTOCOLS/DIAGRAM_AS_CODE.md) |
 | `data` / L2 | all；durable business data / data model / schema migration | [docs/DURABLE_DATA_DOCTRINE.md](DURABLE_DATA_DOCTRINE.md) |
 | `reproducibility` / L2 | all；恢复项目所需 setup / runtime / fixture / reproducibility contract | [30_PROTOCOLS/RECOVERY_HANDOFF.md](../30_PROTOCOLS/RECOVERY_HANDOFF.md) §7 |

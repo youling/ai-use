@@ -1,8 +1,9 @@
 # Diagram-as-Code 与架构拓扑导航
 
 **Classification: L2 Targeted Reference**  
-**Protocol Version: 0.3.0**  
-**Source Issues:** `youling/ai-use#53`, `youling/ai-use#55`, `youling/ai-use#57`
+**Protocol Version: 0.4.0**
+
+**Source Issues:** `youling/ai-use#53`, `youling/ai-use#55`, `youling/ai-use#57`, `youling/ai-use#67`
 
 本协议定义：什么时候值得维护架构图、图拥有什么 authority、图放在哪里、动态图如何处理 currentness，以及 Agent 怎样把图当作导航而不是第二 SSOT。
 
@@ -105,6 +106,14 @@ HTML / SVG / PNG render
 2. 记为 diagram/topology drift；
 3. 修图；
 4. 不得为了让图“继续正确”反向修改事实 authority。
+
+### 4.1 共享派生解释边界
+
+当 index、snapshot、graph/navigation view 与 diagram 描述同一 domain 时，它们 SHOULD 消费同一个 **reviewed normalized interpretation boundary**，或在所声称 domain/query 范围内证明 semantic equivalence。共享边界解释 canonical identity、field、relation 与 derivation；不因它被共享就获得 owner 的 authority，也不要求采用统一数据库或 renderer。
+
+`renderer schema != domain ontology authority`：渲染所需的节点/边字段不能反向规定业务实体与关系的含义。diagram 默认仍为 DERIVED；只有 explicit owner contract 指定的部分才可具有 canonical 身份，不能从 typed schema 或成功 render 推导。
+
+多个派生面不一致时，按 derivation defect 回到 canonical source、source revision 和 interpreter version 排查，修复解释或生成 drift；不能选择最漂亮、最快或成功渲染的一面作为真相。current-read 与旧 snapshot/new target 的证明要求见 [Durable Data Doctrine](../docs/DURABLE_DATA_DOCTRINE.md#8-current-read--derived-freshness)。
 
 ---
 
@@ -467,6 +476,8 @@ L4 Implementation
 ```
 
 每层应尽量保存 pointer，而不是复制下一层全文。
+
+同一 domain 的图与 index/query 也应优先提供 bounded drill-down，而不是把每条 record/node 都塞进默认图；完整信息保留在可追溯 source 与下钻面中。
 
 这不是固定深度限制。若某层内部仍然复杂，可以先按 domain / region / lane / subgraph 继续组织；如果阅读任务发生变化，再增加下一层。原则是：
 
