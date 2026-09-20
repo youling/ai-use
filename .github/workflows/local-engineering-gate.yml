@@ -1,0 +1,41 @@
+name: Local engineering gate Windows self-test
+on:
+  pull_request:
+    paths:
+      - 'tools/local_engineering_gate.ps1'
+      - '10_BOOT/LOCAL_ENGINEERING_GATE.md'
+      - '10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md'
+      - 'READING_MAP.md'
+      - 'docs/AGENT_INTERFACE.md'
+      - '.github/workflows/local-engineering-gate.yml'
+  push:
+    branches: ['main']
+    paths:
+      - 'tools/local_engineering_gate.ps1'
+      - '10_BOOT/LOCAL_ENGINEERING_GATE.md'
+      - '.github/workflows/local-engineering-gate.yml'
+permissions:
+  contents: read
+concurrency:
+  group: local-engineering-gate-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  windows-reference:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Parse and self-test Windows adapter
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          [void][scriptblock]::Create((Get-Content -LiteralPath tools/local_engineering_gate.ps1 -Raw))
+          $json = pwsh -NoProfile -File tools/local_engineering_gate.ps1 -SelfTest | ConvertFrom-Json
+          if ($json.self_test -ne 'PASS') { throw 'Gate self-test did not PASS.' }
+          if ($json.gate_contract_version -ne '1.0.0') { throw 'Unexpected gate contract version.' }
+          if ($json.adapter_id -ne 'windows-pwsh') { throw 'Unexpected adapter ID.' }
+          if ($json.adapter_version -ne '0.1.0') { throw 'Unexpected adapter version.' }
+          if ($json.platform -ne 'windows') { throw 'Unexpected adapter platform.' }
+          if ($json.authority_effect -ne 'NONE') { throw 'Authority effect must remain NONE.' }
