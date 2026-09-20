@@ -56,7 +56,7 @@ Current reference: `tools/local_engineering_gate.ps1`.
 
 ```text
 adapter_id = windows-pwsh
-adapter_version = 0.1.0
+adapter_version = 0.1.1
 platform = windows
 ```
 
@@ -138,9 +138,12 @@ When required, Work Order may supply regex patterns for configured provider/acco
 Reference non-inference probes:
 
 ```text
-opencode auth list --format json
+opencode auth list --help
+opencode auth list [--format json when supported]
 opencode models --refresh
 ```
+
+The Windows adapter feature-detects the optional `--format` flag. If structured output is supported it is preferred; otherwise the documented plain `opencode auth list` form is used. If both usable auth-inventory probes fail, the result is `UNKNOWN` rather than falsely claiming credentials are absent. A successful but explicitly empty inventory is `BLOCKED`.
 
 Deployment-specific provider/tier/model names stay in the Work Order or deployment scheduler. ai-use does not hard-code them.
 
