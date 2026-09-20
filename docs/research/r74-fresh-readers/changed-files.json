@@ -1,0 +1,314 @@
+{
+  "artifact_version": "1.0.0",
+  "base": "e6de9acdafbc3b9d12802ecf8de25f444074553b",
+  "core_commit": "d38cb8aa6c74cc6a5b5f4a49ea39c3f51cf9674d",
+  "core_changes": [
+    {
+      "status": "A",
+      "path": ".github/workflows/routing.yml",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "00_KERNEL/README.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "10_BOOT/README.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "A",
+      "path": "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "40_GUIDES/PUBLIC_COLD_START_CHECKLIST.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "40_GUIDES/README.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "50_TEMPLATES/CONTEXT_MODE_SEED.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "50_TEMPLATES/DISPATCH_PAIR.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "50_TEMPLATES/README.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "50_TEMPLATES/architect_handoff_check.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "50_TEMPLATES/architect_handoff_transaction.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "50_TEMPLATES/capability_self_check.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "A",
+      "path": "90_HISTORY/ADR-0004_RECOVERY_ROUTING_SINGLE_SOURCE.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "90_HISTORY/README.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "NAMESPACE.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "READING_MAP.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "README.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "A",
+      "path": "ROUTING_CATALOG.yaml",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "START_HERE.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/AGENT_INTERFACE.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/DeepSeekPP-github-mcp-usage.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/PROGRESSIVE_CONTEXT_BOOT.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/ROUTING_INDEX.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/SESSION_LIFECYCLE.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/migrations/R74_RECOVERY_ROUTING.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "human/DEPOSITOR_PROMPT_v0.1.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "M",
+      "path": "human/README.md",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "A",
+      "path": "tools/routing.py",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    },
+    {
+      "status": "A",
+      "path": "tools/test_routing.py",
+      "purpose": "R1/R2 implementation; detailed semantic and compatibility mapping in docs/migrations/R74_RECOVERY_ROUTING.md"
+    }
+  ],
+  "evidence_additions": [
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/BUILD_REPORT.md",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/README.md",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/RESULTS.md",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/candidate-source-manifest.json",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/changed-files.json",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/evaluation-plan.json",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/measurements.json",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-archive/reads.jsonl",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-archive/result.json",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-decision/reads.jsonl",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-decision/result.json",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-infrastructure/reads.jsonl",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-infrastructure/result.json",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-product/reads.jsonl",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-product/result.json",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-research/reads.jsonl",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/base-research/result.json",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-archive/reads.jsonl",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-archive/result.json",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-decision/reads.jsonl",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-decision/result.json",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-infrastructure/reads.jsonl",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-infrastructure/result.json",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-product/reads.jsonl",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-product/result.json",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-research/reads.jsonl",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/observations/candidate-research/result.json",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/r74-fresh-readers/scoring.json",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    },
+    {
+      "status": "A",
+      "path": "tools/fresh_reader_io.py",
+      "purpose": "Non-normative fresh-reader evidence or exact executed instrument"
+    }
+  ],
+  "counts": {
+    "core_changes": 31,
+    "evidence_additions": 29,
+    "total": 60
+  }
+}

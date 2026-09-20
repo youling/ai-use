@@ -1,0 +1,109 @@
+{
+  "class": "fact/archive",
+  "observation": "Single synthetic fresh-reader observation over frozen revision e6de9acdafbc3b9d12802ecf8de25f444074553b; no project execution, live governance assessment, implementation writes, or production acceptance was performed.",
+  "applicable_rules": [
+    {"rule": "Human sovereignty, current authorized scope, capability != authority, ownership protection, evidence-bound claims, and fail-closed handling of material ambiguity remain global invariants. Verified authenticated access does not grant merge/deploy/admin authority.", "source": "AGENTS.md §§1–5; CONSTITUTION.md §§1–6"},
+    {"rule": "Recovery uses BOOT-1 addressing, BOOT-2 L0 then project-local/current Work Order, BOOT-3 authority/access/current state. The fixture supplies the necessary current project contract, authority/access/current-state inputs; do not invent missing project facts or repeat actual access checks in this synthetic exercise. Actual Fresh Architect cold-start completion requires durable bootstrap writeback.", "source": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md BOOT-1A–3C"},
+    {"rule": "Continue the bounded authorized work without ceremonial Human confirmation. DIRECT eligibility depends on local reversible risk, frozen prior acceptance, deterministic verification, clear ownership and isolated mutable workspace; choosing DIRECT does not remove the Work Order's independent review requirement for material schema changes.", "source": "docs/AGENT_INTERFACE.md §§1.0, 1.3–1.4, 1.8"},
+    {"rule": "A derived current-read catalog must retain a pointer to its owned canonical archive and must not silently acquire source ownership. Global durable-data doctrine supplies seven questions, not a storage engine or a project schema.", "source": "docs/DURABLE_DATA_DOCTRINE.md §§1–7 and Durable state 的三类常见归属; 30_PROTOCOLS/CHANGE_LIFECYCLE.md §4"},
+    {"rule": "Classify the actual change: ordinary behavior/current-fact changes are L1; material identity/schema/canonical-state/ownership/compatibility choices are L2 and require Issue plus ADR, branch, checks, PR and exact-head review. A regenerable nonnormative presentation refresh may be PERIODIC_DOCS, but schema or canonical-semantics changes cannot use that exception.", "source": "30_PROTOCOLS/CHANGE_LIFECYCLE.md §§2–4"},
+    {"rule": "Record durable decisions, meaningful mutations, verification and risk/state conclusions at semantic checkpoints. A local-only implementation is not a remotely recoverable delivery; label it LOCAL_ONLY until safe durable reconciliation.", "source": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md 阶段性 checkpoint / Remote recoverability / Pointer 规则"},
+    {"rule": "Freshness alone does not require a broad external survey. ARCH-0 applies if this recovery actually involves material architecture/new-domain/reuse choices or external drift; a narrow implementation under an already frozen design need not repeat it.", "source": "docs/ARCHITECT_RECONNAISSANCE.md §§1–2; READING_MAP.md 场景触发"}
+  ],
+  "can_ignore": [
+    "Whole-repository/full-history reading, unrelated projects and workspace-wide open-work scans; only current target and explicit dependencies are relevant.",
+    "90_HISTORY rationale, diagrams, template payloads and workspace initialization/role registration unless their specific scene is triggered.",
+    "Maintainer-specific private control-plane examples, provider memory, old chat, and snapshots as current authority or current fact sources.",
+    "Historical SESSION_LIFECYCLE §5 requirements to read all OPEN Work Orders and obtain Human confirmation before continuing; current L0/Bootstrap/Agent Interface and the Reading Map compatibility note override those generic steps.",
+    "A new Builder dispatch solely to let an otherwise eligible Architect act DIRECT; Runner, Human manual transport cards, multiple verifiers, or Global Architect approval are not universal project-action prerequisites.",
+    "Fixed retention durations, universal append-only provenance, a mandatory database/vector store/search service, mandatory new frameworks, and per-record copies of existing Git author/timestamp metadata; none is established here."
+  ],
+  "native_capability_reuse": [
+    {"capability": "GitHub native relationships, labels, reviews, milestones and Projects for institutional work/lifecycle facts; avoid a parallel natural-language state database.", "source": "CONSTITUTION.md §3"},
+    {"capability": "Issue as rationale/acceptance anchor, ADR as durable design decision, PR plus exact-head review and checks as change evidence, and Git history for evolution/rollback provenance. Git already supplies author/timestamp/parent metadata.", "source": "30_PROTOCOLS/CHANGE_LIFECYCLE.md §§3–5, 7"},
+    {"capability": "An already authorized native GitHub connector/integration for authenticated current-source reads; authenticated gh is a fallback only if the native route is unavailable or unusable.", "source": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md BOOT-1A"}
+  ],
+  "native_capability_limit": "The sources do not prove a ready-made GitHub archive catalog, arbitrary schema/query service, or business-data storage solution. GitHub institutional capability does not establish project archive contents, data correctness, authorization, or a reason to relocate business truth.",
+  "owner_local_design": [
+    "Identify the canonical archive owner, authoritative source boundaries, eligible records and bounded catalog consumers from the current project contract; do not assert actual archive types or contents.",
+    "Define canonical entity keys, uniqueness scopes, dedup/merge boundaries and the distinct representations of unknown, absent and not-applicable.",
+    "Define sufficient provenance from catalog results to archive evidence, plus which data is versioned/append-only and which current state can be replaced.",
+    "Define derivation/filtering rules, source and derivation-version references, stale detection and rebuild conditions. These are project choices, not globally mandated field names or a required new SSOT.",
+    "Choose retention classes, storage/index mechanisms, compatibility/conversion tests and recovery/rollback paths when actually needed. Privacy, access, deletion, backup and regulatory obligations remain owner-local or specialized contracts; do not invent universal requirements.",
+    "Record material stable-ID/schema/ownership decisions as L2 design and preserve the Work Order's independent review. No evidence here selects a specific product, project stage or implementation schema."
+  ],
+  "evidence": {
+    "done": [
+      "Satisfy only the durable Work Order's actual acceptance with deterministic evidence and a recoverable implementation/report pointer; do not generate new acceptance from a template or accept self-report alone.",
+      "For this catalog, demonstrate the project-defined source-to-catalog derivation and relevant identity/semantics/compatibility behavior through reproducible checks appropriate to the actual design, with risks and pending items recorded.",
+      "Provide applicable Issue/ADR/PR links, final exact head, check results and required independent review for material schema changes. Drift invalidates evidence tied to an earlier head.",
+      "Without merge authority, stop at the authorized reviewed-delivery boundary or report any acceptance item that genuinely requires another authority; do not claim merged completion."
+    ],
+    "current": [
+      "Reconcile authority, target HEAD/ref, lifecycle and dependencies against current durable sources; supplied VERIFIED fixture inputs satisfy those observations only within this synthetic scenario.",
+      "Classify archive evidence as current, superseded or historical before using it as current fact. Catalog existence, a timestamp or a previously generated view alone does not prove currentness.",
+      "Show that the catalog corresponds to the relevant source revision/evidence and current derivation contract, with the owner-defined stale/rebuild rule satisfied. Historical source ownership is preserved."
+    ],
+    "production": [
+      "No production claim follows from this benchmark, a local test, review agreement or the word done. A production claim requires applicable project acceptance and real evidence about the relevant production state/behavior.",
+      "Production deployment or mutation requires its own explicit current authority and applicable currentness/risk gates; this fixture grants none. Do not perform merge, deploy or admin actions."
+    ],
+    "sources": "AGENTS.md §§2, 5; docs/AGENT_INTERFACE.md §§1.8, 4; CONSTITUTION.md §§2, 5–8; docs/DURABLE_DATA_DOCTRINE.md §§3–7; 30_PROTOCOLS/CHANGE_LIFECYCLE.md §§3–4"
+  },
+  "recovery": {
+    "can_continue": true,
+    "basis": "CONTEXT_UNAVAILABLE triggers FRESH_CONTEXT reconstructed from durable checkpoint/current state. The synthetic current Work Order supplies the necessary project contract/state, so an unrecoverable old handoff does not prevent recovery. Lost unrecorded implementation progress remains unknown; recreate or reverify only what is necessary rather than inventing it.",
+    "required_missing_inputs": [],
+    "extra_required_gates": [],
+    "existing_gates_retained": "Ordered Bootstrap, actual durable bootstrap writeback before claiming real cold-start complete, existing Work Order scope/acceptance, ownership/currentness and required independent schema review remain applicable. They are not new handoff-recovery approval ceremonies. This exercise reports a judgment and performs no such project writeback.",
+    "source": "docs/AGENT_INTERFACE.md §§1.4, 1.6–1.9; docs/SESSION_LIFECYCLE.md §§10.3–10.5; 30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md Resume / Recovery 规则; 10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md BOOT-3C"
+  },
+  "canonical_homes": {
+    "bootstrap": {"path_section": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md BOOT-1 → BOOT-2 → BOOT-3", "ambiguities": "Bootstrap says NAMESPACE is scene-based, while L0 routes through NAMESPACE + READING_MAP; both agree against full reading. Not a recovery blocker."},
+    "continuation_completion": {"path_section": "docs/AGENT_INTERFACE.md §§1.4, 1.6–1.9 and §4", "ambiguities": "Historical Session templates include generic stopping behavior that current interface and explicit compatibility notes supersede."},
+    "recovery_context": {"path_section": "docs/AGENT_INTERFACE.md §1.9; docs/SESSION_LIFECYCLE.md §10; 30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md Resume / Recovery 规则; Bootstrap first", "ambiguities": "Recovery trace's numbered step to read the latest valid checkpoint/HANDOFF/READY_FOR_REVIEW lacks an explicit if-present branch; Interface §1.9 and Session §10.4 explicitly allow current-state reconstruction."},
+    "change_lifecycle": {"path_section": "30_PROTOCOLS/CHANGE_LIFECYCLE.md §§2–5", "ambiguities": "New schema/identity semantics versus a simple periodic derived refresh must be classified from the actual design; the scenario does not disclose that design."},
+    "durable_data": {"path_section": "docs/DURABLE_DATA_DOCTRINE.md §§1–7, Durable state 的三类常见归属, 使用边界", "ambiguities": "It deliberately leaves concrete identity/schema, retention, storage and privacy/deletion contracts owner-local. Global Git/GitHub durable-truth shorthand must not be read as requiring business archives to move into GitHub."}
+  },
+  "wrong_or_extra_mandatory_hops": {
+    "mandatory": [
+      "Frozen L0 first, targeted bootstrap/current contract and relevant execution/data/change/recovery rules; no whole-repository route.",
+      "Material architecture reconnaissance only when its actual scene trigger applies; material schema change lifecycle and existing independent review when those semantics are changed."
+    ],
+    "optional_investigation": [
+      "Old checkpoint/handoff if it exists and remains valid; unavailable old handoff is not a prerequisite when current durable context is sufficient.",
+      "Specific historical facts, cross-repo contracts, external capabilities or diagrams only when a concrete unresolved project decision needs them.",
+      "Templates only to generate corresponding artifacts. Full Session templates are background, not extra current authority."
+    ],
+    "wrong_as_universal_gates": [
+      "Reconstruct old chat or demand a new Human handoff/confirmation.",
+      "Scan all workspace open Issues, read maintainer private control plane or every ai-use layer.",
+      "Require a new search/database/framework or move business archive truth into GitHub.",
+      "Treat archive/catalog schema work as automatically eligible for the Global Architect's nonbehavioral Maintenance Lane.",
+      "Require full external reconnaissance just because the context crashed, irrespective of material architecture triggers."
+    ]
+  },
+  "false_blockers": [
+    "CONTEXT_UNAVAILABLE or the absent old handoff alone.",
+    "No fresh Human prompt despite an authorized bounded READY task.",
+    "Missing upstream-maintainer private access, optional workspace roles, old session identity or provider-specific fields.",
+    "No merge/deploy/admin authority as a blocker to already authorized design/implementation/review delivery; those limits remain real blockers only to the separate unauthorized actions.",
+    "Unselected owner-local design details as proof recovery is impossible; resolve them within existing scope and material-change review gates, escalating only an actual authority/contract ambiguity."
+  ],
+  "source_ambiguities": [
+    "The trace recovery checklist appears to require an existing recovery artifact, while current Interface and Session §10 permit checkpoint/current-state reconstruction. The latter resolves this scenario, but the trace wording could misroute a literal reader.",
+    "SESSION_LIFECYCLE §5 still contains all-OPEN-work scanning and Human-confirm-before-continuing text; READING_MAP compatibility guidance, Session §10.5 and current L0/Interface explicitly limit or supersede it.",
+    "The material-architecture trigger and the frozen-plan narrow-implementation exception require case-specific judgment; no project stage, new external dependency or final schema is supplied here.",
+    "The doctrine distinguishes institutional Git/GitHub truth from business durable stores, narrowing broad Git/GitHub-only phrasing elsewhere; it does not identify this archive's actual storage engine."
+  ],
+  "instrument_summary": {
+    "files_read": ["AGENTS.md", "NAMESPACE.md", "READING_MAP.md", "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md", "docs/DURABLE_DATA_DOCTRINE.md", "30_PROTOCOLS/CHANGE_LIFECYCLE.md", "docs/AGENT_INTERFACE.md", "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md", "docs/SESSION_LIFECYCLE.md", "docs/ARCHITECT_RECONNAISSANCE.md", "CONSTITUTION.md"],
+    "file_count": 11,
+    "read_operations": 13,
+    "bytes_read_including_repeats": 126814,
+    "unique_source_bytes_read": 120530,
+    "list_metadata_bytes": 0,
+    "limits": "UTF-8 document bytes, not tokens/time; excludes task seed, instructions, tool envelopes, reasoning and output.",
+    "reader_notes": "One combined tool envelope truncated part of otherwise successful reads; targeted rereads recovered missing relevant sections. One attempted exact Session line range was invalid and produced no document content. Instrument summary is measurement only, not a governance source."
+  }
+}
