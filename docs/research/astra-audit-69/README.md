@@ -1,12 +1,20 @@
 # Astra #69 审计证据（非规范性）
 
-Artifact Version: 0.1.0
+Artifact Version: 1.0.0
 
 Work Order: [ai-use#69](https://github.com/youling/ai-use/issues/69)。本目录只承载审计方法、测量、实验和建议；不是现行治理，不表示 #68 实验室已通过正式建立验收。
 
 审计基线：`345184f19bc5e1546c86e6c9e234d5c653437747`。
 
 本候选属于 #69 明确授权的可逆公开审计工具（L1），不改现有规范文档。最终报告提出的 L2 重构仍须 Global Architect review / ADR / 独立实施工单，不由本 PR 推进。
+
+## 交付入口
+
+- [24 项完整报告](REPORT.md)：结论 REFACTOR；当前规范重写 HOLD。
+- [47 文件逐项审查](ARTIFACT_REVIEW.md)：语义职责、处置与发现坐标。
+- [能力证据索引原型](evidence/capability-index.json)：时间、环境、限制、失效与恢复；仅供审计 review，不是正式 #68 schema。
+- [Actions 收据](evidence/actions-receipt.json)、[API 收据](evidence/api-canaries.json)、[关系实验收据](evidence/relationships.json)：实验与当前平台能力分开。
+- [平台快照](evidence/platform-snapshot.json)、[近期 PR 对账](evidence/pr-compliance.json)、[工作项基线](evidence/baseline-work.json)：白名单公开摘要。
 
 ## 复现
 
@@ -17,6 +25,8 @@ python tools/audit_69.py --output audit-output
 ```
 
 仅 Python 标准库 + Git。脚本只读取 exact Git blobs，不执行受审计文件。文件分层是审计采用的人工 rubric；扫描只覆盖普通 Markdown 文件链接和部分 backtick 路径引用，不覆盖锚点、所有语义引用或秘密检测。阅读成本是明确路径的 whole-file 场景，不能作为真实 fresh-agent 成功率。
+
+只读 API canary 可在具有本公开仓读取权限的现有 `gh` 会话中运行 `python tools/audit_69_api.py`。它复查冻结 tree、REST/GraphQL labels 分页、ETag 和搜索，将当前观察写到 `evidence/api-canaries.json`；结果具有时间性，重跑会更新本地收据，应先保留原审计 commit。Projects 缺 scope 不在该脚本中扩权补齐。
 
 ## 公开 canary 范围
 

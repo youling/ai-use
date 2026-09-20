@@ -1,0 +1,21 @@
+{
+  "started_at": "2026-09-20T11:10:28.849040+00:00",
+  "parent": {
+    "number": 71,
+    "id": 5517455006,
+    "url": "https://github.com/youling/ai-use/issues/71"
+  },
+  "child": {
+    "number": 72,
+    "id": 5517455066,
+    "url": "https://github.com/youling/ai-use/issues/72"
+  },
+  "subissue_readback": true,
+  "subissue_removed": true,
+  "dependency_readback": true,
+  "dependency_removed": true,
+  "finished_at": "2026-09-20T11:10:39.292380+00:00",
+  "fixtures_closed": true,
+  "evidence_class": "SYNTHETIC_CANARY",
+  "limits": "Same public repository, two synthetic issues, existing authenticated CLI. Does not prove cross-repository/private permissions, dependency-cycle handling, event delivery, scheduling authority or recovery of original IDs."
+}
