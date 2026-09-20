@@ -77,7 +77,7 @@
 | Public entry / 第一次不知道从哪开始 | `START_HERE.md`；只做 navigation |
 | zero-prompt next-hop | `NAMESPACE.md` 给 chain；本表判断 `NEXT | SKIP | STOP_*` |
 | startup / recovery / access / live-state gate | `10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md` |
-| 本地 / 本地+设备 / explicit local toolchain execution preflight | `10_BOOT/LOCAL_ENGINEERING_GATE.md`；优先运行 `tools/local_engineering_gate.ps1`，再进入高成本施工 |
+| 本地 / 本地+设备 / explicit local toolchain execution preflight | `10_BOOT/LOCAL_ENGINEERING_GATE.md`；运行当前平台 adapter 后再进入高成本施工（Windows reference：`tools/local_engineering_gate.ps1`） |
 | workspace initialization / role registration | `10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md` + `50_TEMPLATES/HUMAN_WORKSPACE_BOOTSTRAP.md` |
 | any write/mutation / workspace ownership / scope hygiene | `docs/AGENT_INTERFACE.md` §1.0；适用于 Direct 与 delegated executor |
 | Fresh/takeover Architect material architecture；material new-domain / major capability / major pivot | `docs/ARCHITECT_RECONNAISSANCE.md`；Bootstrap `EXECUTION_ALLOWED` 后完成适用的 ARCH-0，再进入 `ARCHITECT_READY` |

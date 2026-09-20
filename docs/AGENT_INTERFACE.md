@@ -258,7 +258,7 @@ Human-facing language 只引用 `00_KERNEL/LANGUAGE_POLICY.md`；本接口不复
 
 ## 6. Versioned Definitions
 
-- `2.5.0`：Local Engineering Human Gate（#76）。`本地 / 本地+设备` 只表达 Human 调度位置，executor 需在 BOOT-3 按 targeted gate 脚本验证 PowerShell/Git/GitHub/Codex/OpenCode/repo/project hook 等 current capability；gate 不产生 authority、不接收 Human secret、不要求 L0 扩张。
+- `2.5.0`：Local Engineering Human Gate（#76）。`本地 / 本地+设备` 只表达 Human 调度位置，executor 需在 BOOT-3 使用**当前平台原生 adapter**验证 Work Order 所需的本地 tool/auth/repo/project/device capability；Windows reference 检查 PowerShell/Git/GitHub/Codex/OpenCode 等。共享的是 Gate contract，不是 PowerShell implementation；gate 不产生 authority、不接收 Human secret、不要求 L0 扩张。
 - `2.4.0`：Context Lifecycle v0.1 normative materialization（#60）。新增 §1.6 同 lineage 默认 `WARM_RESUME`、§1.7 `PREMATURE_YIELD` 可执行判据、§1.8 completion boundary（来自 durable acceptance）、§1.9 fresh 与 delegation 边界指针；§3 明确可选 `执行意图` 为语义意图而非 acceptance / stop 副本；正交 `context_policy / mode / continuation / independence` 与最小 `delegation / parallelism` 的可复制形态只在 `50_TEMPLATES/CONTEXT_MODE_SEED.md` 维护，本文不复制第二份维度表；provider 命令仅作 informative 示例，不进 canonical。
 - `2.3.0`：Human/Agent 双词收敛为 `50_TEMPLATES/DISPATCH_PAIR.md` 单一可复制模板；Human Card 从旧六类执行依赖/六字段 UX 收敛为 `网页端 | 云端电脑 | 本地 | 本地+设备` 四类运行位置与五字段卡；Minimal Seed 改为中文扁平键值并加入可选 `节点 / 项目 / 情景 / 上下文参考`，去除 Human-facing `startup_mode/access/work` 重复字段；旧格式保持 historical provenance。
 - `2.2.0`：Kernel residency canonicalization；本文件正式成为 common mutation workspace/scope hygiene、`DIRECT | DELEGATE`、Architect continuous advancement、Global Architect Maintenance Lane 与 Human/Agent dispatch interface 的 canonical home；Bootstrap access routing 与 language override 只保留 pointer，不再复制 downstream policy。**Behavior preserved; residency changed.**

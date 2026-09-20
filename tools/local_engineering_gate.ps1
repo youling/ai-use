@@ -21,16 +21,19 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference="Stop"
 $ProgressPreference="SilentlyContinue"
-$GateVersion="0.1.0"
+$ContractVersion="1.0.0"
+$AdapterId="windows-pwsh"
+$AdapterVersion="0.1.0"
+$Platform="windows"
 $Checks=[System.Collections.Generic.List[object]]::new()
 
 function Add-Check([string]$Name,[bool]$Required,[string]$State,[string]$Detail="",[string]$LocalVersion="",[string]$LatestVersion=""){
   $Checks.Add([pscustomobject]@{name=$Name;required=$Required;state=$State;local_version=$LocalVersion;latest_version=$LatestVersion;detail=$Detail}) | Out-Null
 }
 
-function Run([string]$File,[string[]]$Args=@()){
+function Run([string]$File,[string[]]$Arguments=@()){
   try {
-    $out=(& $File @Args 2>&1 | Out-String).Trim()
+    $out=(& $File @Arguments 2>&1 | Out-String).Trim()
     $code=if($null -eq $LASTEXITCODE){0}else{[int]$LASTEXITCODE}
     return [pscustomobject]@{code=$code;out=$out}
   } catch {
@@ -80,7 +83,7 @@ if($SelfTest){
     $v=SemVer $x[0]
     if($null -eq $v -or $v.ToString() -ne $x[1]){throw "SelfTest failed"}
   }
-  [pscustomobject]@{gate_version=$GateVersion;self_test="PASS";authority_effect="NONE"} | ConvertTo-Json
+  [pscustomobject]@{gate_contract_version=$ContractVersion;adapter_id=$AdapterId;adapter_version=$AdapterVersion;platform=$Platform;self_test="PASS";authority_effect="NONE"} | ConvertTo-Json
   exit 0
 }
 
@@ -200,8 +203,8 @@ if($RequireLatest -and $updates.Count -gt 0){$block=@($block+$updates)}
 $warnings=@($Checks|Where-Object{$_.state -eq "UPDATE_REQUIRED" -or ((-not $_.required) -and $_.state -in @("BLOCKED","UNKNOWN"))})
 $overall=if($block.Count -gt 0){"BLOCKED"}elseif($unknown.Count -gt 0){"UNKNOWN"}elseif($warnings.Count -gt 0){"READY_WITH_WARNINGS"}else{"READY"}
 
-$result=[ordered]@{gate_version=$GateVersion;execution_profile=$ExecutionProfile;repository=$Repository;checks=@($Checks);overall=$overall;blockers=@($block|ForEach-Object{$_.name});warnings=@($warnings|ForEach-Object{$_.name});authority_effect="NONE"}
-if($Json){$result|ConvertTo-Json -Depth 8}else{Write-Host "Local Engineering Human Gate $GateVersion";Write-Host "Overall: $overall";$Checks|Format-Table name,required,state,local_version,latest_version,detail -AutoSize}
+$result=[ordered]@{gate_contract_version=$ContractVersion;adapter_id=$AdapterId;adapter_version=$AdapterVersion;platform=$Platform;execution_profile=$ExecutionProfile;repository=$Repository;checks=@($Checks);overall=$overall;blockers=@($block|ForEach-Object{$_.name});warnings=@($warnings|ForEach-Object{$_.name});authority_effect="NONE"}
+if($Json){$result|ConvertTo-Json -Depth 8}else{Write-Host "Local Engineering Human Gate contract $ContractVersion / adapter $AdapterId $AdapterVersion";Write-Host "Overall: $overall";$Checks|Format-Table name,required,state,local_version,latest_version,detail -AutoSize}
 if($overall -eq "BLOCKED"){exit 2}
 if($overall -eq "UNKNOWN"){exit 3}
 exit 0

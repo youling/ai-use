@@ -148,7 +148,7 @@ Fresh/takeover Architect role cold-start 没有 explicit Work Coordinate 时，�
 
 当 current Work Order 的运行位置为 **本地 / 本地+设备**，或任务明确依赖本地 toolchain / process / private-network capability 时，在进入高成本本地施工前执行 [`LOCAL_ENGINEERING_GATE.md`](LOCAL_ENGINEERING_GATE.md)。
 
-该 gate 只证明当前 Human-selected execution environment 是否满足任务假设，不产生 authority。优先使用脚本化 preflight；Windows reference 为 `tools/local_engineering_gate.ps1`。
+该 gate 只证明当前 Human-selected execution environment 是否满足任务假设，不产生 authority。优先使用当前 execution platform 的脚本化 adapter；Windows reference 为 `tools/local_engineering_gate.ps1`，Linux/Android 后续使用原生 adapter，不共享 PowerShell implementation。
 
 结果为 `READY | READY_WITH_WARNINGS | BLOCKED | UNKNOWN`。required capability 为 `BLOCKED/UNKNOWN` 时不得进入 effectful execution。缺凭据时只报告 capability gap，由 Human 通过 provider/native login flow 修复；禁止把 password/token/private key 交给 Agent。
 
