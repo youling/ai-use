@@ -2,7 +2,9 @@
 
 **Classification: L2 Targeted Reference.** 仅在启动 / 派发 / 恢复场景触发时读取。
 
-**Protocol Version: 1.1.0**
+**Protocol Version: 1.2.0**
+
+恢复/交接先按 [Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md#1-恢复分类) 识别场景；本协议仍是 ordered applicability 与 execution gate 的唯一 owner。
 
 ## 启动模型（固化）
 
@@ -229,5 +231,14 @@ Bootstrap report MAY 列 current active graph / blockers，但不得仅凭 repo/
 3. governance L0 从 current governance repo 解析；control-plane 从 `workspace_registry.control_plane.repo` 或等价 deployment registration 解析。
 4. private repo 首次 durable read 使用 authenticated route；匿名 404 不是权限/存在性证据。
 5. missing optional `asset` / `project` role 不阻塞最小 workspace；只有必需 role 或真实 authority/access/currentness 缺口才 fail closed。
-6. `NAMESPACE.md` 定义 L0 后的 zero-prompt next-hop routing chain；它不是 mandatory full-read order，也不产生 authority / scope / acceptance / priority。
+6. `NAMESPACE.md` 与 `READING_MAP.md` 是 [Routing Catalog](../ROUTING_CATALOG.yaml) 的兼容/阅读投影；next-hop chain 不是 mandatory full-read order，不产生 authority / scope / acceptance / priority。
 7. Human-facing narrative 默认简体中文；英文 template/header 不构成 language override。
+
+
+## 4. Targeted capability preflight
+
+这是既有 Capability Self Check 的 canonical home。新节点/设备、首次接入或派发前需确认执行能力时，按当前任务所需范围盘点 runtime、tools/关键版本、认证状态、目标 access/visibility、OS/network/owned workspace 与 limits；未知写 `unknown`，不编造。只读检查不执行业务任务、不修改目标文件、不输出 token/secret 值。
+
+检查结果只是 capability evidence，不产生 authority；required authority/access 仍由 §3A 判定。缺失**必要**能力时报告 `BLOCKED`，仅实际需要 Human 才使用 `WAITING_FOR_HUMAN`；能力足够的 `READY` 不替代 `EXECUTION_ALLOWED`。可选或无关能力缺失不新建 blocker。
+
+按 [Durable Trace](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) 回写 `CAPABILITY_SELF_CHECK_REPORT` 或在 Bootstrap Report 中引用等价 current evidence；已存在的适用证据不要求重复出独立报告。模板见 [capability_self_check](../50_TEMPLATES/capability_self_check.md)。本节不建立 Lab、provider capability registry 或 promotion schema。

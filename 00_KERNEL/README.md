@@ -39,7 +39,8 @@ Kernel 层是 zero-prompt cold-start chain 的第一个逻辑阶段，也是 low
 - Architect reconnaissance -> `../docs/ARCHITECT_RECONNAISSANCE.md`；
 - durable trace mechanics -> `../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md`；
 - language details -> `LANGUAGE_POLICY.md`；
-- routing -> `../NAMESPACE.md` + `../READING_MAP.md`。
+- recovery/context -> [Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md)；
+- routing -> [Routing Catalog](../ROUTING_CATALOG.yaml)；`../NAMESPACE.md` + `../READING_MAP.md` 是派生投影。
 
 其它文档引用这些 semantics 时只写必要 invariant / summary / pointer，不复制完整 mechanics。
 

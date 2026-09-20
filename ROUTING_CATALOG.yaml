@@ -1,0 +1,327 @@
+{
+  "schema_version": "1.0.0",
+  "format": "JSON-compatible YAML 1.2; parse with Python standard-library json",
+  "boundary": "只拥有 scene/applicability、reading trigger、canonical-home 与 projection/compatibility metadata；不拥有 authority、scope/acceptance、private topology、live project facts 或 protocol mechanics。",
+  "navigation": {
+    "entry": "执行/恢复/接管的第一份 normative rules 是 current governance repo 的 AGENTS.md；BOOT-1 可先做纯寻址。",
+    "chain": [
+      "00",
+      "10",
+      "20",
+      "30",
+      "40",
+      "50",
+      "90"
+    ],
+    "layers": {
+      "00": "Kernel",
+      "10": "Bootstrap",
+      "20": "Roles",
+      "30": "Protocols",
+      "40": "Guides",
+      "50": "Templates",
+      "90": "History"
+    },
+    "results": {
+      "NEXT": "角色/场景命中，targeted 读取必要 home 后继续。",
+      "SKIP": "没有适用内容，不读该层正文。",
+      "STOP_READY": "最小充分 context 与 current Bootstrap/execution gates 满足，即退出阅读链。",
+      "STOP_BLOCKED": "真实 authority/access/currentness/security/dependency gate；报告精确缺口。"
+    },
+    "notes": [
+      "链可短路，不是 mandatory full-read。没有 Human 新 prompt 本身不阻塞下一跳。",
+      "在 L0 后按匹配场景选择 home；roles 中 Architect 包括 Project/Global Architect。普通 delegated executor 读取 exact Work/Dispatch、target-local rules 与 owns 范围；这些 owner-local 内容不进入本目录。",
+      "同一文件命中多个场景只读取所需章节一次。只有生成对应 artifact 时才读取 templates；history 默认跳过。",
+      "投影可直接用于选路；不要求再通读 catalog 或其它投影。新文档默认 L2/L3，提升 L0 必须遵守 AGENTS.md Kernel residency test。",
+      "下层缺失/陈旧/冲突时保留 L0 判断：可选输入可跳过，必需输入无法替代则 STOP_BLOCKED；不能反向修改 authority/truth/scope。",
+      "项目类型不会自动触发 Workspace Bootstrap、Human collaboration、全仓扫描、全量 Constitution、history 或任何外部项目。security/permission 与 cross-repo contract 仅按当前真实依赖读取 owner-local current source。"
+    ]
+  },
+  "projections": {
+    "human": "START_HERE.md",
+    "reading": "READING_MAP.md",
+    "compatibility": "NAMESPACE.md",
+    "index": "docs/ROUTING_INDEX.md"
+  },
+  "entries": [
+    {
+      "id": "kernel",
+      "layer": "00",
+      "reading_level": "L0",
+      "roles": [
+        "all"
+      ],
+      "when": "execution / recovery / takeover 的第一份 normative rules",
+      "home": "AGENTS.md",
+      "section": "",
+      "templates": [],
+      "public": true
+    },
+    {
+      "id": "language",
+      "layer": "00",
+      "reading_level": "L2",
+      "roles": [
+        "all"
+      ],
+      "when": "Human-facing language / override 存在歧义",
+      "home": "00_KERNEL/LANGUAGE_POLICY.md",
+      "section": "",
+      "templates": [],
+      "public": false
+    },
+    {
+      "id": "bootstrap",
+      "layer": "10",
+      "reading_level": "L2",
+      "roles": [
+        "all"
+      ],
+      "when": "startup / recovery / access / live-state gate",
+      "home": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+      "section": "",
+      "templates": [
+        "50_TEMPLATES/bootstrap_check_request.md",
+        "50_TEMPLATES/capability_self_check.md"
+      ],
+      "public": true
+    },
+    {
+      "id": "workspace",
+      "layer": "10",
+      "reading_level": "L2",
+      "roles": [
+        "Global Architect",
+        "Human"
+      ],
+      "when": "仅 workspace 初始化 / role registration；普通项目执行不触发",
+      "home": "10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md",
+      "section": "",
+      "templates": [
+        "50_TEMPLATES/HUMAN_WORKSPACE_BOOTSTRAP.md"
+      ],
+      "public": true
+    },
+    {
+      "id": "roles",
+      "layer": "20",
+      "reading_level": "L2",
+      "roles": [
+        "all"
+      ],
+      "when": "current role / authority boundary 尚不明确",
+      "home": "CONSTITUTION.md",
+      "section": "§2",
+      "templates": [],
+      "public": false
+    },
+    {
+      "id": "execution",
+      "layer": "30",
+      "reading_level": "L2",
+      "roles": [
+        "all"
+      ],
+      "when": "mutation / workspace hygiene、DIRECT/DELEGATE、dispatch / review / repair / continuation / completion / Maintenance Lane",
+      "home": "docs/AGENT_INTERFACE.md",
+      "section": "§1–4",
+      "templates": [
+        "50_TEMPLATES/DISPATCH_PAIR.md"
+      ],
+      "public": true
+    },
+    {
+      "id": "recovery",
+      "layer": "30",
+      "reading_level": "L2",
+      "roles": [
+        "all"
+      ],
+      "when": "planned transfer / crash takeover / old context unavailable / hot or warm resume；context modes / independence / delegation",
+      "home": "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+      "section": "§1–5",
+      "templates": [
+        "50_TEMPLATES/CONTEXT_MODE_SEED.md",
+        "50_TEMPLATES/architect_handoff_check.md",
+        "50_TEMPLATES/architect_handoff_transaction.md"
+      ],
+      "public": true
+    },
+    {
+      "id": "trace",
+      "layer": "30",
+      "reading_level": "L2",
+      "roles": [
+        "all"
+      ],
+      "when": "事实价值行为 / checkpoint / durable recovery evidence",
+      "home": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+      "section": "",
+      "templates": [],
+      "public": true
+    },
+    {
+      "id": "change",
+      "layer": "30",
+      "reading_level": "L2",
+      "roles": [
+        "Architect",
+        "Builder",
+        "Research",
+        "Repair"
+      ],
+      "when": "文档即代码、代码/文档变更分级、Issue/ADR/PR、repo-wide migration / bulk refactor；Builder/Research/Repair 仅派单要求治理 artifact 时",
+      "home": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+      "section": "§3–4.1",
+      "templates": [
+        "50_TEMPLATES/CHANGE_LIFECYCLE.md"
+      ],
+      "public": false
+    },
+    {
+      "id": "diagram",
+      "layer": "30",
+      "reading_level": "L2",
+      "roles": [
+        "Architect",
+        "Builder",
+        "Research",
+        "Repair"
+      ],
+      "when": "复杂 topology / workflow / sequence / lifecycle / diagram drift；Builder/Research/Repair 仅派单要求 diagram 时",
+      "home": "30_PROTOCOLS/DIAGRAM_AS_CODE.md",
+      "section": "",
+      "templates": [
+        "50_TEMPLATES/DIAGRAM_AS_CODE.md"
+      ],
+      "public": false
+    },
+    {
+      "id": "data",
+      "layer": "30",
+      "reading_level": "L2",
+      "roles": [
+        "all"
+      ],
+      "when": "durable business data / data model / schema migration",
+      "home": "docs/DURABLE_DATA_DOCTRINE.md",
+      "section": "",
+      "templates": [],
+      "public": false
+    },
+    {
+      "id": "reproducibility",
+      "layer": "30",
+      "reading_level": "L2",
+      "roles": [
+        "all"
+      ],
+      "when": "恢复项目所需 setup / runtime / fixture / reproducibility contract",
+      "home": "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+      "section": "§7",
+      "templates": [],
+      "public": false
+    },
+    {
+      "id": "reconnaissance",
+      "layer": "40",
+      "reading_level": "L2",
+      "roles": [
+        "Architect"
+      ],
+      "when": "Fresh/takeover material architecture、new domain / major pivot；成熟项目拟引入 external runtime/framework/subsystem；普通 hot resume / 小 bug / 确定性维护不机械重做 ARCH-0",
+      "home": "docs/ARCHITECT_RECONNAISSANCE.md",
+      "section": "",
+      "templates": [],
+      "public": false
+    },
+    {
+      "id": "merge",
+      "layer": "40",
+      "reading_level": "L2",
+      "roles": [
+        "Architect",
+        "Release"
+      ],
+      "when": "repository merge authority / gate；同时按任务读取 project-local contract / identity mapping",
+      "home": "CONSTITUTION.md",
+      "section": "§2",
+      "templates": [],
+      "public": false
+    },
+    {
+      "id": "verification",
+      "layer": "40",
+      "reading_level": "L2",
+      "roles": [
+        "Architect",
+        "Verifier",
+        "Incident"
+      ],
+      "when": "verification policy ambiguity / Incident / governance conflict；同时读取 exact requirements / current verification contract",
+      "home": "CONSTITUTION.md",
+      "section": "§7–8",
+      "templates": [],
+      "public": false
+    },
+    {
+      "id": "cold-start-check",
+      "layer": "40",
+      "reading_level": "L2",
+      "roles": [
+        "all"
+      ],
+      "when": "public cold-start / Kernel ABI / recovery regression 验证",
+      "home": "40_GUIDES/PUBLIC_COLD_START_CHECKLIST.md",
+      "section": "",
+      "templates": [],
+      "public": true
+    },
+    {
+      "id": "human-collaboration",
+      "layer": "40",
+      "reading_level": "L2",
+      "roles": [
+        "Human collaborator"
+      ],
+      "when": "Human 明确指定二脑协作 / Depositor；project 类型本身不触发",
+      "home": "human/README.md",
+      "section": "",
+      "templates": [],
+      "public": true
+    },
+    {
+      "id": "history",
+      "layer": "90",
+      "reading_level": "L3",
+      "roles": [
+        "all"
+      ],
+      "when": "明确需要 rationale / historical provenance / Incident deep-dive，默认跳过",
+      "home": "90_HISTORY/README.md",
+      "section": "",
+      "templates": [],
+      "public": false
+    }
+  ],
+  "compatibility": [
+    {
+      "path": "docs/SESSION_LIFECYCLE.md",
+      "route": "recovery",
+      "status": "forward",
+      "note": "旧 Fast Restore / Convergence / context anchors 指向 current protocol，旧正文保留 frozen Git provenance。"
+    },
+    {
+      "path": "docs/DeepSeekPP-github-mcp-usage.md",
+      "route": "bootstrap",
+      "status": "retired-forward",
+      "note": "旧 provider 指南仅历史 provenance，current access 指向 Bootstrap。"
+    },
+    {
+      "path": "20_ROLES/README.md",
+      "route": "roles",
+      "status": "forward",
+      "note": "保留原目录入口。"
+    }
+  ]
+}

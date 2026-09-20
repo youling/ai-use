@@ -1,5 +1,7 @@
 # Human SSOT Depositor Prompt v0.1
 
+> **HISTORICAL / SUPERSEDED**：本文件仅保留原版本 provenance，不再是 current copyable entry。当前入口见 [DEPOSITOR_PROMPT.md](DEPOSITOR_PROMPT.md)；本次没有升级其 0.1.3 语义。
+
 > 用途：当一次 Chat / Agent 交流完成后，临时调用 AI 将当前交流沉淀到 Human SSOT（如 `an`）。
 >
 > 本提示不是让 AI 分析 Human，而是让 AI 生成可靠的 source-bound Deposit。

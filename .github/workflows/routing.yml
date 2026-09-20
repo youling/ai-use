@@ -1,0 +1,32 @@
+name: Routing and recovery structure
+on:
+  pull_request:
+  push:
+    branches: [main, 'codex/r74-*']
+permissions:
+  contents: read
+concurrency:
+  group: routing-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  routing:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Catalog, projections, links, compatibility, public fixtures and L0
+        env:
+          ROUTING_BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: python tools/routing.py --check
+      - name: Negative fixtures
+        run: python tools/test_routing.py
+      - name: Whitespace
+        run: git diff --check e6de9acdafbc3b9d12802ecf8de25f444074553b

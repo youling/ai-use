@@ -67,10 +67,12 @@ Checkpoint 本身不授权 force push、merge、deploy、destructive cleanup，�
 
 ## Resume / Recovery 规则
 
+恢复分支与旧 context 不可用的处理见 [Recovery & Handoff](RECOVERY_HANDOFF.md#1-恢复分类)。本节只拥有 checkpoint 的读取/验证 mechanics；没有旧 checkpoint 本身不新增 recovery gate。
+
 恢复任务时：
 
 1. 先按当前 Bootstrap / access route 读取 live Work Order、current durable ruling、Issue state 与 remote refs；
-2. 再读取同一 `work` 的**最近有效 `PROGRESS_CHECKPOINT` / HANDOFF / READY_FOR_REVIEW`**；
+2. 存在时，读取同一 `work` 的**最近有效 `PROGRESS_CHECKPOINT` / HANDOFF / READY_FOR_REVIEW**；不存在或旧 context 不可用时按 Recovery & Handoff 从 current durable state 重建，不把旧产物缺失单独视为 blocker；
 3. 用 live GitHub state 校验 checkpoint 中的 branch / commit / exact head / PR 是否仍 current；
 4. checkpoint 与 live state 冲突时，以 live durable state 为准并报告 drift；不得盲信旧 checkpoint；
 5. 从最近仍成立的 checkpoint 继续，不要求重新研究已经有 durable evidence 的前序阶段。
