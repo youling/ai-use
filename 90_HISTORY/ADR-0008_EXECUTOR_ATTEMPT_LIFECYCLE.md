@@ -1,8 +1,8 @@
 # ADR-0008：Observable Executor Attempt Lifecycle
 
-**Artifact Version: 1.0.0**  
-状态：Decision materialization；acceptance/currentness 以 Git/GitHub exact-head Review + merge history 为准  
-裁决来源：[Governance #94](https://github.com/youling/ai-use/issues/94)  
+**Artifact Version: 1.0.0**
+状态：Decision materialization；acceptance/currentness 以 Git/GitHub exact-head Review + merge history 为准
+裁决来源：[Governance #94](https://github.com/youling/ai-use/issues/94)
 语义 owner：[Agent Interface](../docs/AGENT_INTERFACE.md) + [Durable Trace Principle](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md)
 
 ## Context
