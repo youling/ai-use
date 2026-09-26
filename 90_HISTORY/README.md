@@ -14,5 +14,6 @@
 - [ADR-0005](ADR-0005_OWNER_NATIVE_DERIVATION.md) — Owner / instance、GitHub Native First 与派生解释边界（已 exact-head Review 接受）。
 - [ADR-0006](ADR-0006_GITHUB_CAPABILITY_LAB.md) — GitHub Capability Lab evidence、fixture safety、currentness 与 owner-local adoption delta（已 exact-head Review 接受）。
 - [ADR-0007](ADR-0007_ACTIONS_RESOURCE_BUDGET.md) — GitHub Actions visibility / runner / budget-aware 使用策略（#89）。
+- [ADR-0008](ADR-0008_EXECUTOR_ATTEMPT_LIFECYCLE.md) — Delegated executor 的 `DISPATCH → CLAIM → [CHECKPOINT]* → TERMINAL` 可观察 attempt lifecycle（#94）。
 
 退休入口的历史原文通过 [Session compatibility](../docs/SESSION_LIFECYCLE.md)、[provider guide forward](../docs/DeepSeekPP-github-mcp-usage.md) 的 frozen Git pointers 追溯；默认不读取历史全文。
