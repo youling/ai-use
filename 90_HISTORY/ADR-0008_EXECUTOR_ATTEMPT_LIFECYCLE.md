@@ -26,7 +26,7 @@ DISPATCH
 
 1. **CLAIM 是 attempt-start evidence。** Bootstrap / execution gate 通过后、material execution 前写入 exact Work coordinate，并 readback 确认。
 2. **CHECKPOINT 仍是语义阶段事件。** 短任务可以没有 checkpoint；禁止 heartbeat 化。
-3. **TERMINAL 是 attempt-close evidence。** SUCCESS、NEGATIVE_RESULT、PARTIAL、BLOCKED、HUMAN_REQUIRED、FAILED 都必须走同一 durable closeout；写入后必须 readback 确认。
+3. **TERMINAL 是 attempt-close evidence。** SUCCESS、NEGATIVE_RESULT、PARTIAL、BLOCKED、HUMAN_REQUIRED、FAILED、CANCELLED 都必须走同一 durable closeout；TERMINAL 必须精确引用它关闭的 CLAIM pointer，写入后必须 readback 确认。
 4. **Attempt lifecycle 与 Work lifecycle 分离。** TERMINAL 关闭一次 executor attempt，不自动关闭 Work，不替代 Architect Review、merge 或 deploy gate。
 5. **Completion 必须绑定 durable closeout。** `WRITEBACK_ATTEMPTED != DURABLE_WRITEBACK_CONFIRMED`；适用 delegated execution 在 terminal writeback 未确认前不能声称 `COMPLETION_REACHED`。
 6. **Terminal transport 只返回 pointer。** durable terminal result 确认后，delegated executor 对 caller/Human 的最终返回只包含 exact GitHub pointer，不复制 summary。父 Architect live-read pointer/current Work 后再消费。
@@ -40,7 +40,7 @@ DISPATCH
 - 有 CLAIM、无 TERMINAL：执行可能仍在进行，或已经进入 suspect/recovery candidate；
 - 有 TERMINAL：本 attempt 已 durable 闭合，结果可由其它 Agent/Human 重新读取。
 
-中间 checkpoint 保持可选，避免把协议变成高频 heartbeat 或日志系统。
+TERMINAL 直接引用 exact CLAIM pointer，不另造 attempt-ID registry；GitHub durable pointer 本身就是 attempt correlation key。中间 checkpoint 保持可选，避免把协议变成高频 heartbeat 或日志系统。
 
 Pointer-only terminal return 同时把“有没有正确回写”变成可机械观察的 transport property：没有 pointer、pointer 无效或 pointer 指向不匹配 terminal event 都是显式 drift，而不是自然语言猜测。
 
