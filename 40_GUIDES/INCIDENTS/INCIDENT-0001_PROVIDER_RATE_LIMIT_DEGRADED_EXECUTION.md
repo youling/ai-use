@@ -2,10 +2,10 @@
 
 ## Summary
 
-**Observed window:** 2026-09-26 → 2026-09-27  
-**Primary work:** youling/ai-use#98 governance audit  
-**Experiment:** youling/ai-use#99  
-**Fault class:** provider/session availability / rate-limit degradation  
+**Observed window:** 2026-09-26 → 2026-09-27
+**Primary work:** youling/ai-use#98 governance audit
+**Experiment:** youling/ai-use#99
+**Fault class:** provider/session availability / rate-limit degradation
 **Case status:** MITIGATION_VALIDATED / ROOT_CAUSE_RESOLUTION_UNKNOWN
 
 在一次 Global Architect 长链治理施工中，Agent 表现退化为“每收到一次 Human 新消息，只能推进一个很小步骤”，无法保持正常的 CONTINUE_WITHIN_AUTHORITY 长链执行。Human 使用 Codex/Astra 做外部分析后判断执行环境遭遇 HTTP 429 rate limiting。
