@@ -57,7 +57,8 @@ status: CLAIMED
 AGENT_TERMINAL_RESULT
 ---
 work: <owner/repo#issue@step>
-result: SUCCESS | NEGATIVE_RESULT | PARTIAL | BLOCKED | HUMAN_REQUIRED | FAILED
+claim: <exact AGENT_CLAIMED pointer>
+result: SUCCESS | NEGATIVE_RESULT | PARTIAL | BLOCKED | HUMAN_REQUIRED | FAILED | CANCELLED
 remote_head: <sha | none>
 durable_refs: <PR / commit / report / artifact pointers, or none>
 verification: <summary>
@@ -70,6 +71,7 @@ next: <single next action>
 
 - 每个已 CLAIM 的 delegated attempt 在正常可写回的终止路径上都必须产生 terminal result，成功与失败没有例外；
 - 写回 exact Work coordinate 后必须 readback / 等价 durable read 确认，`WRITEBACK_ATTEMPTED != DURABLE_WRITEBACK_CONFIRMED`；
+- `claim` 必须精确引用本 terminal 所关闭的 `AGENT_CLAIMED`，以区分同一 Work coordinate 的多次 retry / recovery attempt；
 - terminal result 关闭 execution attempt，不自动关闭 Work Order，不替代 Architect Review / merge / deploy gate；
 - terminal 详细事实留在 durable source，不依赖聊天 self-report；
 - 没有 authorized durable write path 的 subagent 不得假装产生 terminal event，由 primary/orchestrator 承担最终 durable writeback。
