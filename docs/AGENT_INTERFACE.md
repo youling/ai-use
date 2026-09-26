@@ -192,7 +192,7 @@ DISPATCH
 
 - `AGENT_CLAIMED`：Bootstrap / execution gate 已通过后、material execution 开始前立即写入 exact Work coordinate，并从 durable source readback 确认。它只证明“本 attempt 已接手并开始”，不产生 authority，也不改变 Work 状态。
 - `PROGRESS_CHECKPOINT`：只在语义阶段边界按 Durable Trace 写入；不是 heartbeat。短任务可以没有 checkpoint。
-- `AGENT_TERMINAL_RESULT`：无论 `SUCCESS | NEGATIVE_RESULT | PARTIAL | BLOCKED | HUMAN_REQUIRED | FAILED`，本 attempt 终止前都必须写回 exact Work coordinate，并 readback 确认。它关闭的是 **execution attempt**，不自动把 Work Order 置为 DONE，也不替代 Architect Review。
+- `AGENT_TERMINAL_RESULT`：无论 `SUCCESS | NEGATIVE_RESULT | PARTIAL | BLOCKED | HUMAN_REQUIRED | FAILED | CANCELLED`，本 attempt 终止前都必须写回 exact Work coordinate，并 readback 确认。它关闭的是 **execution attempt**，不自动把 Work Order 置为 DONE，也不替代 Architect Review。
 
 因此：
 
