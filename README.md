@@ -2,6 +2,8 @@
 
 一套围绕 **Human governance + 专职 AI Agent + Git/GitHub durable state** 形成的人机协作方法论。
 
+它的工程出发点很简单：**默认 Human 不可靠、默认 AI 不可靠、默认执行环境不可靠。** 这里的“不可靠”不是价值判断，而是故障模型——Human 会遗忘、分心、离开项目；AI 会丢上下文、漂移、自述失真或突然中断；设备、网络、会话和执行节点会离线、损坏或被替换。ai-use 的目标不是消灭这些故障，而是让系统在这些故障发生后仍然可以从 durable state 恢复、核验并继续。
+
 > 第一次进入？先读 [`START_HERE.md`](START_HERE.md)。准备执行/接管角色时，第一份 normative rules read 是 current [`AGENTS.md`](AGENTS.md) L0。
 
 [路由总览（派生）](docs/ROUTING_INDEX.md) · [路由目录源](ROUTING_CATALOG.yaml)
@@ -9,6 +11,14 @@
 ---
 
 ## Why
+
+ai-use 从三个默认故障假设开始：
+
+- **Human 不可靠**：记忆会衰减，注意力会切换，人会离开几天甚至忘记某条施工线；Human 不应成为消息总线、状态数据库或唯一调度时钟。
+- **AI 不可靠**：上下文会丢、模型会漂移、Agent 会自述“完成”却缺少 durable evidence，也可能因为 token、provider、网络或会话中断突然消失。
+- **执行环境不可靠**：电脑、节点、容器、网络、本地 workspace 和 provider runtime 都可能失效；任何单台设备都应当可丢弃、可替换。
+
+因此，系统把 **Git/GitHub durable state** 作为可恢复协作基础，把聊天和本地现场降为 working cache，并用显式 authority、evidence、checkpoint、review 与 fail-closed gate 对抗这些不可靠性。
 
 AI 很强，但如果只用聊天来驱动它写代码，长期工程会逐渐劣化：
 
