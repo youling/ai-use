@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** Read when dispatching/executing Agent work, choosing Architect execution mode, advancing an authorized program, or producing/reviewing Human/Agent interface artifacts.
 
-**Protocol Version: 2.6.0**
+**Protocol Version: 2.7.0**
 
 本文是 **execution / dispatch / continuation interface** 的 canonical home。公共 `ai-use` 不绑定特定 owner/repo、私有 control-plane 名称或账号。[Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md) 拥有 recovery、Work Context、正交 context/mode 与 independence/delegation 语义；[CONTEXT_MODE_SEED](../50_TEMPLATES/CONTEXT_MODE_SEED.md) 只给形态。本文保留 continuation、`PREMATURE_YIELD` 与完成边界。
 
@@ -46,6 +46,14 @@ status: `DISPATCHED`
 ```
 
 具体机器 gate 由 deployment-local control-plane contract 定义。公共 contract 不假设 control plane 一定叫 `ai-hub`，也不指向上游维护者 private repo。
+
+Delegated execution 在 `EXECUTION_ALLOWED` 后进入统一的 attempt lifecycle：
+
+```text
+DISPATCH -> AGENT_CLAIMED -> [PROGRESS_CHECKPOINT]* -> AGENT_TERMINAL_RESULT
+```
+
+事件的 durable shape 由 [Durable Trace Principle](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md#delegated-execution-attempt-events) 拥有；本接口只拥有这些事件与 execution/completion 的关系。
 
 ### 1.2 Bootstrap relationship
 
@@ -169,11 +177,39 @@ AND executor_yielded
 
 普通 test / lint / typecheck / red CI、已知 review finding、可在当前 scope 内修复的代码错误属于 repair input，不是 Human interrupt。同一 lineage 内 executor 遇到此类输入应自动进入 repair loop，不得把 Human prompt 当 scheduling clock。
 
-### 1.8 Completion boundary：来自 durable acceptance
+### 1.8 Completion boundary：durable acceptance + terminal writeback
 
-不新造第二套 acceptance。executor goal / stop predicate 必须从 current durable Work Order acceptance 编译：只有本任务 acceptance 要求的 deterministic checks / currentness / commit-push / exact-head / evidence 均满足，才可 `COMPLETION_REACHED`。不适用项不得凭模板被强制创造。
+不新造第二套 acceptance。executor goal / stop predicate 必须从 current durable Work Order acceptance 编译；不适用项不得凭模板被强制创造。
 
-Executor 自述 `done / completed` 只是 observation，不能覆盖 deterministic finish / review / evidence gates。`DIRECT` 与 `DELEGATE` 均适用本条；选择执行方式不改变 evidence 要求。
+对 delegated executor，execution attempt 与 Work lifecycle 分开：
+
+```text
+DISPATCH
+ -> AGENT_CLAIMED
+ -> [PROGRESS_CHECKPOINT]*
+ -> AGENT_TERMINAL_RESULT
+```
+
+- `AGENT_CLAIMED`：Bootstrap / execution gate 已通过后、material execution 开始前立即写入 exact Work coordinate，并从 durable source readback 确认。它只证明“本 attempt 已接手并开始”，不产生 authority，也不改变 Work 状态。
+- `PROGRESS_CHECKPOINT`：只在语义阶段边界按 Durable Trace 写入；不是 heartbeat。短任务可以没有 checkpoint。
+- `AGENT_TERMINAL_RESULT`：无论 `SUCCESS | NEGATIVE_RESULT | PARTIAL | BLOCKED | HUMAN_REQUIRED | FAILED`，本 attempt 终止前都必须写回 exact Work coordinate，并 readback 确认。它关闭的是 **execution attempt**，不自动把 Work Order 置为 DONE，也不替代 Architect Review。
+
+因此：
+
+```text
+EXECUTION_FINISHED != COMPLETION_REACHED
+WRITEBACK_ATTEMPTED != DURABLE_WRITEBACK_CONFIRMED
+```
+
+只有 current Work acceptance 要求的 deterministic checks / currentness / commit-push / exact-head / evidence 已满足，且适用 delegated attempt 的 terminal writeback 已被 durable readback 确认，才可 `COMPLETION_REACHED`。
+
+Executor 自述 `done / completed` 只是 observation，不能覆盖 deterministic finish / review / evidence gates。父 Architect / orchestrator 收到 executor 返回后必须 live-read terminal pointer 与 current Work state，再消费结果；聊天中的 self-report 不是 completion evidence。
+
+**Delegated terminal return 固定为 exact GitHub pointer only。** terminal writeback 确认后，executor 对 caller/Human 的最终返回只包含指向该 `AGENT_TERMINAL_RESULT` 的精确 GitHub pointer，不再复制 summary、状态说明、本地路径或代码块。这样 missing/invalid/mismatched pointer 可以被机械识别为 terminal drift。
+
+没有 authorized durable GitHub write path 的 side/fork/subagent 不具备 Work closeout 能力：它只能向 primary/orchestrator 返回有界 evidence；primary 必须验证/综合并完成 durable writeback 后，Work 才能进入可消费的 terminal boundary。
+
+`DIRECT` 与 `DELEGATE` 的 authority/evidence 要求不因本协议改变；CLAIM/TERMINAL 只为 delegated attempt 建立最小可观察闭环。
 
 ### 1.9 Fresh 与 delegation 边界（指针）
 
@@ -233,19 +269,21 @@ Seed 不复制 role、startup_mode、scope、acceptance、requirements、reporti
 
 ---
 
-## 4. Human Completion Card
+## 4. Human Completion Card（非 delegated terminal transport）
 
-Agent 完成后，Builder / Research / Repair / Verifier 保持详细 durable report。Human Completion Card 恰好五个语义：
+Builder / Research / Repair / Verifier 的 terminal transport 由 §1.8 固定为 **exact GitHub pointer only**；详细结果留在 durable `AGENT_TERMINAL_RESULT` / report / PR 中，不再复制到聊天。
+
+Human Completion Card 仅保留为 Architect / orchestrator 在**非 delegated executor terminal return** 场景下的可选 Human-facing synthesis（例如一个 program 已由 Architect 完成最终验收，需要向 Human 汇总）。其五个语义保持：
 
 | # | 字段 | 内容 |
-|---|---|
+|---|---|---|
 | 1 | 结果 | 完成情况 |
 | 2 | 交付 | 交付物 + 精确可恢复 pointer（PR / commit / exact head / durable report） |
 | 3 | 验证 | 验证方法与结果 |
 | 4 | 剩余风险 | 已知风险 / 未覆盖区域 |
 | 5 | 下一步 | 建议的后续动作 |
 
-Human-facing language 只引用 `00_KERNEL/LANGUAGE_POLICY.md`；本接口不复制 language override 细节。
+该 Card 不是 executor lifecycle event、不是 Work 状态源，也不得替代 terminal durable writeback。Human-facing language 只引用 `00_KERNEL/LANGUAGE_POLICY.md`；本接口不复制 language override 细节。
 
 ---
 
@@ -263,6 +301,8 @@ Human-facing language 只引用 `00_KERNEL/LANGUAGE_POLICY.md`；本接口不复
 ---
 
 ## 6. Versioned Definitions
+
+- `2.7.0`：Executor lifecycle hardening（#94）。Delegated attempt 固化为 `DISPATCH -> AGENT_CLAIMED -> [PROGRESS_CHECKPOINT]* -> AGENT_TERMINAL_RESULT`；CLAIM/TERMINAL 必须 durable readback；成功/失败共用收尾门；`COMPLETION_REACHED` 增加 terminal writeback confirmed gate；delegated terminal chat return 固定为 exact GitHub pointer only；无 durable write path 的 subagent 不可关闭 Work。Human Completion Card 降为 Architect/orchestrator 的非 terminal 可选 synthesis，不再与 executor terminal transport 冲突。
 
 - `2.6.0`：在已合并的 Local Engineering Gate 2.5.0 基础上保留 R1 relocation：context/recovery/independence/delegation 的 semantic owner 收敛至 Recovery & Handoff；模板仅保留形态。原 Seed minimality/transport fallback 搬回本接口；continuation、repair、completion 与 authority 不变。PR #75 旧候选曾使用 2.5.0，现与上游版本区分，旧候选由 Git provenance 保留。
 
