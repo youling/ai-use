@@ -1,7 +1,7 @@
 # 文档即代码与变更生命周期
 
 **Classification: L2 Targeted Reference**  
-**Protocol Version: 0.2.0**
+**Protocol Version: 0.3.0**
 
 本协议定义代码与文档 Artifact 的统一变更留痕方式。目标不是把所有 Markdown 都变成重治理对象，而是让**真正会影响 Human / Agent 判断的文档**拥有和代码一样可审查、可追溯、可回滚的生命周期。
 
@@ -137,6 +137,22 @@ Issue
 ```
 
 ADR 记录的是**长期设计选择与取舍**，不是重复粘贴 Issue。后续改变裁决时新增 ADR 或明确 supersede；不要改写旧 ADR 让历史看起来从未发生。
+
+### L2 Semantic Integrity Review Gate
+
+仅当变更属于 **material normative governance L2**（会改变长期 authority、canonical ownership、lifecycle、identity/schema、cross-project contract 或等价治理语义）时，exact-head semantic Review 还必须对下列 proof obligations 逐项给出 `PASS | FAIL | N/A`；`N/A` 需要一句理由。普通 L0、非治理 L2、机械 checks 不因本节增加额外仪式。
+
+1. **Single semantic owner** —— 一个 concept/state/rule 只有一个 canonical home；其它位置只 pointer / summary，不重新创造 authority。
+2. **Term/state separation** —— 相近名称的对象没有被混成同一状态，例如 execution attempt vs Work lifecycle、capability vs authority、observation vs durable truth。
+3. **Authority conservation** —— tool access、permission、state observation、scheduler wake、implementation success、role naming 都没有静默产生新 authority。
+4. **Failure-closed meaning** —— missing / stale / conflicting / partial / unknown 输入有明确且不靠猜测的结果。
+5. **Lifecycle closure** —— 若修改 state machine，start/terminal、abnormal outcome、retry/recovery boundary 与 transition owner 均明确；不适用则标 `N/A`。
+6. **Compatibility / supersession** —— 既有 durable artifact 的解释与迁移/兼容边界明确；historical evidence 不被静默改写。
+7. **Counterexample test** —— Review 至少写出一个 plausible misuse/failure，并证明 current rule 会拒绝或正确分类它。
+8. **Minimum semantics** —— rule 留在最低稳定 canonical layer；“重要/常用”本身不构成升入 L0 或更高层的理由。
+9. **Decidable where possible** —— 优先 exact head、pointer、state predicate、machine-observable evidence；无法机械证明的部分仍绑定 exact-head semantic Review。
+
+本 Gate **不新增审批角色、不要求 theorem prover、不替代 ADR/tests/checks，也不把 proof 文本复制进 L0**。它只是现有 L2 exact-head Review 的最小语义举证要求；proof 记录留在 PR Review / durable Review artifact，并 pointer 回 Issue / ADR，不建立第二套 governance truth。
 
 ---
 
