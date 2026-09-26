@@ -33,6 +33,29 @@ ai-use 要解决的，不是"让 AI 写更多代码"，而是让 Human 与 AI �
 
 ---
 
+## Goal
+
+ai-use 不追求让任何单个 Human、AI 或执行节点变得绝对可靠。它追求的是：
+
+> **在参与者与执行环境都可能失败的前提下，让协作系统整体变得更可靠。**
+
+这里的“更可靠”有明确含义：关键事实能够恢复，当前状态能够核验，权限边界能够判断，失败能够被观察，工作能够被其他合格参与者接管，最终结论能够追溯到 durable evidence。
+
+因此，宪法不是某个 Architect 的个人习惯，而是所有参与者共享的协作边界。Human、Architect、Builder、Research、Repair、Verifier、Runner 以及未来新增角色，都处在同一治理体系内。
+
+但**治理覆盖所有参与者，不等于所有参与者都要通读全部治理文本**：
+
+```text
+GOVERNANCE_SCOPE = UNIVERSAL
+CONTEXT_LOADING = ROLE_SCOPED + SCENE_TARGETED + PROGRESSIVE
+```
+
+每个参与者只加载当前角色与当前场景所需的最小充分规则：先获得稳定 Kernel，再根据 role、Work 与 scene 逐层展开；触发更深规则时再继续读取。宪法应当贯穿整个系统，而不是淹没每一个上下文。
+
+这也要求宪法本身具有比普通项目文档更高的语义纪律：**少概念、硬边界、单一语义归属、最小重复、可判定优先。** 能用一个稳定不变量表达的，不写成多套近义规则；能放到下层协议的 mechanics，不塞进 Kernel；任何新增复杂度都必须证明它减少了更大的系统不确定性。
+
+---
+
 ## Governance model
 
 ```
