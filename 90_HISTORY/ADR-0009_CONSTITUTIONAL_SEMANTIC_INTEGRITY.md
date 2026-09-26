@@ -1,8 +1,8 @@
 # ADR-0009：Constitutional Semantic Integrity Gate
 
-**Artifact Version: 1.0.0**  
-状态：Decision materialization；acceptance/currentness 以 Git/GitHub exact-head Review + merge history 为准  
-裁决来源：[Governance #96](https://github.com/youling/ai-use/issues/96)  
+**Artifact Version: 1.0.0**
+状态：Decision materialization；acceptance/currentness 以 Git/GitHub exact-head Review + merge history 为准
+裁决来源：[Governance #96](https://github.com/youling/ai-use/issues/96)
 语义 owner：[Change Lifecycle](../30_PROTOCOLS/CHANGE_LIFECYCLE.md)
 
 ## Context
