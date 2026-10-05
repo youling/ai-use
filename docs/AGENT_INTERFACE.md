@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** Read when dispatching/executing Agent work, choosing Architect execution mode, advancing an authorized program, or producing/reviewing Human/Agent interface artifacts.
 
-**Protocol Version: 2.7.0**
+**Protocol Version: 2.8.0**
 
 本文是 **execution / dispatch / continuation interface** 的 canonical home。公共 `ai-use` 不绑定特定 owner/repo、私有 control-plane 名称或账号。[Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md) 拥有 recovery、Work Context、正交 context/mode 与 independence/delegation 语义；[CONTEXT_MODE_SEED](../50_TEMPLATES/CONTEXT_MODE_SEED.md) 只给形态。本文保留 continuation、`PREMATURE_YIELD` 与完成边界。
 
@@ -121,6 +121,73 @@ Continuous advancement **不产生 authority**。以下情况必须停 Human / h
 - no READY work 或 explicit program stop condition 已达。
 
 Fresh/takeover Architect 不得因为 historical playbook 写着“先给 Human 确认”就机械等待；以 current L0 + Bootstrap + 本节 continuation 为准。
+
+
+### 1.4.1 Adaptive reasoning effort
+
+Reasoning effort 是**可升降的运行时计算 / 搜索深度**，不是角色 authority、truth、correctness proof 或永久风险姿态。
+
+```text
+REASONING_EFFORT = COMPUTE / SEARCH DEPTH
+REASONING_EFFORT != AUTHORITY
+REASONING_EFFORT != EVIDENCE
+REASONING_EFFORT != PERMANENT RISK POSTURE
+```
+
+Fresh / takeover / material architecture cold start 的深推理启动条件由 [Architect Reconnaissance](ARCHITECT_RECONNAISSANCE.md#11-adaptive-reasoning-effort-at-cold-start) 拥有。完成 durable reconciliation / reconnaissance、项目世界模型已经可从 durable source 恢复后，Architect 的默认巡航语义为：
+
+```text
+STEADY_BALANCED
+```
+
+它表示：使用足以完成 current Work 的正常推理强度，优先 live-reconcile / 引用 durable truth，不为了降低自身不确定性每轮重新打开已经闭合的问题，也不因为角色名机械常驻 provider 的最大推理档位。
+
+只有出现 **material signal** 时才升级：
+
+```text
+STEADY_BALANCED
+  -> DEEP_ESCALATION
+```
+
+典型 signal：
+
+- 同类实现 / repair 已重复失败且原因未收敛；
+- implementation / tests / live facts 与 current architecture 发生 material contradiction；
+- current durable facts 互相冲突；
+- current governance / architecture invariants 发生真实冲突；
+- material irreversible / destructive / security / secret / authority unknown；
+- 多个独立 evidence source / Agent 给出无法用 current facts 调和的 material 结论；
+- PR / acceptance 多轮不能闭合，且不是普通 repair backlog；
+- live evidence 表明已接受架构可能存在根本性错误；
+- 准备重新打开已 durable 关闭的 ruling，并且存在新 material evidence。
+
+普通 test failure、第一次实现错误、已知 repair、可定位 lint/build 问题 **不是**自动升到最大 reasoning effort 的理由。
+
+Deep escalation 的目标是**破局并重新形成 durable truth**：
+
+```text
+diagnose
+ -> discriminate
+ -> decide
+ -> durable evidence / ruling
+ -> DE-ESCALATE
+ -> STEADY_BALANCED
+```
+
+根因或 ruling 已 durable 写回后继续常驻 deep，必须有新的 unresolved material signal；“刚刚遇到过复杂问题”本身不构成永久升级理由。
+
+Reasoning effort 的升降不得改变：
+
+- scope / acceptance；
+- merge / deploy / destructive / production authority；
+- security / secret gate；
+- verification requirement；
+- current Work lifecycle；
+- evidence strength。
+
+无证据 hard cap / arbitrary resource constraint 的 challenge 语义仍由 current constraint-quality owner（source direction #106）负责；并行 Foreman / child 调度仍由其 current concurrency owner（source direction #111）负责。本节不复制第二套 constraint 或 scheduler policy。
+
+Provider / product 的具体档位映射、开放式 Human 探索等实践见 [Adaptive Reasoning Effort Guide](../40_GUIDES/ADAPTIVE_REASONING_EFFORT.md)。
 
 ### 1.5 Global Architect Maintenance Lane
 
