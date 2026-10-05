@@ -93,4 +93,4 @@ RE_RESOLUTION != AUTOMATIC_MIGRATION
 
 ## 10. Host-specific exceptions
 
-仅保留会改变 Agent 行为的少数例外；不要把 `HOST_AGENT.md` 写成机器百科全书。
+仅保留会改变 Agent 行为的少数例外；不要把 **HOST_AGENT.md** 写成机器百科全书。
