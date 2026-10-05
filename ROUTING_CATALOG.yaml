@@ -14,13 +14,13 @@
       "90"
     ],
     "layers": {
+      "00": "Kernel",
       "10": "Bootstrap",
       "20": "Roles",
       "30": "Protocols",
       "40": "Guides",
       "50": "Templates",
-      "90": "History",
-      "00": "Kernel"
+      "90": "History"
     },
     "results": {
       "NEXT": "角色/场景命中，targeted 读取必要 home 后继续。",
