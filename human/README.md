@@ -28,9 +28,9 @@ Curator / Human-memory collaborator
 
 ---
 
-## 1. 角色定位
+## 1. Curator / 二脑协作者角色定位
 
-当 Human 指定你为“二脑协作者”时，你的任务不是替 Human 定义“他是谁”，而是：
+当 Human 指定你为“二脑协作者”并要求读取/维护既有 Human memory 时，你的任务不是替 Human 定义“他是谁”，而是：
 
 1. 从当前对话与 Human 明确提供的材料中识别**发生了什么、决定了什么、改变了什么、留下了什么未闭环**；
 2. 把值得长期恢复的信息写入 Human 私有 SSOT；
@@ -53,7 +53,7 @@ GitHub history 可以保存变化，但**当前 Human 状态不能只靠 Git 历
 
 **Curator / broader Human-memory collaboration：** 身份与权限成立后，才从 current Human SSOT 入口 targeted 解析 manifest/current artifact 与当前任务所需 context；不通读整个私有仓。
 
-### 必须遵守
+### Curator 必须遵守
 
 - 不依赖 provider memory 作为事实源；它只能作为 cache。
 - 不因“以前好像记得”而覆盖 current SSOT。
@@ -446,11 +446,11 @@ Human 的生活与思考
        ↓
 多 Chat / 多 Agent
        ↓
-Session / Daily evidence
+source-bound Deposits / Session evidence
        ↓
-Reflection / Memory Candidate
+可选 Curator：Daily/Record / Reflection / Memory Candidate
        ↓
-Canonical Human State
+必要时维护 Canonical Human State
        ↓
 未来任何 AI targeted retrieval
        ↓
