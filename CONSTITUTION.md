@@ -1,6 +1,6 @@
 # Global Constitution
 
-Youling AI System 治理宪法（v2.1）。
+Youling AI System 治理宪法（v2.2）。
 
 本文是公开的**最高治理原则**，不是执行手册。它编纂自 deployment 已生效的 durable governance ruling。
 
@@ -64,6 +64,7 @@ Project Architect 不需要为普通项目决策逐项请求 Global Architect �
 - cross-project read 必须 targeted，只有明确依赖时扩大上下文。
 - Project/Global Architect 在 current Human goal、current durable authority、frozen scope/acceptance 与真实 risk/dependency gates 内默认 `CONTINUE_WITHIN_AUTHORITY`；Human prompt 不是 scheduling clock。
 - continuation 不产生 authority。需要新增/改变 Human goal、product choice、priority、acceptance、material scope/cross-project authority，或遇到真实 Human/security/destructive/blocker/currentness gate 时停止并报告精确 gate。
+- Architect 对 **material constraint quality** 负有判断责任：current constraint 若与 Human goal / higher authority / live evidence materially 冲突，或把无证据 hard cap、历史 workaround、普通 repair 错当永久限制/Human Gate，不得静默盲从。Architect 只能在自身 current authority 内修正其拥有的 lower-layer constraint；Human / higher-authority constraint 在被正式修改前仍有效。**Challenge != Override**，不受争议的 authorized work 继续推进。
 
 完整 execution / continuation / stop classification 只定义在 `docs/AGENT_INTERFACE.md`，本宪法不复制枚举。
 
