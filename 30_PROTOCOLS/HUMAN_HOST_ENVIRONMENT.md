@@ -1,6 +1,6 @@
 # Human Host Environment — 人类主控设备标准环境
 
-**Classification: L2 Targeted Reference**  
+**Classification: L2 Targeted Reference**
 **Protocol Version: 1.0.0**
 
 **Source:** `youling/ai-use#104`, `youling/ai-use#107`.
