@@ -6,7 +6,7 @@
 
 - `project.architecture.json` — ai-use Project Detail Map。
 - diagram type: `architecture`
-- renderer target: Archify v3.0.1-compatible typed source
+- renderer target: Archify v3.0.1 exact commit `2ab3cae7ac2c2a55d7386ca789d03c4fcd31816c`
 - semantic source baseline: `ai-use@399650f05d1a51c642dda55bbbf2920e53c50fb4`
 - presentation consumer: deployment-local Architecture Navigator or any compatible renderer
 
@@ -49,3 +49,9 @@ ai-hub / Architecture Navigator 只允许：
 节点的 `sources[]` 指向 ai-use 内 canonical homes。验证时应对 semantic source baseline 使用 repository-backed validation；source path 不存在、revision 不匹配或行/路径越界都应 fail closed。
 
 参见：[`../30_PROTOCOLS/DIAGRAM_AS_CODE.md`](../30_PROTOCOLS/DIAGRAM_AS_CODE.md)。
+
+## Owner-side verification
+
+`.github/workflows/project-diagram.yml` 只在本图/README/自身 workflow 变化时运行：读取图中 `meta.repository.revision`，checkout exact semantic source snapshot，再用 pinned Archify v3.0.1 做 repository-backed `validate + deliver --quality showcase`。
+
+这条 CI 只证明 schema / source-path evidence / layout / deterministic delivery；不证明治理语义正确，也不替代 Architect Review。
