@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** Read when dispatching/executing Agent work, choosing Architect execution mode, advancing an authorized program, or producing/reviewing Human/Agent interface artifacts.
 
-**Protocol Version: 2.8.0**
+**Protocol Version: 2.9.0**
 
 本文是 **execution / dispatch / continuation interface** 的 canonical home。公共 `ai-use` 不绑定特定 owner/repo、私有 control-plane 名称或账号。[Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md) 拥有 recovery、Work Context、正交 context/mode 与 independence/delegation 语义；[CONTEXT_MODE_SEED](../50_TEMPLATES/CONTEXT_MODE_SEED.md) 只给形态。本文保留 continuation、`PREMATURE_YIELD` 与完成边界。
 
@@ -189,6 +189,69 @@ Reasoning effort 的升降不得改变：
 
 Provider / product 的具体档位映射、开放式 Human 探索等实践见 [Adaptive Reasoning Effort Guide](../40_GUIDES/ADAPTIVE_REASONING_EFFORT.md)。
 
+
+### 1.4.2 Architect Constraint Challenge
+
+Architect 默认不仅负责推进 Work，也负责判断 **material constraint 是否仍然成立**。存在规则文本不等于继续机械服从就是正确行为。
+
+```text
+OBEDIENCE != CORRECTNESS
+CHALLENGE != OVERRIDE
+AUTONOMY != AUTHORITY_EXPANSION
+HIGHER_AUTHORITY_STILL_WINS
+```
+
+以下 signal 命中且会 materially 影响 acceptance / capability / progress 时，Architect MUST surface challenge，而不是静默盲从：
+
+- constraint 与 current Human goal / acceptance 或更高 current authority 冲突；
+- 关键前提已被 live evidence 证伪；
+- historical AI recommendation / temporary workaround 被误当 permanent Human requirement；
+- arbitrary numeric / time / retry / resource / concurrency hard cap 没有 current evidence；
+- constraint 使 acceptance 实际不可达或制造明显 `PREMATURE_YIELD`；
+- ordinary repair / retry / deterministic work 被错误升级为 Human Gate；
+- newer architecture/runtime/current durable ruling 已 supersede 旧 gate；
+- 流程成本 materially 高于其控制的风险，且不存在 current safety/authority justification。
+
+这不是对每个偏好或轻微低效发起治理争论。Challenge 只针对 **material constraint defect**。
+
+#### Owner-based handling
+
+**A. Architect-owned / lower-layer AI-generated constraint**
+
+如果 current Architect 有权修改该 Work Order / project-local rule，且修正不改变 Human goal、product acceptance、material scope，也不绕过 security / secret / destructive / irreversible gate，则 SHOULD 直接 amend，并 durable 记录 evidence 与理由。不要把自己可修的旧错误再升级成 Human ceremony。
+
+**B. Human / current higher-authority / global-governance constraint**
+
+不得自行绕过。向 owner / higher authority 提交 challenge；受争议动作继续 fail-closed，**其它不受影响的 READY work 继续推进**。
+
+**C. Stale / superseded lower-authority constraint**
+
+若 durable hierarchy 已证明 newer/higher ruling supersede 旧 constraint，直接采用 current ruling，并 durable 标记旧 gate `stale / superseded`。不得因为历史文本仍存在，就重新制造 Human Gate。
+
+Agent 准备进入 `HUMAN_REQUIRED / AWAITING_DECISION` 或等价等待前，必须先 live-reconcile exact Work 的最新 Human/Architect durable ruling；已被解除的旧 gate 不能靠惯性继续生效。
+
+#### Builder / Foreman boundary
+
+Builder / Research / Repair / Foreman SHOULD 识别明显坏约束，但默认没有 governance override authority。它们应 durable 报告 challenge，停止受争议约束影响且可能越权的动作，继续其它 authorized work；不得因为发现坏约束就扩大 scope、merge、deploy 或 destructive authority。
+
+最小 durable finding：
+
+```yaml
+constraint: <受质疑约束>
+source: <durable pointer>
+owner: <Human | Global | Project Architect | Work Order | unknown>
+evidence: <current evidence>
+impact: <material impact>
+challenge_reason: <why materially defective>
+recommended_change: <minimal replacement>
+can_continue_unaffected_work: true|false
+authority_to_amend: yes|no|unknown
+```
+
+该 finding 不是新 lifecycle / approval state；沿用现有 Work / Issue / checkpoint / Review durable surface。
+
+Constraint Challenge 不授权绕过 Human current explicit requirement、security/privacy/secret、destructive/irreversible gate、production/deploy authority、legal/compliance、required independent verification、unknown ownership/currentness。上述约束可以被 challenge，但在 current owner 修改前仍须遵守。
+
 ### 1.5 Global Architect Maintenance Lane
 
 Global Architect 在 live validate 后，可以 `DIRECT` 维护以下**低风险、非行为性**治理内容，不要求为了角色仪式启动 Runner / Builder / Verifier：
@@ -368,6 +431,8 @@ Human Completion Card 仅保留为 Architect / orchestrator 在**非 delegated e
 ---
 
 ## 6. Versioned Definitions
+
+- `2.9.0`：Architect Constraint Challenge（#106）。Architect 对 material constraint quality 负有判断责任；按 constraint owner 区分可直接 amend、向 higher authority challenge、或采用 newer ruling supersede stale gate。Builder/Foreman 可 durable 报告 challenge 但不获得 governance override authority；等待 Human 前必须 live-reconcile newer durable ruling；不受争议的 authorized work 继续。Challenge 不改变 Human/security/destructive/deploy/verification authority。
 
 - `2.8.0`：Adaptive Reasoning Effort（#113）。Fresh/takeover/material cold start 的 `DEEP_BOOTSTRAP` trigger 由 Architect Reconnaissance 持有；本接口新增 steady-state `STEADY_BALANCED`、material-signal `DEEP_ESCALATION` 与 durable closure 后 de-escalation。Reasoning effort 仅表示 compute/search depth，不改变 authority、scope、acceptance、verification、security/destructive gate、evidence strength 或 Work lifecycle；provider UI 档位映射留在 non-normative Guide，不进入 core governance。
 
