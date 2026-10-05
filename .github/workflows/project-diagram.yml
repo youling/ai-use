@@ -1,0 +1,82 @@
+name: ai-use project diagram
+
+on:
+  pull_request:
+    paths:
+      - 'docs/diagrams/**'
+      - 'README.md'
+      - '.github/workflows/project-diagram.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/diagrams/**'
+      - 'README.md'
+      - '.github/workflows/project-diagram.yml'
+
+permissions:
+  contents: read
+
+env:
+  ARCHIFY_COMMIT: 2ab3cae7ac2c2a55d7386ca789d03c4fcd31816c
+
+jobs:
+  project-map:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ai-use candidate
+        uses: actions/checkout@v4
+
+      - name: Read semantic source revision
+        id: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          revision="$(node -e "const x=require('./docs/diagrams/project.architecture.json'); process.stdout.write(x.meta.repository.revision)")"
+          test "${#revision}" -eq 40
+          echo "revision=$revision" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout semantic source snapshot
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.source.outputs.revision }}
+          path: .diagram-source
+          persist-credentials: false
+
+      - name: Checkout pinned Archify
+        uses: actions/checkout@v4
+        with:
+          repository: tt-a1i/archify
+          ref: ${{ env.ARCHIFY_COMMIT }}
+          path: .archify-tool
+          persist-credentials: false
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify Archify runtime
+        run: node .archify-tool/archify/bin/archify.mjs doctor
+
+      - name: Validate owner project map
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .diagram-out
+          node .archify-tool/archify/bin/archify.mjs validate architecture \
+            docs/diagrams/project.architecture.json \
+            --repo-root .diagram-source \
+            --quality showcase --json \
+            | tee .diagram-out/validate.json
+
+      - name: Deliver owner project map
+        shell: bash
+        run: |
+          set -euo pipefail
+          node .archify-tool/archify/bin/archify.mjs deliver architecture \
+            docs/diagrams/project.architecture.json \
+            .diagram-out/ai-use-project.architecture.html \
+            --repo-root .diagram-source \
+            --quality showcase --json \
+            | tee .diagram-out/deliver.json
+          test -s .diagram-out/ai-use-project.architecture.html

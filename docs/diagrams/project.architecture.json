@@ -1,0 +1,612 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "ai-use Project Map",
+    "subtitle": "Human governance · targeted routing · execution/recovery · durable truth",
+    "locale": "zh-CN",
+    "output": "ai-use-project.architecture.html",
+    "quality_profile": "showcase",
+    "visual_preset": "blueprint",
+    "repository": {
+      "url": "https://github.com/youling/ai-use",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "399650f05d1a51c642dda55bbbf2920e53c50fb4"
+    },
+    "views": [
+      {
+        "id": "executionPath",
+        "label": "执行闭环",
+        "focus": [
+          "human",
+          "kernel",
+          "routing",
+          "roles",
+          "bootstrap",
+          "agentInterface",
+          "durable",
+          "recovery"
+        ],
+        "note": "从 Human authority 到 targeted execution，再从 Git/GitHub durable state 恢复。"
+      },
+      {
+        "id": "hostPath",
+        "label": "Human Host",
+        "focus": [
+          "routing",
+          "humanHost",
+          "agentInterface",
+          "durable"
+        ],
+        "note": "Host 只提供 resolved execution substrate，不获得项目 truth authority。"
+      },
+      {
+        "id": "changePath",
+        "label": "治理变更",
+        "focus": [
+          "human",
+          "kernel",
+          "roles",
+          "changeLifecycle",
+          "durable"
+        ],
+        "note": "架构/治理 mutation 走 docs-as-code lifecycle，不靠聊天自述完成。"
+      },
+      {
+        "id": "navigationPath",
+        "label": "导航与图示",
+        "focus": [
+          "routing",
+          "diagram",
+          "ownerBoundary",
+          "githubNative",
+          "support",
+          "history"
+        ],
+        "note": "L0 后按 scene targeted 读取；模板/历史按需，不做全仓通读。"
+      },
+      {
+        "id": "ownerPath",
+        "label": "Owner 边界",
+        "focus": [
+          "ownerBoundary",
+          "projectTruth",
+          "agentInterface",
+          "durable"
+        ],
+        "note": "ai-use 管方法与治理；项目实时事实继续留在项目 owner。"
+      }
+    ]
+  },
+  "layout": {
+    "mode": "grid",
+    "origin": [
+      64,
+      76
+    ],
+    "cols": 4,
+    "gapX": 110,
+    "gapY": 98,
+    "cellW": 220,
+    "cellH": 86
+  },
+  "components": [
+    {
+      "id": "human",
+      "type": "external",
+      "label": "Human",
+      "sublabel": "目标 · 优先级 · acceptance · 最终主权",
+      "tag": "FINAL AUTHORITY",
+      "row": 0,
+      "col": 0,
+      "size": [
+        220,
+        72
+      ],
+      "sources": [
+        {
+          "path": "CONSTITUTION.md",
+          "label": "Human sovereignty"
+        }
+      ]
+    },
+    {
+      "id": "kernel",
+      "type": "security",
+      "label": "L0 Kernel",
+      "sublabel": "最小跨角色不变量 · 第一份 normative rules",
+      "tag": "AGENTS / CONSTITUTION",
+      "row": 0,
+      "col": 1,
+      "size": [
+        220,
+        72
+      ],
+      "sources": [
+        {
+          "path": "AGENTS.md",
+          "label": "Kernel ABI"
+        },
+        {
+          "path": "CONSTITUTION.md",
+          "label": "Global principles"
+        }
+      ]
+    },
+    {
+      "id": "routing",
+      "type": "messagebus",
+      "label": "Routing Catalog",
+      "sublabel": "scene / role trigger → targeted canonical home",
+      "tag": "PROGRESSIVE READ",
+      "row": 0,
+      "col": 2,
+      "size": [
+        220,
+        72
+      ],
+      "sources": [
+        {
+          "path": "ROUTING_CATALOG.yaml",
+          "label": "Routing source"
+        },
+        {
+          "path": "READING_MAP.md",
+          "label": "Reading projection"
+        }
+      ]
+    },
+    {
+      "id": "roles",
+      "type": "backend",
+      "label": "Role & Authority",
+      "sublabel": "Global / Project Architect · Executors · Runner",
+      "tag": "RESPONSIBILITY",
+      "row": 0,
+      "col": 3,
+      "size": [
+        220,
+        72
+      ],
+      "sources": [
+        {
+          "path": "CONSTITUTION.md",
+          "label": "Governance hierarchy"
+        },
+        {
+          "path": "docs/AGENT_INTERFACE.md",
+          "label": "Execution discretion"
+        }
+      ]
+    },
+    {
+      "id": "bootstrap",
+      "type": "backend",
+      "label": "Bootstrap",
+      "sublabel": "authority · access · live state · execution readiness",
+      "tag": "BOOT",
+      "row": 1,
+      "col": 0,
+      "size": [
+        220,
+        72
+      ],
+      "sources": [
+        {
+          "path": "10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md",
+          "label": "Bootstrap protocol"
+        },
+        {
+          "path": "10_BOOT/LOCAL_ENGINEERING_GATE.md",
+          "label": "Local readiness"
+        }
+      ]
+    },
+    {
+      "id": "agentInterface",
+      "type": "backend",
+      "label": "Agent Interface",
+      "sublabel": "DIRECT / DELEGATE · Work Order · continuation · completion",
+      "tag": "EXECUTION",
+      "row": 1,
+      "col": 1,
+      "size": [
+        220,
+        72
+      ],
+      "sources": [
+        {
+          "path": "docs/AGENT_INTERFACE.md",
+          "label": "Agent Interface"
+        }
+      ]
+    },
+    {
+      "id": "recovery",
+      "type": "backend",
+      "label": "Recovery & Durable Trace",
+      "sublabel": "handoff · resume · CLAIM/checkpoint/terminal evidence",
+      "tag": "RECOVERY",
+      "row": 1,
+      "col": 2,
+      "size": [
+        220,
+        72
+      ],
+      "sources": [
+        {
+          "path": "30_PROTOCOLS/RECOVERY_HANDOFF.md",
+          "label": "Recovery"
+        },
+        {
+          "path": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+          "label": "Durable trace"
+        }
+      ]
+    },
+    {
+      "id": "durable",
+      "type": "database",
+      "label": "Git / GitHub Durable State",
+      "sublabel": "Work · exact head · review · evidence · current facts",
+      "tag": "DURABLE TRUTH",
+      "row": 1,
+      "col": 3,
+      "size": [
+        220,
+        72
+      ],
+      "sources": [
+        {
+          "path": "CONSTITUTION.md",
+          "label": "Durable truth"
+        },
+        {
+          "path": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
+          "label": "Evidence writeback"
+        }
+      ]
+    },
+    {
+      "id": "changeLifecycle",
+      "type": "security",
+      "label": "Change Lifecycle",
+      "sublabel": "Issue / ADR / branch / PR / review / merge by risk",
+      "tag": "DOCS-AS-CODE",
+      "row": 2,
+      "col": 0,
+      "size": [
+        220,
+        72
+      ],
+      "sources": [
+        {
+          "path": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "label": "Change lifecycle"
+        }
+      ]
+    },
+    {
+      "id": "humanHost",
+      "type": "cloud",
+      "label": "Human Host Environment",
+      "sublabel": "semantic domains + smart probe + HOST_AGENT projection",
+      "tag": "EXECUTION SUBSTRATE",
+      "row": 2,
+      "col": 1,
+      "size": [
+        220,
+        72
+      ],
+      "sources": [
+        {
+          "path": "30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md",
+          "label": "Human Host"
+        }
+      ]
+    },
+    {
+      "id": "diagram",
+      "type": "frontend",
+      "label": "Diagram-as-Code",
+      "sublabel": "总图入口 · 细图贴 owner · typed derived navigation",
+      "tag": "NAVIGATION",
+      "row": 2,
+      "col": 2,
+      "size": [
+        220,
+        72
+      ],
+      "sources": [
+        {
+          "path": "30_PROTOCOLS/DIAGRAM_AS_CODE.md",
+          "label": "Diagram protocol"
+        }
+      ]
+    },
+    {
+      "id": "ownerBoundary",
+      "type": "security",
+      "label": "Owner / Instance Boundary",
+      "sublabel": "semantic owner · projection · private instance · secret ref/value",
+      "tag": "NO SECOND SSOT",
+      "row": 2,
+      "col": 3,
+      "size": [
+        252,
+        72
+      ],
+      "sources": [
+        {
+          "path": "30_PROTOCOLS/OWNER_INSTANCE_BOUNDARY.md",
+          "label": "Owner boundary"
+        }
+      ]
+    },
+    {
+      "id": "githubNative",
+      "type": "cloud",
+      "label": "GitHub Native First",
+      "sublabel": "优先复用 native work/review/metadata capabilities",
+      "tag": "PLATFORM REUSE",
+      "row": 3,
+      "col": 0,
+      "size": [
+        220,
+        72
+      ],
+      "sources": [
+        {
+          "path": "30_PROTOCOLS/GITHUB_NATIVE_FIRST.md",
+          "label": "GitHub Native First"
+        }
+      ]
+    },
+    {
+      "id": "support",
+      "type": "frontend",
+      "label": "Guides & Templates",
+      "sublabel": "仅在 artifact/scene 命中时读取，不进入默认 Kernel",
+      "tag": "L2 SUPPORT",
+      "row": 3,
+      "col": 1,
+      "size": [
+        220,
+        72
+      ],
+      "sources": [
+        {
+          "path": "READING_MAP.md",
+          "label": "Targeted shapes"
+        },
+        {
+          "path": "50_TEMPLATES/DIAGRAM_AS_CODE.md",
+          "label": "Diagram template"
+        }
+      ]
+    },
+    {
+      "id": "history",
+      "type": "database",
+      "label": "History / ADR",
+      "sublabel": "rationale · provenance · Incident deep-dive",
+      "tag": "L3 DEFAULT SKIP",
+      "row": 3,
+      "col": 2,
+      "size": [
+        220,
+        72
+      ],
+      "sources": [
+        {
+          "path": "90_HISTORY/README.md",
+          "label": "History index"
+        }
+      ]
+    },
+    {
+      "id": "projectTruth",
+      "type": "external",
+      "label": "Project-local Truth",
+      "sublabel": "业务/runtime/current project facts stay with project owner",
+      "tag": "NOT OWNED BY AI-USE",
+      "row": 3,
+      "col": 3,
+      "size": [
+        220,
+        72
+      ],
+      "sources": [
+        {
+          "path": "README.md",
+          "label": "Governance vs control plane"
+        },
+        {
+          "path": "30_PROTOCOLS/OWNER_INSTANCE_BOUNDARY.md",
+          "label": "Owner semantics"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "human-kernel",
+      "from": "human",
+      "to": "kernel",
+      "label": "governance",
+      "variant": "emphasis"
+    },
+    {
+      "id": "kernel-routing",
+      "from": "kernel",
+      "to": "routing",
+      "label": "L0 → targeted"
+    },
+    {
+      "id": "routing-roles",
+      "from": "routing",
+      "to": "roles",
+      "label": "role trigger"
+    },
+    {
+      "id": "routing-bootstrap",
+      "from": "routing",
+      "to": "bootstrap",
+      "label": "startup",
+      "variant": "dashed"
+    },
+    {
+      "id": "roles-interface",
+      "from": "roles",
+      "to": "agentInterface",
+      "label": "DIRECT / DELEGATE",
+      "variant": "emphasis"
+    },
+    {
+      "id": "bootstrap-interface",
+      "from": "bootstrap",
+      "to": "agentInterface",
+      "label": "READY"
+    },
+    {
+      "id": "interface-durable",
+      "from": "agentInterface",
+      "to": "durable",
+      "label": "writeback",
+      "variant": "emphasis"
+    },
+    {
+      "id": "durable-recovery",
+      "from": "durable",
+      "to": "recovery",
+      "label": "recover",
+      "variant": "emphasis"
+    },
+    {
+      "id": "recovery-interface",
+      "from": "recovery",
+      "to": "agentInterface",
+      "label": "resume"
+    },
+    {
+      "id": "interface-change",
+      "from": "agentInterface",
+      "to": "changeLifecycle",
+      "label": "mutation",
+      "variant": "dashed"
+    },
+    {
+      "id": "change-durable",
+      "from": "changeLifecycle",
+      "to": "durable",
+      "label": "Issue / PR / review"
+    },
+    {
+      "id": "routing-host",
+      "from": "routing",
+      "to": "humanHost",
+      "label": "host scene",
+      "variant": "dashed"
+    },
+    {
+      "id": "host-interface",
+      "from": "humanHost",
+      "to": "agentInterface",
+      "label": "substrate"
+    },
+    {
+      "id": "routing-diagram",
+      "from": "routing",
+      "to": "diagram",
+      "label": "diagram scene",
+      "variant": "dashed"
+    },
+    {
+      "id": "diagram-durable",
+      "from": "diagram",
+      "to": "durable",
+      "label": "derived source"
+    },
+    {
+      "id": "routing-owner",
+      "from": "routing",
+      "to": "ownerBoundary",
+      "label": "ownership",
+      "variant": "dashed"
+    },
+    {
+      "id": "owner-project",
+      "from": "ownerBoundary",
+      "to": "projectTruth",
+      "label": "protect truth",
+      "variant": "emphasis"
+    },
+    {
+      "id": "project-interface",
+      "from": "projectTruth",
+      "to": "agentInterface",
+      "label": "target-local context",
+      "variant": "dashed"
+    },
+    {
+      "id": "routing-github",
+      "from": "routing",
+      "to": "githubNative",
+      "label": "platform scene",
+      "variant": "dashed"
+    },
+    {
+      "id": "routing-support",
+      "from": "routing",
+      "to": "support",
+      "label": "artifact shape",
+      "variant": "dashed"
+    },
+    {
+      "id": "routing-history",
+      "from": "routing",
+      "to": "history",
+      "label": "L3 on demand",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Authority",
+      "items": [
+        "Human 保留最终主权；Architect authority 来自 current durable delegation，不来自工具能力。",
+        "Project Architect 在项目内自治；Global 只处理跨项目、共享契约、治理冲突与优先级。",
+        "Capability != Authority；merge / deploy / destructive action 分开判断。"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Reading discipline",
+      "items": [
+        "执行/恢复先读 L0 Kernel，再由 Routing Catalog 按 role + scene targeted 展开。",
+        "document exists != every Agent must read it；History/ADR 默认 L3 跳过。",
+        "图是下一跳索引，不是让 Agent 递归通读整个治理仓。"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Reliability loop",
+      "items": [
+        "Git/GitHub 持久化 Work、exact head、review 与 evidence；聊天/本地现场默认只是 working cache。",
+        "Agent Interface 负责施工；Durable Trace 负责恢复证据；Recovery 负责从 current durable state 接续。",
+        "evidence > self-report；current live facts > stale snapshot / chat memory。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Boundary",
+      "items": [
+        "ai-use 拥有可复用治理/协议，不拥有部署实例的项目实时状态、节点 runtime 或业务事实。",
+        "Human Host / Diagram / GitHub Native 都是 targeted protocol，不自动提升为 Kernel。",
+        "本图为 DERIVED；任何冲突都回 canonical source 修图，不反向修改 truth 来迁就图。"
+      ]
+    }
+  ]
+}
