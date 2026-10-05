@@ -2,7 +2,7 @@
 
 先读 `../30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md`。本模板是 **resolved Host Contract shape**，不是 desired profile、资产档案或 secret store。无适用项就删掉，不保留空壳。
 
-> 默认 materialization：`<OS-native Documents folder>/HOST_AGENT.md`。  
+> 默认 materialization：`<OS-native Documents folder>/HOST_AGENT.md`。
 > canonical resolved copy / owner pointer：`<deployment-local pointer>`
 
 ## 0. Host identity / currentness
