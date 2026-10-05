@@ -2,6 +2,8 @@
 
 表达、诊断与恢复 guidance 层。
 
+多方向探索、大资料分区或并行施工需要减少架构师逐子对话协调时，按需读取 [异步主工头协作](ASYNC_FOREMEN.md)。它应用既有派单、恢复与 durable trace 协议，不另立状态或授权。
+
 人类可见输出默认简体中文，见 [Language Policy](../00_KERNEL/LANGUAGE_POLICY.md)。
 
 secret/output invariant 见 [AGENTS.md §5](../AGENTS.md#5-evidence-bound-mutation)；public cold-start 回归见 [PUBLIC_COLD_START_CHECKLIST.md](PUBLIC_COLD_START_CHECKLIST.md)。
