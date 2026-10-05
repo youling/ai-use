@@ -48,7 +48,7 @@ ai-hub / Architecture Navigator 只允许：
 
 节点的 `sources[]` 指向 ai-use 内 canonical homes。验证时应对 semantic source baseline 使用 repository-backed validation；source path 不存在、revision 不匹配或行/路径越界都应 fail closed。
 
-参见：[`../30_PROTOCOLS/DIAGRAM_AS_CODE.md`](../30_PROTOCOLS/DIAGRAM_AS_CODE.md)。
+参见：[`../../30_PROTOCOLS/DIAGRAM_AS_CODE.md`](../../30_PROTOCOLS/DIAGRAM_AS_CODE.md)。
 
 ## Owner-side verification
 
