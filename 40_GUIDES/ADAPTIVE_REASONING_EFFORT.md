@@ -1,6 +1,6 @@
 # Adaptive Reasoning Effort — 实践指南
 
-**Classification: L2 non-normative guide**  
+**Classification: L2 non-normative guide**
 **Source:** `youling/ai-use#113`
 
 本指南帮助 Human / Architect 把 provider 暴露的 reasoning effort 当作**可升降计算强度**使用。Normative owner 仍是：
