@@ -11,9 +11,9 @@ Human 主控设备逐渐成为多个 AI 产品、Agent、CLI 与容器共享的�
 
 ## Decision
 
-采用：cross-platform semantic profile → Smart Agent probes current Host → Host-local physical resolution → resolved `HOST_AGENT.md`。固定七个生命周期语义域 `Execution / Workspace / Config / State / Cache / Temp / Secrets`，固定常用 Host-managed semantic roots，但不固定 universal physical paths。
+采用：cross-platform semantic profile → Smart Agent probes current Host → Host-local physical resolution → resolved **HOST_AGENT.md**。固定七个生命周期语义域 `Execution / Workspace / Config / State / Cache / Temp / Secrets`，固定常用 Host-managed semantic roots，但不固定 universal physical paths。
 
-Human Host 的稳定发现面为逻辑 OS-native Documents folder 下的 `HOST_AGENT.md`。它是 resolved operational projection，不是 desired-profile SSOT、Assets 或 secret store。Fresh Agent 必须把 saved observation 与 current Host 做低成本 drift 对比；material drift 可触发 re-resolution，但不得自动触发迁移。
+Human Host 的稳定发现面为逻辑 OS-native Documents folder 下的 **HOST_AGENT.md**。它是 resolved operational projection，不是 desired-profile SSOT、Assets 或 secret store。Fresh Agent 必须把 saved observation 与 current Host 做低成本 drift 对比；material drift 可触发 re-resolution，但不得自动触发迁移。
 
 ## Why not a universal directory tree
 
