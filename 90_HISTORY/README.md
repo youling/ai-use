@@ -16,5 +16,6 @@
 - [ADR-0007](ADR-0007_ACTIONS_RESOURCE_BUDGET.md) — GitHub Actions visibility / runner / budget-aware 使用策略（#89）。
 - [ADR-0008](ADR-0008_EXECUTOR_ATTEMPT_LIFECYCLE.md) — Delegated executor 的 `DISPATCH → CLAIM → [CHECKPOINT]* → TERMINAL` 可观察 attempt lifecycle（#94）。
 - [ADR-0009](ADR-0009_CONSTITUTIONAL_SEMANTIC_INTEGRITY.md) — Material governance L2 exact-head Review 的最小 semantic proof obligations（#96）。
+- [ADR-0010](ADR-0010_HUMAN_HOST_ENVIRONMENT.md) — Human Host Environment：语义标准、现场解析与 `HOST_AGENT.md` 稳定发现（#107）。
 
 退休入口的历史原文通过 [Session compatibility](../docs/SESSION_LIFECYCLE.md)、[provider guide forward](../docs/DeepSeekPP-github-mcp-usage.md) 的 frozen Git pointers 追溯；默认不读取历史全文。
