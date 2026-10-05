@@ -8,6 +8,23 @@
 
 [路由总览（派生）](docs/ROUTING_INDEX.md) · [路由目录源](ROUTING_CATALOG.yaml)
 
+## Architecture at a glance
+
+```mermaid
+flowchart LR
+  H["Human\n目标 / 主权 / 风险"] --> G["ai-use Governance\nL0 + targeted L2"]
+  G --> A["Architect\n项目自治 / 协调"]
+  A --> E["Builder / Research / Repair / Verifier"]
+  E --> X["Execution Surfaces\nHuman Host / Runner / Node / Container"]
+  X --> D["Git / GitHub\nDurable Work + Evidence"]
+  D --> A
+  G -. "Human Host semantics" .-> HH["HOST_AGENT.md\nresolved local projection"]
+  HH -. "readiness input" .-> X
+```
+
+这张图是 **DERIVED navigation**：authority、角色、执行与 durable truth 的精确定义仍以对应 canonical 文档为准。复杂图/局部图按 [Diagram-as-Code](30_PROTOCOLS/DIAGRAM_AS_CODE.md) 下钻；Human 主控设备环境见 [Human Host Environment](30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md)。
+
+
 ---
 
 ## Why
@@ -108,6 +125,7 @@ Human
 | [Recovery & Handoff](30_PROTOCOLS/RECOVERY_HANDOFF.md) | 需要恢复、交接或 context 判定的人 | 当前三分支 recovery 与 context contract；[旧 Session 路径](docs/SESSION_LIFECYCLE.md) 只保留兼容转向 |
 | [`10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`](10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md) | 所有执行 Agent | 启动状态验证（L2 按需） |
 | [`10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md`](10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md) | 新组织 / Global Architect | 初始化 workspace、发现仓库角色、确认 Global Architect Ready（L2 按需） |
+| [`30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md`](30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md) | Human Host 上的 Agent | 新机 bootstrap、目录/工具/cache/state 归整、Host drift/cleanup 时（L2 按需） |
 | [`30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md`](30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) | 所有执行 Agent | 需要留痕/返回 pointer 时（L2 按需） |
 | [`00_KERNEL/LANGUAGE_POLICY.md`](00_KERNEL/LANGUAGE_POLICY.md) | 所有执行 Agent | 人类可见输出默认简体中文（L2 按需） |
 
