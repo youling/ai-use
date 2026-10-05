@@ -27,6 +27,38 @@ ARCH-0 RECONNAISSANCE
 
 `EXECUTION_ALLOWED` 与 `ARCHITECT_READY` 不得合并：前者是 authority/currentness gate，后者是 material architecture readiness。
 
+
+### 1.1 Adaptive reasoning effort at cold start
+
+Fresh / takeover / material architecture cold start 是**认知建立阶段**。如果当前 provider / product 暴露可调 reasoning effort，Architect 在执行 ARCH-0 时 SHOULD 优先请求较深的推理配置，用于：
+
+- current durable reconciliation；
+- current / superseded / historical evidence 区分；
+- external current-state scan；
+- architecture delta；
+- reuse / build boundary；
+- 高成本错误的前置发现。
+
+这里的语义名为：
+
+```text
+DEEP_BOOTSTRAP
+```
+
+它只是 **compute / search depth hint**，不产生 authority、truth、evidence 或更高风险权限，也不把 provider UI 的具体档位名写成治理常量。
+
+当 ARCH-0 已形成足够稳定的项目世界模型，并且关键 current facts / ruling 已 durable 写回后，**不要求为了“Architect”角色永久保持最大推理强度**。后续稳态、升级与降档由 [Agent Interface](AGENT_INTERFACE.md#141-adaptive-reasoning-effort) 拥有；实践映射见 [Adaptive Reasoning Effort Guide](../40_GUIDES/ADAPTIVE_REASONING_EFFORT.md)。
+
+```text
+DEEP_BOOTSTRAP
+  -> establish / repair world model
+  -> durable evidence + ruling
+  -> ARCHITECT_READY
+  -> steady execution
+```
+
+本节不猜测 provider 内部 token / context 实现。治理对象是可观察任务阶段、unresolved uncertainty 与 durable outcome。
+
 ## 2. 何时必须触发
 
 MUST 触发：
