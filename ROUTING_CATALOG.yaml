@@ -129,6 +129,21 @@
       "public": false
     },
     {
+      "id": "human-host-environment",
+      "layer": "30",
+      "reading_level": "L2",
+      "roles": [
+        "all"
+      ],
+      "when": "Human 主控设备新机 bootstrap、目录/工具/缓存/状态归整、Host cleanup/drift，或需要解析本机 HOST_AGENT 时",
+      "home": "30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md",
+      "section": "",
+      "templates": [
+        "50_TEMPLATES/HOST_AGENT_CONTRACT.md"
+      ],
+      "public": true
+    },
+    {
       "id": "execution",
       "layer": "30",
       "reading_level": "L2",
