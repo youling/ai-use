@@ -14,13 +14,13 @@
       "90"
     ],
     "layers": {
-      "00": "Kernel",
       "10": "Bootstrap",
       "20": "Roles",
       "30": "Protocols",
       "40": "Guides",
       "50": "Templates",
-      "90": "History"
+      "90": "History",
+      "00": "Kernel"
     },
     "results": {
       "NEXT": "角色/场景命中，targeted 读取必要 home 后继续。",
@@ -127,6 +127,21 @@
       "section": "§2",
       "templates": [],
       "public": false
+    },
+    {
+      "id": "human-host-environment",
+      "layer": "30",
+      "reading_level": "L2",
+      "roles": [
+        "all"
+      ],
+      "when": "Human 主控设备新机 bootstrap、目录/工具/缓存/状态归整、Host cleanup/drift，或需要解析本机 HOST_AGENT 时",
+      "home": "30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md",
+      "section": "",
+      "templates": [
+        "50_TEMPLATES/HOST_AGENT_CONTRACT.md"
+      ],
+      "public": true
     },
     {
       "id": "execution",
