@@ -369,6 +369,8 @@ Human Completion Card 仅保留为 Architect / orchestrator 在**非 delegated e
 
 ## 6. Versioned Definitions
 
+- `2.8.0`：Adaptive Reasoning Effort（#113）。Fresh/takeover/material cold start 的 `DEEP_BOOTSTRAP` trigger 由 Architect Reconnaissance 持有；本接口新增 steady-state `STEADY_BALANCED`、material-signal `DEEP_ESCALATION` 与 durable closure 后 de-escalation。Reasoning effort 仅表示 compute/search depth，不改变 authority、scope、acceptance、verification、security/destructive gate、evidence strength 或 Work lifecycle；provider UI 档位映射留在 non-normative Guide，不进入 core governance。
+
 - `2.7.0`：Executor lifecycle hardening（#94）。Delegated attempt 固化为 `DISPATCH -> AGENT_CLAIMED -> [PROGRESS_CHECKPOINT]* -> AGENT_TERMINAL_RESULT`；CLAIM/TERMINAL 必须 durable readback；成功/失败共用收尾门；`COMPLETION_REACHED` 增加 terminal writeback confirmed gate；delegated terminal chat return 固定为 exact GitHub pointer only；无 durable write path 的 subagent 不可关闭 Work。Human Completion Card 降为 Architect/orchestrator 的非 terminal 可选 synthesis，不再与 executor terminal transport 冲突。
 
 - `2.6.0`：在已合并的 Local Engineering Gate 2.5.0 基础上保留 R1 relocation：context/recovery/independence/delegation 的 semantic owner 收敛至 Recovery & Handoff；模板仅保留形态。原 Seed minimality/transport fallback 搬回本接口；continuation、repair、completion 与 authority 不变。PR #75 旧候选曾使用 2.5.0，现与上游版本区分，旧候选由 Git provenance 保留。
