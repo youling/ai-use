@@ -33,6 +33,20 @@ BOOT-3A Authority + Access
  -> BOOT-3C Durable Conclusion
 ```
 
+## Host environment input
+
+当本地执行发生在 Human 主控设备上时，长期目录/工具/cache/state/secret 语义由 [Human Host Environment](../30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md) 持有。
+
+Local Engineering Gate **消费** resolved Host Contract / `HOST_AGENT.md` 与 platform profile；它只回答“当前 Work 需要的 capability 是否 READY”，不重新决定长期 Host 目录布局，也不建立第二 Host profile。
+
+```text
+Human Host Environment / HOST_AGENT
+        ↓
+Local Engineering Gate
+        ↓
+isolated Work Attempt
+```
+
 ## Cross-platform contract / platform-native adapters
 
 The **Gate contract is shared; adapter code is not**.
