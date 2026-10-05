@@ -24,6 +24,8 @@ flowchart LR
 
 这张图是 **DERIVED navigation**：authority、角色、执行与 durable truth 的精确定义仍以对应 canonical 文档为准。复杂图/局部图按 [Diagram-as-Code](30_PROTOCOLS/DIAGRAM_AS_CODE.md) 下钻；Human 主控设备环境见 [Human Host Environment](30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md)。
 
+**L1 详情图：** [ai-use Project Detail Map 图源](docs/diagrams/project.architecture.json) · [图示维护契约](docs/diagrams/README.md)。部署侧 Navigator 只消费/渲染这份 owner 图源，不复制第二份 ai-use 架构语义。
+
 
 ---
 
