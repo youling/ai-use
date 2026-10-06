@@ -1,6 +1,6 @@
 # Architect Watch & Daily Brief
 
-**Classification: L2 Targeted Guidance / derived read model.**  
+**Classification: L2 Targeted Guidance / derived read model.**
 **Normative wake/authority owner:** [Agent Interface §1.4.3](../docs/AGENT_INTERFACE.md#143-architect-watch--reconciliation-wake)
 
 本指南用于 deployment 已具备 scheduler / automation / event wake 时，帮助 Architect 周期观察 durable Work、发现需要裁决的 delta，并向 Human 提供简洁日报。它不定义 scheduler 实现，不创建 task DB、Work state 或 executor lifecycle。
