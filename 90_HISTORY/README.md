@@ -20,5 +20,6 @@
 - [ADR-0011](ADR-0011_ADAPTIVE_REASONING_EFFORT.md) — Adaptive Reasoning Effort：Fresh/takeover 深推理、稳态巡航、证据触发升级与 durable closure 后降档（#113）。
 - [ADR-0012](ADR-0012_ARCHITECT_CONSTRAINT_CHALLENGE.md) — Architect Constraint Challenge：反盲从约束、owner-aware challenge/amend 与 currentness-before-wait（#106）。
 - [ADR-0013](ADR-0013_ARCHITECT_WATCH_AND_DAILY_BRIEF.md) — Architect Watch / Daily Brief：周期唤醒只做 durable reconciliation；健康分类与日报是派生投影，不建立第二 lifecycle/authority（#91）。
+- [ADR-0014](ADR-0014_HUMAN_SSOT_DEPOSITOR_INGRESS.md) — Human SSOT Depositor：post-hoc source-bound create-only capture，与 Curator 读取/维护 current Human state 分权（#38）。
 
 退休入口的历史原文通过 [Session compatibility](../docs/SESSION_LIFECYCLE.md)、[provider guide forward](../docs/DeepSeekPP-github-mcp-usage.md) 的 frozen Git pointers 追溯；默认不读取历史全文。
