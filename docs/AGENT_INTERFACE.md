@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** Read when dispatching/executing Agent work, choosing Architect execution mode, advancing an authorized program, or producing/reviewing Human/Agent interface artifacts.
 
-**Protocol Version: 2.9.0**
+**Protocol Version: 2.10.0**
 
 本文是 **execution / dispatch / continuation interface** 的 canonical home。公共 `ai-use` 不绑定特定 owner/repo、私有 control-plane 名称或账号。[Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md) 拥有 recovery、Work Context、正交 context/mode 与 independence/delegation 语义；[CONTEXT_MODE_SEED](../50_TEMPLATES/CONTEXT_MODE_SEED.md) 只给形态。本文保留 continuation、`PREMATURE_YIELD` 与完成边界。
 
@@ -252,6 +252,30 @@ authority_to_amend: yes|no|unknown
 
 Constraint Challenge 不授权绕过 Human current explicit requirement、security/privacy/secret、destructive/irreversible gate、production/deploy authority、legal/compliance、required independent verification、unknown ownership/currentness。上述约束可以被 challenge，但在 current owner 修改前仍须遵守。
 
+### 1.4.3 Architect Watch / Reconciliation Wake
+
+Architect 的持续推进不要求一个模型会话永久在线。deployment 若提供 scheduler / automation / event wake，Project/Global Architect MAY 通过周期或条件唤醒重新进入 current durable state，并执行一次**观察—重建—裁决**循环：
+
+```text
+WAKE
+ -> bootstrap / live reconcile current durable sources
+ -> read owned active Work graph only
+ -> derive health / actionable delta
+ -> continue | review | recover | report exact real gate
+ -> durable writeback when an authorized action occurs
+ -> EXIT
+```
+
+该循环只是对现有 Work / attempt / durable evidence 的消费方式，不创建第二套 task DB、Work state、liveness registry 或 authority。scheduler capability、定时器、Webhook、后台进程或模型在线状态都 **不产生 authority**。
+
+Watch 每次唤醒必须从 Git/GitHub current state 重建，不能依赖 scheduler-local memory、上一轮聊天或旧 brief。它 MAY 消费 [Durable Trace](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) 已有的 CLAIM / CHECKPOINT / TERMINAL、remote refs、PR/review 与 deployment observation；不得为 Watch 另造并行 attempt lifecycle。
+
+deployment MAY 配置 pickup / stale thresholds，但 public governance 不冻结统一 TTL。超过阈值只能形成 `SUSPECT` / `UNKNOWN` 等**派生健康判断**，不能自动把 executor 判 FAILED、取消 ownership、授予 takeover、merge 或 destructive authority。准备恢复前必须重新核对 current generation / remote refs / ownership / shared resources；未知 effect、provider backoff、rate limit 和 security/permission gate 继续 fail closed。
+
+健康且无可执行 delta 时，Watch 可以静默结束。出现 current authorized next action 时，按 §1.4 continuation 继续；出现真实 Human / higher-authority gate 时才通知 Human。Human 不是例行状态轮询器。
+
+Daily Brief 是同一 durable state 的**派生 Human-facing memory projection**，不是新的 Work truth。其 health class、字段、freshness 与 source discipline 见 [Architect Watch & Daily Brief Guide](../40_GUIDES/ARCHITECT_WATCH_AND_BRIEF.md)。brief 只能帮助重新定向；任何 mutation 前仍需 live revalidate exact Work / PR / head。
+
 ### 1.5 Global Architect Maintenance Lane
 
 Global Architect 在 live validate 后，可以 `DIRECT` 维护以下**低风险、非行为性**治理内容，不要求为了角色仪式启动 Runner / Builder / Verifier：
@@ -431,6 +455,8 @@ Human Completion Card 仅保留为 Architect / orchestrator 在**非 delegated e
 ---
 
 ## 6. Versioned Definitions
+
+- `2.10.0`：Architect Watch / Reconciliation Wake（#91）。deployment 可用 scheduler/event 周期唤醒 Architect，但每轮必须从 current Git/GitHub durable state 重建；Watch 只消费既有 Work/CLAIM/CHECKPOINT/TERMINAL/refs，不创建第二 lifecycle 或 authority。stale/pickup threshold 留 deployment；超时只产生 derived SUSPECT/UNKNOWN，不自动 failure/takeover。Daily Brief 明确为派生 Human memory projection，mutation 前仍 live revalidate。
 
 - `2.9.0`：Architect Constraint Challenge（#106）。Architect 对 material constraint quality 负有判断责任；按 constraint owner 区分可直接 amend、向 higher authority challenge、或采用 newer ruling supersede stale gate。Builder/Foreman 可 durable 报告 challenge 但不获得 governance override authority；等待 Human 前必须 live-reconcile newer durable ruling；不受争议的 authorized work 继续。Challenge 不改变 Human/security/destructive/deploy/verification authority。
 
