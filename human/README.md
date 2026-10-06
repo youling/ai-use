@@ -1,6 +1,6 @@
 # Human / 二脑协作工作手册
 
-**状态：Experimental v0.1.0**
+**状态：Experimental v0.2.0**
 
 本目录用于一种特殊的人机协作：**AI 作为 Human 的二脑协作者（Second-Brain Collaborator），把聊天中的日常经历、决策、认知变化与长期线索，沉淀到 Human 自己控制的私有 SSOT。**
 
@@ -8,11 +8,29 @@
 
 > 本部署的 Human SSOT 可以叫 `an`，但 `an` 只是 deployment-local alias；公共 `ai-use` 不绑定具体 owner/repo，也不保存个人事实。
 
+## 0. 两种协作角色：Depositor 与 Curator
+
+本手册不再把所有 Human-memory 工作都视为同一种“二脑协作者”。至少区分：
+
+```text
+Depositor / Capture
+  = 对当前 source 做后置、source-bound、create-only 沉淀
+  = 默认不读取 existing Human SSOT
+
+Curator / Human-memory collaborator
+  = 在明确授权下 targeted read existing Human SSOT
+  = 去重、关联、Candidate/Record/Canonical State 维护
+```
+
+普通 Chat / Agent 在 Human 说“把这段沉淀一下”时，默认进入 **Depositor**，按 [Depositor Ingress](DEPOSITOR_PROTOCOL.md) / [Depositor Prompt](DEPOSITOR_PROMPT.md) 工作。它不因拥有 GitHub 或 Human SSOT 写能力自动获得 Curator authority。
+
+下文关于多层长期记忆、Daily/Candidate/Canonical State 的内容主要属于 **Curator / processing**。Depositor 只负责新建 source evidence。
+
 ---
 
-## 1. 角色定位
+## 1. Curator / 二脑协作者角色定位
 
-当 Human 指定你为“二脑协作者”时，你的任务不是替 Human 定义“他是谁”，而是：
+当 Human 指定你为“二脑协作者”并要求读取/维护既有 Human memory 时，你的任务不是替 Human 定义“他是谁”，而是：
 
 1. 从当前对话与 Human 明确提供的材料中识别**发生了什么、决定了什么、改变了什么、留下了什么未闭环**；
 2. 把值得长期恢复的信息写入 Human 私有 SSOT；
@@ -29,9 +47,13 @@ GitHub history 可以保存变化，但**当前 Human 状态不能只靠 Git 历
 
 ## 2. 冷启动顺序
 
-本页是 [Routing Catalog](../ROUTING_CATALOG.yaml) 的 `human-collaboration` targeted home。执行/恢复时先读 current governance repo 的 [AGENTS.md](../AGENTS.md) L0，再按 [Reading Map](../READING_MAP.md) 与 [Bootstrap](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md) 进入当前场景；本页不另立 cold-start 顺序。身份与权限成立后，仅从 current Human SSOT 入口解析其 manifest/当日记录及当前任务所需 context。
+本页是 [Routing Catalog](../ROUTING_CATALOG.yaml) 的 `human-collaboration` targeted home。执行/恢复时先读 current governance repo 的 [AGENTS.md](../AGENTS.md) L0，再按 [Reading Map](../READING_MAP.md) 与 [Bootstrap](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md) 进入当前场景；本页不另立 cold-start 顺序。
 
-### 必须遵守
+**Depositor 例外边界：** post-hoc Depositor 不需要也不应该为了 capture 当前 source 先冷启动/读取 Human SSOT。它只读取 current source + [Depositor Ingress](DEPOSITOR_PROTOCOL.md) / execution prompt，并使用 Human/transport 已明确提供的 create-only target；目标不明确时输出 portable Deposit。
+
+**Curator / broader Human-memory collaboration：** 身份与权限成立后，才从 current Human SSOT 入口 targeted 解析 manifest/current artifact 与当前任务所需 context；不通读整个私有仓。
+
+### Curator 必须遵守
 
 - 不依赖 provider memory 作为事实源；它只能作为 cache。
 - 不因“以前好像记得”而覆盖 current SSOT。
@@ -44,6 +66,8 @@ GitHub history 可以保存变化，但**当前 Human 状态不能只靠 Git 历
 ## 3. 四层记忆模型
 
 Human SSOT 应逻辑上区分四层。**物理目录与文件名由具体 Human SSOT 自己定义，本手册不冻结其仓库结构。**
+
+这四层是 **Curator / processing 的逻辑模型，不是普通 Depositor 的 mandatory pipeline**。Depositor 只产生 source-bound Deposit/Session evidence；`Daily Record` 可作为 downstream 时间投影，但不是所有 Deposit 必经的 convergence layer。
 
 ### A. Session Drop — 会话投递
 
@@ -208,7 +232,9 @@ Human 会变化。
 
 ---
 
-## 7. 每日协作流程
+## 7. Curator 的可选日常协作流程
+
+以下是需要持续 Human-memory curation 时的一种推荐节奏，**不是 Depositor 协议，也不要求每次 source capture 都生成 Daily Record**。Human 可以按事件、阶段或需要进行整理，不以自然日作为 mandatory convergence boundary。
 
 Human 可以每天固定使用一个二脑对话；当窗口漂移、上下文耗尽或更换模型时，直接换 Chat/Agent，不要求保存 provider-side continuity。
 
@@ -263,7 +289,7 @@ Human SSOT 允许多方协作，但不允许“多人同时重写同一个人”
 
 默认规则：
 
-1. 普通 Chat/Agent 可以新增自己的 Session Drop；
+1. 普通 Chat/Agent 可按 Depositor contract 新建自己的 unique Deposit / Session evidence；默认 create-only，不要求先读其它 Deposit；
 2. Daily Record 由当前日终协作者或明确的 curator 进行 current-read 后收敛；
 3. Memory Candidate 可以由多个 Agent 提出，但必须保留 provenance；
 4. Canonical Human State 修改前必须读取 current state，不能基于旧会话直接覆盖；
@@ -373,7 +399,9 @@ Human SSOT 是高敏感仓库。即使仓库私有，也不要把“能存”理
 
 ## 13. 二脑协作者的停止条件
 
-一次日常记录工作完成于：
+普通 Depositor 的完成边界由 [Depositor Ingress](DEPOSITOR_PROTOCOL.md) 定义：source 已忠实凝练 + create-only durable writeback 或 portable artifact 已交付即可；不要求继续进入 Daily/Candidate/Canonical curation。
+
+Curator / broader collaboration 的日常记录工作完成于：
 
 ```text
 当前对话已提炼
@@ -388,6 +416,12 @@ Human SSOT 是高敏感仓库。即使仓库私有，也不要把“能存”理
 ---
 
 ## 14. 最小冷启动提示
+
+### Depositor
+
+普通 post-hoc 沉淀直接使用 [Depositor Prompt](DEPOSITOR_PROMPT.md) 或等价 deployment transport；**不要**先加载 Human SSOT current state。
+
+### Curator / 二脑协作者
 
 Human 可以只给一个很短的启动指令，例如：
 
@@ -412,11 +446,11 @@ Human 的生活与思考
        ↓
 多 Chat / 多 Agent
        ↓
-Session / Daily evidence
+source-bound Deposits / Session evidence
        ↓
-Reflection / Memory Candidate
+可选 Curator：Daily/Record / Reflection / Memory Candidate
        ↓
-Canonical Human State
+必要时维护 Canonical Human State
        ↓
 未来任何 AI targeted retrieval
        ↓
