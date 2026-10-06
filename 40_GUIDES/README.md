@@ -11,3 +11,5 @@ secret/output invariant 见 [AGENTS.md §5](../AGENTS.md#5-evidence-bound-mutati
 真实异常 / failure mode / recovery case 统一进入 [INCIDENTS/](INCIDENTS/README.md)。Incident 只提供 evidence + diagnostic/recovery guidance，不成为第二套 authority 或 protocol。
 
 按任务阶段调节模型推理强度：见 [Adaptive Reasoning Effort](ADAPTIVE_REASONING_EFFORT.md)。它只提供 provider-agnostic 实践映射；Fresh/takeover 与 steady/escalation 的 normative owner 仍在 Reconnaissance / Agent Interface。
+
+需要周期观察项目、发现待审/疑似失联/真实 Human Gate，或生成每日恢复摘要时，按需读取 [Architect Watch & Daily Brief](ARCHITECT_WATCH_AND_BRIEF.md)。health class 与 brief 都是派生 read model，不是第二 Work state。
