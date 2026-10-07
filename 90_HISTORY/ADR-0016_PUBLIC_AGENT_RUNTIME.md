@@ -1,6 +1,6 @@
 # ADR-0016 — Public Agent Runtime ownership and release lifecycle
 
-- Status: Proposed implementation of Human/Architect direction in [#123](https://github.com/youling/ai-use/issues/123)
+- Status: Accepted implementation at PR #124 exact head `f8a4a873933e8b0e8e36d2c82cc7ecd480eeecfa`; merged as `45de55617f1921055aef660c13310650eb15625a`; first OCI publication remains separately gated
 - Decision level: L2
 - Canonical implementation: [agent-runtime](../agent-runtime/README.md)
 - Does not supersede common HOST_AGENT schema or private instance ownership.
