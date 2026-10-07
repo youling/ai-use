@@ -37,7 +37,7 @@ ai-use
 platform/profile owner (e.g. Fleet)
 = OS-specific desired profile / scanner / reconcile implementation
 
-private instance owner (for this deployment: ai-hub)
+deployment-local private instance owner
 = resolved Host facts / evidence / durable canonical HOST_AGENT copy / local materialization
 ```
 
@@ -76,7 +76,7 @@ ONE_LAYOUT_FITS_ALL = NO
 Human Host 默认有两层同一 resolved projection：
 
 ```text
-private instance owner durable copy (this deployment: youling/ai-hub)
+deployment-local private instance owner durable copy
   = canonical resolved recovery source
 
 <OS-native Documents folder>/HOST_AGENT.md
