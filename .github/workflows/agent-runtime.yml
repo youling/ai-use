@@ -1,0 +1,40 @@
+name: Agent runtime conformance
+on:
+  pull_request:
+    paths: ['agent-runtime/**', '90_HISTORY/ADR-0016_PUBLIC_AGENT_RUNTIME.md', '.github/workflows/agent-runtime*.yml']
+  push:
+    branches: [main]
+    paths: ['agent-runtime/**', '.github/workflows/agent-runtime*.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: agent-runtime-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Public inert source, recovery and lifecycle fixtures
+        run: |
+          python -m pip install 'pytest==8.4.2' 'PyYAML==6.0.3'
+          python -m pytest agent-runtime/conformance -q
+      - name: Build exact candidate without registry push
+        env:
+          REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: docker build --build-arg SOURCE_REVISION="$REVISION" -t runtime-candidate agent-runtime/opencode
+      - name: Image smoke, provenance and layer/history secret checks
+        env:
+          EXPECTED_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: python agent-runtime/conformance/image_check.py runtime-candidate
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: runtime-conformance-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            image-conformance.json
+            package-manifest.current.tsv

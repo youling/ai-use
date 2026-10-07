@@ -1,0 +1,93 @@
+name: Agent runtime candidate publication (gated)
+on:
+  workflow_dispatch:
+    inputs:
+      revision:
+        description: Exact reviewed source SHA authorized on current main
+        required: true
+        type: string
+      tag:
+        description: Unique authorized 2.0.22-runtime.1-candidate-SHA tag
+        required: true
+        type: string
+      conformance_run_id:
+        description: Successful exact-source Agent runtime conformance run
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: agent-runtime-publication
+  cancel-in-progress: false
+jobs:
+  authorization:
+    if: vars.RUNTIME_RELEASE_ENABLED == 'true' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Verify current authorization and exact successful conformance
+        env:
+          RELEASE_ENABLED: ${{ vars.RUNTIME_RELEASE_ENABLED }}
+          RELEASE_REVISION: ${{ inputs.revision }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          CONFORMANCE_RUN_ID: ${{ inputs.conformance_run_id }}
+          GH_TOKEN: ${{ github.token }}
+        run: python agent-runtime/release/verify_authorization.py
+  publish:
+    needs: authorization
+    runs-on: ubuntu-latest
+    environment: runtime-release
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+      actions: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.revision }}
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+          path: authority
+          persist-credentials: false
+      - name: Recheck current authority after environment approval
+        working-directory: authority
+        env:
+          RELEASE_ENABLED: ${{ vars.RUNTIME_RELEASE_ENABLED }}
+          RELEASE_REVISION: ${{ inputs.revision }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          CONFORMANCE_RUN_ID: ${{ inputs.conformance_run_id }}
+          GH_TOKEN: ${{ github.token }}
+        run: python agent-runtime/release/verify_authorization.py
+      - name: Build and verify exact approved source
+        env:
+          EXPECTED_REVISION: ${{ inputs.revision }}
+        run: |
+          docker build --build-arg SOURCE_REVISION="$EXPECTED_REVISION" -t runtime-candidate agent-runtime/opencode
+          python agent-runtime/conformance/image_check.py runtime-candidate
+      - name: Publish unique candidate only and record manifest digest
+        env:
+          REGISTRY_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          package="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/opencode-foreman"
+          printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          trap 'docker logout ghcr.io' EXIT
+          docker tag runtime-candidate "$package:$RELEASE_TAG"
+          docker push "$package:$RELEASE_TAG"
+          docker buildx imagetools inspect "$package:$RELEASE_TAG" --format '{{json .Manifest}}' > release-manifest.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: authorized-candidate-${{ inputs.revision }}
+          path: |
+            release-manifest.json
+            image-conformance.json
+            package-manifest.current.tsv
