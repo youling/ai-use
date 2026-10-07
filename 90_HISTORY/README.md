@@ -21,5 +21,6 @@
 - [ADR-0012](ADR-0012_ARCHITECT_CONSTRAINT_CHALLENGE.md) — Architect Constraint Challenge：反盲从约束、owner-aware challenge/amend 与 currentness-before-wait（#106）。
 - [ADR-0013](ADR-0013_ARCHITECT_WATCH_AND_DAILY_BRIEF.md) — Architect Watch / Daily Brief：周期唤醒只做 durable reconciliation；健康分类与日报是派生投影，不建立第二 lifecycle/authority（#91）。
 - [ADR-0014](ADR-0014_HUMAN_SSOT_DEPOSITOR_INGRESS.md) — Human SSOT Depositor：post-hoc source-bound create-only capture，与 Curator 读取/维护 current Human state 分权（#38）。
+- [ADR-0015](ADR-0015_HOST_AGENT_DURABLE_RELOCATION.md) — HOST_AGENT durable instance copy + autonomous Host-managed root relocation：ai-hub 作为 private resolved canonical recovery source；material storage drift 下允许有证据的自主迁移（#119）。
 
 退休入口的历史原文通过 [Session compatibility](../docs/SESSION_LIFECYCLE.md)、[provider guide forward](../docs/DeepSeekPP-github-mcp-usage.md) 的 frozen Git pointers 追溯；默认不读取历史全文。
