@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+from secret_scan import contains_material
 
 SOURCE='ghcr.io/anomalyco/opencode:2.0.22@sha256:11f2b6c96d380867387fbee390c06cb47efffd9fdc37009b4cd40795b45dad19'
 def run(*args):
@@ -38,9 +39,8 @@ def main():
     manifest=shell('cat /usr/share/agent-runtime/package-manifest.tsv')
     assert manifest.splitlines()==Path('agent-runtime/opencode/package-manifest.observed.tsv').read_text().splitlines()
     Path('package-manifest.current.tsv').write_text(manifest+'\n')
-    secret=re.compile(rb'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|(?:gh[pousr]_[A-Za-z0-9]{30,}|sk-proj-[A-Za-z0-9_-]{30,})')
     history=run('history','--no-trunc','--format','{{json .}}',image).encode()
-    assert not secret.search(history) and b'/run/secrets' not in history
+    assert not contains_material(history) and b'/run/secrets' not in history
     layers=0
     with tempfile.TemporaryDirectory(prefix='runtime-image-scan-') as directory:
         archive=Path(directory)/'image.tar'
@@ -62,10 +62,10 @@ def main():
                             while True:
                                 chunk=content.read(1024*1024)
                                 if not chunk:break
-                                assert not secret.search(tail+chunk), 'secret signature in image file'
-                                tail=chunk[-256:]
+                                assert not contains_material(tail+chunk), 'secret material signature in image file '+item.name
+                                tail=chunk[-4096:]
                 elif member.size<2*1024*1024:
-                    assert not secret.search(handle.read())
+                    assert not contains_material(handle.read())
     assert layers==len(layer_paths) and layers>0
     evidence={'runtime':'opencode','version':'2.0.22','platform':'linux/amd64','revision':revision,
         'config_id':info['Id'],'source':SOURCE,'upstream_executable_sha256':actual,
