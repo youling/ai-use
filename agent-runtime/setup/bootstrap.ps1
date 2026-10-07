@@ -6,12 +6,16 @@ param(
     [string]$PythonPath,
     [switch]$Prepare,
     [switch]$ApprovePythonInstall,
-    [switch]$CheckOnly
+    [switch]$CheckOnly,
+    [switch]$AuthorizeHostApply,
+    [switch]$ShowLaunchArguments
 )
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if ($env:OS -ne 'Windows_NT') { throw 'Windows V1 only. Linux/macOS real apply is unsupported.' }
 $setupRoot = [IO.Path]::GetFullPath($PSScriptRoot)
+if ($AuthorizeHostApply -and $Mode -ne 'tui') { throw 'Host apply entry is the reviewed Textual flow only.' }
+if ($ShowLaunchArguments -and -not $CheckOnly) { throw 'ShowLaunchArguments requires nonmutating CheckOnly.' }
 $runtimeRoot = Join-Path $setupRoot '.setup-runtime'
 $spec = Get-Content -LiteralPath (Join-Path $setupRoot 'python-runtime.json') -Raw | ConvertFrom-Json
 
@@ -47,6 +51,14 @@ function Invoke-Checked([string]$Exe, [string[]]$Arguments) {
     & $Exe @Arguments
     if ($LASTEXITCODE -ne 0) { throw 'Installer subprocess failed; no Host success claimed.' }
 }
+function Get-EngineArguments {
+    $arguments = @('-s', '-m', 'agent_setup', $Mode)
+    if ($Mode -eq 'cli') { $arguments += 'probe' }
+    if ($Fixture) { $arguments += @('--fixture', [IO.Path]::GetFullPath($Fixture)) }
+    # This only unlocks review controls; apply still needs fresh plan approval.
+    if ($AuthorizeHostApply) { $arguments += '--host-authorized' }
+    return $arguments
+}
 Assert-PlainPath $setupRoot
 $lockPath = Join-Path $setupRoot 'requirements.lock'
 $lockHash = (Get-FileHash -LiteralPath $lockPath -Algorithm SHA256).Hash
@@ -81,6 +93,7 @@ if (-not $python) {
     }
 }
 if ($CheckOnly) {
+    if ($ShowLaunchArguments) { ConvertTo-Json -InputObject @(Get-EngineArguments) -Compress; return }
     if ($python) { Write-Output 'PYTHON_314_VERIFIED; CHECK_ONLY; HOST_UNCHANGED' }
     else { Write-Output 'PYTHON_314_MISSING; EXPLICIT_INSTALL_APPROVAL_REQUIRED; HOST_UNCHANGED' }
     return
@@ -148,9 +161,7 @@ try {
     }
     $env:PYTHONPATH = $setupRoot
     $env:PYTHONNOUSERSITE = '1'
-    $engineArgs = @('-s', '-m', 'agent_setup', $Mode)
-    if ($Mode -eq 'cli') { $engineArgs += 'probe' }
-    if ($Fixture) { $engineArgs += @('--fixture', [IO.Path]::GetFullPath($Fixture)) }
+    $engineArgs = @(Get-EngineArguments)
     Invoke-Checked -Exe $venvPython -Arguments $engineArgs
 } finally {
     $env:PYTHONPATH = $oldPythonPath

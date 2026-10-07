@@ -37,3 +37,28 @@ identity/free-route selection is not yet provider readiness proof. WSLC metadata
 access is distinct from an authorized real first-run runtime canary. That canary
 requires exact Host authority and remains pending. Source recipe/immutable released
 OCI digest are consumed unchanged; no new release, deployment or merge is performed.
+
+## RF-1 / RF-2 / RF-3 bounded repair
+
+Architect review5447937111 / dispatch6046219802 require re-review of a new head.
+RF-1: default bootstrap remains preview; explicit AuthorizeHostApply reaches the
+same Textual review/apply flow, still requiring fresh exact-plan consent. The
+PowerShell argument builder is exercised through the actual CLI and real Textual
+app using only a disposable fixture; default denial and approved apply are proven.
+
+RF-2: marker schema alone is never ownership. Exact owner/root/config journal/
+attempt/install binding plus the journal's created-root list and live transaction
+state are required. Independent canonical classification must bind a real exact
+context hash/owner pointer. Foreign or partial evidence fails closed; valid rerun
+remains idempotent, and verify rejects changed ownership.
+
+RF-3: checkbox/image alone cannot enable the discovery projection. Approved owner
+metadata must prove current credential and selected model readiness; denied startup
+clears earlier enabled state. Verification distinguishes CONFIGURED_PENDING_AUTH,
+RUNTIME_GITHUB_READY and complete READY, rereading current model/credential readiness
+instead of trusting old receipt flags. Missing/revoked model proof cannot hide behind
+successful GitHub proof.
+
+Local repair setup65 PASS/2 symlink-privilege skips; existing conformance41 PASS/1
+skip; public Windows/Linux exact-head CI and independent Architect re-review follow.
+No current-Host apply, raw key access, inference, new release or self-merge.

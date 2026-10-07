@@ -41,7 +41,7 @@ def test_apply_without_approval_never_writes(setup):
 def test_apply_no_move_and_truthful_partial_readiness(setup):
     engine,adapter,plan=setup
     result=engine.apply(plan,approved=True)
-    assert result['status']=='CONFIGURED_RUNTIME_PENDING'
+    assert result['status']=='CONFIGURED_PENDING_AUTH'
     assert result['checks']['runtime']=='NOT_AUTHORIZED'
     assert result['checks']['github_fresh_recovery']=='NOT_AUTHORIZED'
     assert plan['placement']=='NO_MOVE' and len(plan['domains'])==7
@@ -177,3 +177,66 @@ def test_control_reparse_and_random_atomic_temp(setup,tmp_path):
     except OSError:pytest.skip('Windows symlink privilege unavailable')
     with pytest.raises(SetupError,match='REPARSE'):engine.apply(plan,approved=True)
     assert list(outside.iterdir())==[]
+
+@pytest.mark.parametrize('marker',[{'schema':'1.0.0'}, {'schema':'1.0.0','owner':'foreign','attempt':'a'*32}])
+def test_schema_only_or_foreign_marker_never_claims_unknown_root(setup,marker):
+    engine,_,plan=setup
+    root=Path(plan['roots']['workspace']['path']);root.mkdir(parents=True)
+    (root/'.agent-runtime-setup-owner.json').write_text(json.dumps(marker))
+    reviewed=engine.plan(engine.probe())
+    assert reviewed['status']=='BLOCKED' and reviewed['roots']['workspace']['owner']=='UNKNOWN'
+
+@pytest.mark.parametrize('field,value',[('attempt','f'*32),('root','foreign/root'),('install_binding','f'*64),('config_root','foreign/config')])
+def test_foreign_complete_marker_binding_rejected(setup,field,value):
+    engine,_,plan=setup;engine.apply(plan,approved=True)
+    root=Path(plan['roots']['workspace']['path']);marker=root/'.agent-runtime-setup-owner.json'
+    record=json.loads(marker.read_text());record[field]=value;marker.write_text(json.dumps(record))
+    assert engine.plan(engine.probe())['roots']['workspace']['owner']=='UNKNOWN'
+
+def test_checkbox_and_image_do_not_enable_context(setup):
+    import yaml
+    engine,_,plan=setup
+    plan['github']['authorized']=True
+    context=engine.context(plan,'sha256:'+'a'*64)
+    projection=yaml.safe_load(context.split('```yaml\n')[1].split('```')[0])
+    assert projection['agents']['opencode']['enabled'] is False
+    assert projection['agents']['opencode']['readiness']=='CONFIGURED_PENDING_AUTH'
+
+def test_incomplete_canonical_classification_cannot_claim_unknown_root(setup):
+    engine,adapter,plan=setup
+    root=Path(plan['roots']['workspace']['path']);root.mkdir(parents=True)
+    adapter.data['existing_roots']['workspace']={'path':str(root),'owner':'HOST_MANAGED','relocatable':True,'exists':True}
+    adapter.data['canonical_classification']={'verified':True,'sha256':None,'owner_pointer':'owner:canonical'}
+    assert engine.plan(engine.probe())['roots']['workspace']['owner']=='UNKNOWN'
+
+def test_verified_github_cannot_hide_missing_model(setup,monkeypatch):
+    engine,adapter,plan=setup;engine.apply(plan,approved=True)
+    receipt_path=Path(plan['roots']['config']['path'])/'.agent-runtime-setup/receipt.json'
+    receipt=json.loads(receipt_path.read_text());receipt['runtime']={'state':'READY'}
+    receipt['image']={'state':'PASS','config_id':'sha256:'+'a'*64};receipt['durable']={'state':'PASS'}
+    receipt_path.write_text(json.dumps(receipt))
+    adapter.fixture=False
+    monkeypatch.setattr(adapter,'verify_runtime',lambda *a,**kw:{'state':'PASS'},raising=False)
+    plan['github'].update(helper_approved=True,helper='approved',repo='example/repo',work='example/repo#1')
+    plan.pop('fingerprint');plan['fingerprint']=digest(plan)
+    proof={'state':'PASS','repo':'example/repo','work':'example/repo#1','context_sha256':receipt['context_after_sha256'],
+           'authenticated_api':True,'github_read':True,'github_write':True,'fresh_recovery':True}
+    monkeypatch.setattr(adapter,'helper_status',lambda *a,**kw:proof,raising=False)
+    monkeypatch.setattr(adapter,'runtime_readiness',lambda _: {'credentials':'PASS','model':'NOT_AUTHORIZED'},raising=False)
+    outcome=engine.verify(plan)
+    assert outcome['status']=='RUNTIME_GITHUB_READY' and outcome['checks']['model']=='NOT_AUTHORIZED'
+    # A past checkpoint alone cannot hide revoked/unverified current model auth.
+    receipt['readiness']={'model':'PASS','credentials':'PASS'};receipt_path.write_text(json.dumps(receipt))
+    assert engine.verify(plan)['status']=='RUNTIME_GITHUB_READY'
+    monkeypatch.setattr(adapter,'runtime_readiness',lambda _: {'credentials':'PASS','model':'PASS'},raising=False)
+    assert engine.verify(plan)['status']=='READY'
+
+def test_denied_runtime_start_clears_preflight_enabled_projection(setup,monkeypatch):
+    import yaml
+    engine,adapter,_=setup
+    plan=engine.plan(engine.probe(),overrides={'host_authorized':True,'runtime':True},github={'authorized':True},model={'ref':'fixture.model'})
+    monkeypatch.setattr(adapter,'runtime_readiness',lambda _: {'credentials':'PASS','model':'PASS'},raising=False)
+    outcome=engine.apply(plan,approved=True)
+    projection=yaml.safe_load(Path(plan['host_agent']).read_text().split('```yaml\n')[1].split('```')[0])
+    assert outcome['status']=='CONFIGURED_PENDING_AUTH'
+    assert projection['agents']['opencode']['enabled'] is False

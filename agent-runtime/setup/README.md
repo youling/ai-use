@@ -74,6 +74,30 @@ CI 分别在 Windows synthetic smoke 与 Linux contract runner 验证；fixture 
 
 ## V1 验证边界与 owner helper
 
+### 显式安装入口
+
+默认 bootstrap 仅预览。拥有本次具体 Host 变更权限的 end user 可使用同一入口：
+
+```powershell
+pwsh -NoProfile -File .\agent-runtime\setup\bootstrap.ps1 -Prepare -AuthorizeHostApply
+```
+
+此开关只解锁 Textual 的审查/应用控件，不会自动安装 Host roots 或启动 runtime。
+用户必须查看当前精确方案后再次勾选授权并选择应用；改动方案会清除旧确认，
+engine 在 apply 前重新验证 fingerprint、当前环境和所有权。这个产品入口不表示
+本次 repo 修复任务获得真实工作站 apply 权限。`-CheckOnly -ShowLaunchArguments`
+可只读查看默认/显式授权入口传递的参数；CLI bootstrap 仍只提供 probe。
+
+已有目录不能因只有 schema 的 marker 或本机旧 context 字符串就变成 HOST_MANAGED。
+安装器 marker 必须绑定同一 owner、精确 root、config journal、install binding 和
+current attempt，journal 还须列出该 root；或有独立 owner canonical 分类证明。
+外来、缺字段、已 rollback 或漂移标记均 fail closed。
+
+配置未证明 credential/model readiness 时，HOST_AGENT 的 enabled=false、
+readiness=CONFIGURED_PENDING_AUTH。实际 runtime/GitHub 证据通过但模型缺失时只报告
+RUNTIME_GITHUB_READY；完整 READY 还必须有 bound model readiness。勾选授权、引用
+字符串、镜像存在或 provider 选择不是这些证明。
+
 WSLC preflight 的 `ps` 探针只证明原生控制面 metadata 访问。真正 runtime
 canary 必须在已批准 apply 后，通过固定 OCI pull、既有 launcher 和非 root
 context/image readback 另行成立；不能把 metadata PASS 当作容器启动 PASS。

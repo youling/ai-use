@@ -221,17 +221,30 @@ try {
                 if isinstance(value, str) and len(value) <= 4096 and not any(c in value for c in "\r\n\x00") and Path(value).is_absolute():
                     output[key] = value
             for key, pattern in (("work", r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#[1-9][0-9]*"),
+                                 ("model_ref", r"[A-Za-z0-9_.:/#-]{1,256}"),
                                  ("repo", r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"),
                                  ("context_sha256", r"[a-f0-9]{64}"),
                                  ("durable_destination", r"https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/blob/[A-Za-z0-9_./-]+")):
                 if isinstance(raw.get(key), str) and re.fullmatch(pattern, raw[key]):
                     output[key] = raw[key]
-            for key in ("authenticated_api", "github_read", "github_write", "fresh_recovery", "private_destination"):
+            for key in ("authenticated_api", "github_read", "github_write", "fresh_recovery", "private_destination", "model_ready"):
                 if type(raw.get(key)) is bool:
                     output[key] = raw[key]
             return output
         except (OSError, ValueError, subprocess.TimeoutExpired):
             return {"state": "BLOCKED", "reason": "HELPER_METADATA_UNAVAILABLE"}
+
+    def runtime_readiness(self,plan:dict)->dict:
+        github=plan.get('github',{})
+        if not self.apply_authorized or not github.get('authorized') or not github.get('helper_approved'):
+            return {'credentials':'NOT_AUTHORIZED','model':'NOT_AUTHORIZED'}
+        status=self.helper_status(github.get('helper',''),approved=True)
+        bound=(status.get('state') in {'READY','PASS'} and status.get('repo')==github.get('repo')
+            and status.get('work')==github.get('work') and bool(status.get('projection_directory')) and bool(status.get('server_env')))
+        # Model input/checkbox never becomes proof; the approved helper attests
+        # the selected exact reference after metadata readiness verification.
+        model_bound=bound and bool(plan.get('model',{}).get('ref')) and status.get('model_ref')==plan['model']['ref'] and status.get('model_ready') is True
+        return {'credentials':'PASS' if bound else 'NOT_AUTHORIZED','model':'PASS' if model_bound else 'NOT_AUTHORIZED'}
 
     def writeback_context(self, plan: dict, target: Path, sha: str) -> dict:
         github = plan.get("github", {})
