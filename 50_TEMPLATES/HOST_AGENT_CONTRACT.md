@@ -3,7 +3,7 @@
 先读 `../30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md`。本模板是 **Agent-facing resolved Host Contract shape**：服务 AI Agent / Human-AI 协作所需的 Host 上下文发现，不是全机配置数据库、desired profile、资产档案、Work SSOT 或 secret store。无适用项就删掉，不保留空壳。
 
 > 默认 materialization：`<OS-native Documents folder>/HOST_AGENT.md`。
-> canonical resolved copy / owner pointer：`<deployment-local pointer>`
+> canonical resolved copy / owner pointer：`<private instance owner durable pointer>`（本部署为 `youling/ai-hub`）；本机 Documents 文件是可恢复的 materialized copy。
 
 ## Initial V1 — minimum reference shape
 
@@ -16,13 +16,29 @@ observed_at: <timestamp>
 durable:
   work: <GitHub / owner durable pointer>
   governance: <ai-use/current pointer>
+  host_agent_canonical: <private instance owner durable pointer; this deployment: ai-hub>
 
 paths:
-  workspace: <resolved workspace root/policy>
-  config: <non-secret config + declared-variable area>
-  state: <Agent/application state area>
-  cache: <rebuildable cache area>
-  temp: <attempt-local temp area>
+  workspace:
+    path: <resolved workspace root/policy>
+    owner: HOST_MANAGED
+    relocatable: true
+  config:
+    path: <non-secret config + declared-variable area>
+    owner: HOST_MANAGED
+    relocatable: true
+  state:
+    path: <Agent/application state area>
+    owner: <HOST_MANAGED | VENDOR_OWNED | OWNER_DEFINED>
+    relocatable: <true only when current owner/migration contract permits>
+  cache:
+    path: <rebuildable cache area>
+    owner: HOST_MANAGED
+    relocatable: true
+  temp:
+    path: <attempt-local temp area>
+    owner: HOST_MANAGED
+    relocatable: true
   exchange:
     in: <Host -> container bounded input>
     out: <container -> Host bounded output>
@@ -66,6 +82,8 @@ agents:
 ### V1 rules
 
 - `paths.*` is the common Agent collaboration context; do not copy the whole machine configuration into it.
+- A path may move only when its current owner/class permits it. `HOST_MANAGED + relocatable=true` grants the placement Agent autonomous relocation authority when material drift/benefit is evidenced.
+- `Secrets`, device identity, Human-unique data, vendor-owned state and UNKNOWN ownership are not autonomously relocatable merely because storage pressure exists.
 - `paths.secrets.catalog_ref` points to the Human-owned secret/key catalog; no key/token/private-key value enters **HOST_AGENT.md**.
 - Secret entries in V1 carry reference/classification/materialization metadata only. `class / custody / materialize` values are resolved by the current secret/deployment owner; this template does **not** create a credential taxonomy SSOT. `GITHUB_MACHINE_IDENTITY` and `MODEL_PROVIDER_AUTH` are current examples, not public enums.
 - `agents.opencode.*` is the current canary/example launch/runtime projection. Include it only where OpenCode is actually enabled; do not pre-create DSH/Claude Code/other runtime fields.
@@ -94,7 +112,8 @@ resolved_contract_owner: <pointer>
 - Secret 只用 reference，不读取/写入 raw value。
 - Vendor-owned runtime/state 不因存在共享工具就自动去重。
 - 路径是 current resolution，不是永恒配置；先做低成本 drift probe。
-- 有 material drift 才重新解析；重新解析不等于自动迁移。
+- 对明确标记 `HOST_MANAGED + relocatable=true` 的目录，material drift 下 Agent 可自主迁移；其它 ownership 仍 fail closed。
+- 迁移成功后先回写 private-instance durable canonical，再重新 materialize 本机 **HOST_AGENT.md**；旧位置只有在 no-unique-state proof 后才 GC。
 - 不同 Agent runtime 只读取与自己相关的字段；不要要求 OpenCode/DSH/Claude Code 复制维护各自一整套 Host 规则。
 
 ## 2. Placement-relevant observation
@@ -188,8 +207,12 @@ specialized follow-ups: <pointer(s)>
 disk/mount/drive-letter 变化、新增/移除高速 storage、filesystem/locality 能力变化、material capacity pressure、Host role 变化、WSL/container/runtime storage 模式变化、current root 不存在/不可写、desired profile material revision。
 
 ```text
-RE_RESOLUTION != AUTOMATIC_MIGRATION
+RE_RESOLUTION != BLIND_MIGRATION
+HOST_MANAGED + relocatable=true + MATERIAL_DRIFT
+  => AUTONOMOUS_RELOCATION_ALLOWED
 ```
+
+迁移顺序：`probe -> classify -> resolve target -> quiesce(if needed) -> copy/move -> verify -> switch -> durable writeback -> local rematerialize -> old-path GC after proof`。
 
 ## 10. Cleanup / rebuild expectations
 
