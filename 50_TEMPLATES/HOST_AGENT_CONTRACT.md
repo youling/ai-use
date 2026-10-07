@@ -5,9 +5,9 @@
 > 默认 materialization：`<OS-native Documents folder>/HOST_AGENT.md`。
 > canonical resolved copy / owner pointer：`<deployment-local pointer>`
 
-## Initial V1 — minimum required shape
+## Initial V1 — minimum reference shape
 
-Human current direction: initial `HOST_AGENT.md` should stay deliberately small. V1 only standardizes the common Agent directories/context already agreed plus the current OpenCode runtime projection. New Agent classes extend the file later with a new runtime block; they do not redesign the common section.
+Human current direction: initial **HOST_AGENT.md** should stay deliberately small. V1 standardizes the common Agent directories/context already agreed and shows the current OpenCode canary projection as a concrete example. OpenCode is **not** a universal public dependency: deployments include only actually enabled Agent runtime blocks, and new Agent classes extend the file later without redesigning the common section.
 
 ```yaml
 host_agent_version: 1.0.0
@@ -27,19 +27,19 @@ paths:
     in: <Host -> container bounded input>
     out: <container -> Host bounded output>
   secrets:
-    catalog_ref: <logical pointer to the user's key/secret catalog, e.g. 我的文件夹/密钥>
+    catalog_ref: <logical pointer to the Human-owned key/secret catalog>
     runtime_root: </run/secrets or platform-equivalent>
     refs:
       github_machine:
         ref: <logical secret reference>
-        class: GITHUB_MACHINE_IDENTITY
-        custody: HOST_SECRET_STORE
-        materialize: SHORT_LIVED_RUNTIME_CREDENTIAL
+        class: <owner-defined credential class, e.g. GITHUB_MACHINE_IDENTITY>
+        custody: <owner-defined custody class, e.g. HOST_SECRET_STORE>
+        materialize: <owner-defined runtime projection, e.g. SHORT_LIVED_RUNTIME_CREDENTIAL>
       model_provider:
         ref: <logical secret reference>
-        class: MODEL_PROVIDER_AUTH
-        custody: HOST_SECRET_STORE
-        materialize: RUNTIME_SECRET_FILE
+        class: <owner-defined credential class, e.g. MODEL_PROVIDER_AUTH>
+        custody: <owner-defined custody class, e.g. HOST_SECRET_STORE>
+        materialize: <owner-defined runtime projection, e.g. RUNTIME_SECRET_FILE>
 
 agents:
   opencode:
@@ -59,16 +59,16 @@ agents:
       credential_ref: <logical machine-identity / short-lived token projection reference>
       recovery_required: true
     model_auth:
-      credential_ref: <logical provider SecretReference>
+      credential_ref: <logical provider secret reference>
       materialize: </run/secrets/opencode/...>
 ```
 
 ### V1 rules
 
 - `paths.*` is the common Agent collaboration context; do not copy the whole machine configuration into it.
-- `paths.secrets.catalog_ref` points to the Human-owned secret/key catalog. It may resolve to a local folder such as `我的文件夹/密钥`, but no key/token/private-key value enters `HOST_AGENT.md`.
-- Secret entries in V1 are classification metadata only: `ref / class / custody / materialize`. The initial classes are `GITHUB_MACHINE_IDENTITY` and `MODEL_PROVIDER_AUTH`; add new classes only when a real Agent/runtime need appears.
-- `agents.opencode.*` contains only OpenCode-specific launch/runtime context. Do not pre-create DSH/Claude Code fields in V1.
+- `paths.secrets.catalog_ref` points to the Human-owned secret/key catalog; no key/token/private-key value enters **HOST_AGENT.md**.
+- Secret entries in V1 carry reference/classification/materialization metadata only. `class / custody / materialize` values are resolved by the current secret/deployment owner; this template does **not** create a credential taxonomy SSOT. `GITHUB_MACHINE_IDENTITY` and `MODEL_PROVIDER_AUTH` are current examples, not public enums.
+- `agents.opencode.*` is the current canary/example launch/runtime projection. Include it only where OpenCode is actually enabled; do not pre-create DSH/Claude Code/other runtime fields.
 - GitHub recovery is mandatory for the OpenCode runtime: a fresh runtime must be able to recover durable Work/source from GitHub using a Host-projected credential reference.
 - `state/cache/temp` are distinct even if a concrete Host maps some of them near each other physically.
 - New Agent class = add a sibling runtime block under `agents:` and only extend common fields when that new runtime proves a genuinely shared need.
@@ -147,7 +147,7 @@ agents:
     cache: <path/lifecycle>
     temp: <path/lifecycle>
     secrets:
-      - ref: <logical SecretReference>
+      - ref: <logical secret reference>
         materialize: </run/secrets/... or platform-equivalent>
     broker: <Host authority/broker pointer or N/A>
 
