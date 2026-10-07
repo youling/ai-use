@@ -3,7 +3,7 @@
 先读 `../30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md`。本模板是 **Agent-facing resolved Host Contract shape**：服务 AI Agent / Human-AI 协作所需的 Host 上下文发现，不是全机配置数据库、desired profile、资产档案、Work SSOT 或 secret store。无适用项就删掉，不保留空壳。
 
 > 默认 materialization：`<OS-native Documents folder>/HOST_AGENT.md`。
-> canonical resolved copy / owner pointer：`<private instance owner durable pointer>`（本部署为 `youling/ai-hub`）；本机 Documents 文件是可恢复的 materialized copy。
+> canonical resolved copy / owner pointer：`<deployment-local private instance owner durable pointer>`；本机 Documents 文件是可恢复的 materialized copy。
 
 ## Initial V1 — minimum reference shape
 
@@ -16,7 +16,7 @@ observed_at: <timestamp>
 durable:
   work: <GitHub / owner durable pointer>
   governance: <ai-use/current pointer>
-  host_agent_canonical: <private instance owner durable pointer; this deployment: ai-hub>
+  host_agent_canonical: <deployment-local private instance owner durable pointer>
 
 paths:
   workspace:
