@@ -1,9 +1,9 @@
 # Human Host Environment — 人类主控设备标准环境
 
 **Classification: L2 Targeted Reference**
-**Protocol Version: 1.0.0**
+**Protocol Version: 1.1.0**
 
-**Source:** `youling/ai-use#104`, `youling/ai-use#107`.
+**Source:** `youling/ai-use#104`, `youling/ai-use#107`, `youling/ai-use#119`.
 
 本协议定义 Human 主控设备（工作站、桌面机、笔记本、Human-controlled Linux desktop 等）的跨平台环境语义。它不规定所有机器必须使用同一盘符或路径，而是规定 Agent 应如何理解、探测、解析、维护一台 Human Host。
 
@@ -84,17 +84,38 @@ Human Host 默认 materialize 一份：
 Client/tool-specific `AGENTS.md`、global instruction 或 bootstrap adapter 可以放一个**薄 pointer**告诉 Agent 先读取 **HOST_AGENT.md**，但不得复制整份正文并独立演化。
 
 ```text
-HOST_AGENT.md = resolved current Host projection
+HOST_AGENT.md = Agent-facing resolved current Host collaboration projection
+HOST_AGENT.md != all machine configuration
 HOST_AGENT.md != desired-profile SSOT
+HOST_AGENT.md != Work/Knowledge SSOT
 HOST_AGENT.md != secret store
 HOST_AGENT.md != hardware asset registry
 ```
 
 ## 6. What HOST_AGENT.md must preserve
 
+**HOST_AGENT.md 的使用者是 AI Agent / Human-AI 协作层。** 它解决的是 Fresh Agent 缺少本机上下文的问题，而不是把整台机器的所有配置集中进一个 Markdown。目标是 **single discovery surface**，不是 single physical SSOT。
+
+不同 Agent runtime（例如 OpenCode、DSH、未来 Claude Code）可以读取同一份 Host projection 的不同字段。共同语义尽量复用七域与 resolved roots；Agent-specific 部分只保存会改变该 Agent 启动、工作、恢复或权限判断的投影，例如：
+
+- execution substrate / runtime image or version pointer；
+- workspace materialization / current working-root policy；
+- non-secret software config / declared variables；
+- State / Cache / Temp 的位置与生命周期；
+- `SecretReference`、custody class、允许的 runtime materialization target；
+- current broker / durable Work / governance pointers；
+- 少量 Host-specific exception。
+
 **HOST_AGENT.md** 不能只是目录表；还必须保存足以解释和重新裁决 placement 的 current Host observation：Host identity/role/current pointers、`observed_at`、storage topology、filesystem/locality/runtime capability、七域 mapping、resolved roots、placement rationale、vendor/state/secret boundaries、do-not-duplicate rules、drift triggers、cleanup/rebuild expectations。
 
-只保存布局/执行需要的 observation。优先使用 `asset_ref` / `host_ref` pointer，而不是复制完整资产档案。动态事实（容量、mount、runtime storage、current role）必须带 `observed_at` 或等价 currentness。
+只保存 **Agent 协作 / 布局 / 执行真正需要** 的 observation。优先使用 `asset_ref` / `host_ref` / owner pointer，而不是复制完整资产档案、项目 Work、软件数据库或所有系统设置。动态事实（容量、mount、runtime storage、current role）必须带 `observed_at` 或等价 currentness。
+
+```text
+ONE_AGENT_DISCOVERY_FILE = YES
+ONE_PHYSICAL_SOURCE_FOR_EVERYTHING = NO
+AGENT_SPECIFIC_PROJECTION = ALLOWED
+DUPLICATE_CANONICAL_TRUTH = NO
+```
 
 ## 7. Drift and self-update
 
@@ -158,7 +179,7 @@ read ai-use L0 + targeted Human Host protocol
 
 ## 12. Anti-patterns
 
-拒绝：复制另一台 canary 的路径；为目录整齐搬 vendor state；用 Cache 语义处理 State；把 Temp/Cache 当 durable Work；将 secret value 写进 Host Contract；每个 AI 客户端维护独立 Host 规则正文；新增磁盘就自动搬家；不 probe 当前机器就沿用旧 **HOST_AGENT.md**；把 Host Contract 变成 Assets/Fleet 第二 SSOT；为 headless server 强造 Human Documents 目录。
+拒绝：复制另一台 canary 的路径；为目录整齐搬 vendor state；用 Cache 语义处理 State；把 Temp/Cache 当 durable Work；将 secret value 写进 Host Contract；把 **HOST_AGENT.md** 当成全机配置数据库或把所有软件配置全文复制进去；每个 AI 客户端维护独立 Host 规则正文；新增磁盘就自动搬家；不 probe 当前机器就沿用旧 **HOST_AGENT.md**；把 Host Contract 变成 Assets/Fleet/Work/Secret 第二 SSOT；为 headless server 强造 Human Documents 目录。
 
 ## 13. Minimum acceptance
 
