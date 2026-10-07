@@ -153,4 +153,7 @@ ai-use **不负责**私有项目实时状态、active project topology、Runner 
 
 ## License
 
+公共 Agent Runtime 产品线见 [agent-runtime](agent-runtime/README.md)：OpenCode
+参考容器、Host exchange/credential contract、conformance 与受控 OCI 发布流程。
+
 见 [`LICENSE`](LICENSE)。

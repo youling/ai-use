@@ -2,3 +2,5 @@
 docs/research/github-capability-lab/** text eol=lf
 tools/capability_lab.py text eol=lf
 tools/test_capability_lab.py text eol=lf
+agent-runtime/** text eol=lf
+.github/workflows/agent-runtime*.yml text eol=lf
