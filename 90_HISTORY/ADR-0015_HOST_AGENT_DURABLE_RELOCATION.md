@@ -1,11 +1,11 @@
 # ADR-0015 — HOST_AGENT durable instance copy and autonomous Host-root relocation
 
-- **Status:** Accepted Human direction / materialization in #119
-- **Issue:** `youling/ai-use#119`
+- **Status:** Accepted bounded direction / materialization in #122
+- **Issue:** `youling/ai-use#122`
 - **Decision level:** L2
 - **Supersedes in part:** `ADR-0010_HUMAN_HOST_ENVIRONMENT.md` only where it denied relocation authority after material storage drift
 - **Public semantic owner:** `30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md`
-- **Private instance owner:** `youling/ai-hub` for Human Host resolved canonical copies/evidence
+- **Private instance owner:** deployment-local resolved Host instance owner
 
 ## Context
 
@@ -25,14 +25,14 @@ Without these rules, a Host rebuild can lose its resolved projection, while stor
 For Human Host private deployments:
 
 ```text
-youling/ai-hub private instance artifact
+deployment-local private instance artifact
   = durable canonical resolved HOST_AGENT copy / recovery source
 
 <OS-native Documents>/<HOST_AGENT materialization>
   = local materialized discovery copy
 ```
 
-`ai-use` continues to own the portable semantics/template. `fleet` owns desired profile/scanner/reconcile implementation. `assets` owns stable physical asset facts. `ai-hub` owns private per-Host resolved instance state/evidence and the durable canonical HOST_AGENT copy.
+`ai-use` continues to own the portable semantics/template. The platform/profile owner owns desired profile/scanner/reconcile implementation; the asset owner owns stable physical asset facts; the deployment-local private instance owner owns per-Host resolved instance state/evidence and the durable canonical HOST_AGENT copy.
 
 The canonical ai-hub artifact contains only Agent-facing resolved context and references allowed by the Human Host contract. Raw secret values remain outside it.
 
@@ -73,7 +73,7 @@ PROBE current Host
  -> COPY/MOVE owned data
  -> VERIFY bytes/structure/consumer readiness
  -> SWITCH active mapping
- -> UPDATE ai-hub canonical HOST_AGENT
+ -> UPDATE deployment-local canonical HOST_AGENT
  -> RE-MATERIALIZE local Documents HOST_AGENT
  -> VERIFY fresh Agent discovery/currentness
  -> GC old location only after no-unique-state proof
@@ -122,6 +122,6 @@ Benefits:
 - fresh Agents read one current projection instead of rediscovering historical placement from chat.
 
 Costs:
-- ai-hub private instance artifacts must be kept current after migrations;
+- deployment-local private instance artifacts must be kept current after migrations;
 - relocation implementation needs ownership/currentness/verification/rollback checks;
 - not every directory can be treated as movable just because it is listed in HOST_AGENT.
