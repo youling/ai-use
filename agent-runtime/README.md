@@ -1,8 +1,9 @@
 # Agent Runtime Container 1.0.0
 
 Public generic owner: [Work #123](https://github.com/youling/ai-use/issues/123).
-Status: candidate awaiting exact-head Architect review. No package has been
-published by this migration. [Ownership ADR](../90_HISTORY/ADR-0016_PUBLIC_AGENT_RUNTIME.md).
+Status: public source accepted and merged from PR #124 exact head
+`f8a4a873933e8b0e8e36d2c82cc7ecd480eeecfa` (merge `45de55617f1921055aef660c13310650eb15625a`).
+First OCI/GHCR package publication remains separately gated and has not occurred. [Ownership ADR](../90_HISTORY/ADR-0016_PUBLIC_AGENT_RUNTIME.md).
 
 One Foreman runtime per independent image. [OpenCode](opencode/README.md) is the
 first amd64 reference; DSH and Claude Code remain future siblings, not dependencies.
