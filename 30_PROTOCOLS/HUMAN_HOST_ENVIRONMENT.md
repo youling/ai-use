@@ -102,7 +102,7 @@ HOST_AGENT.md != hardware asset registry
 - workspace materialization / current working-root policy；
 - non-secret software config / declared variables；
 - State / Cache / Temp 的位置与生命周期；
-- `SecretReference`、custody class、允许的 runtime materialization target；
+- logical secret reference、custody class、允许的 runtime materialization target；
 - current broker / durable Work / governance pointers；
 - 少量 Host-specific exception。
 
