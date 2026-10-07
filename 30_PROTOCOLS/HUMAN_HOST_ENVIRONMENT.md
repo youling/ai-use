@@ -1,7 +1,7 @@
 # Human Host Environment — 人类主控设备标准环境
 
 **Classification: L2 Targeted Reference**
-**Protocol Version: 1.1.0**
+**Protocol Version: 1.2.0**
 
 **Source:** `youling/ai-use#104`, `youling/ai-use#107`, `youling/ai-use#119`.
 
@@ -37,8 +37,8 @@ ai-use
 platform/profile owner (e.g. Fleet)
 = OS-specific desired profile / scanner / reconcile implementation
 
-private instance owner
-= resolved Host facts / evidence / local HOST_AGENT materialization
+private instance owner (for this deployment: ai-hub)
+= resolved Host facts / evidence / durable canonical HOST_AGENT copy / local materialization
 ```
 
 本协议不创建第二 Host registry、第二 Assets、第二 Fleet profile。若 deployment 有 Assets：`Assets = stable physical asset facts`；`HOST_AGENT.md = current operational observation + resolved environment projection`。购买日期、保修、完整硬件历史等不因为“Host information”进入 **HOST_AGENT.md**；只保留影响当前执行/布局判断的事实，并带 currentness。
@@ -73,11 +73,17 @@ ONE_LAYOUT_FITS_ALL = NO
 
 ## 5. HOST_AGENT.md — Human Host stable discovery surface
 
-Human Host 默认 materialize 一份：
+Human Host 默认有两层同一 resolved projection：
 
 ```text
+private instance owner durable copy (this deployment: youling/ai-hub)
+  = canonical resolved recovery source
+
 <OS-native Documents folder>/HOST_AGENT.md
+  = local materialized discovery copy
 ```
+
+本机文件丢失、重装或 Host rebuild 时，应从 private instance owner 的 durable canonical copy 恢复，再做 currentness/drift probe；不得把 provider/chat memory 当恢复源。
 
 这里的 Documents 是**逻辑 Known Folder**，不是硬编码路径。Windows 使用当前用户的 Documents Known Folder（可能被 OneDrive/策略重定向）；macOS 通常为 `~/Documents`；Linux desktop 优先 `XDG_DOCUMENTS_DIR`；headless/server 不要求伪造 Human Documents surface。
 
@@ -121,7 +127,29 @@ DUPLICATE_CANONICAL_TRUTH = NO
 
 Fresh Agent 读取现有 **HOST_AGENT.md** 后，先做低成本 drift probe，不能把旧 mapping 当永久真理。Material drift 包括 disk added/removed/replaced、drive/mount 改变、filesystem/locality 能力变化、material capacity pressure、Host role 变化、container/execution substrate 变化、root 不存在/不可写、desired profile material revision。
 
-无 material drift：保持现有 mapping。命中 drift：re-probe → re-resolve mapping → only-if-justified migrate → verify → update canonical resolved Host Contract → re-materialize **Documents/HOST_AGENT.md**。硬件变化只触发重新评估权，不授予自动迁移/删除权。
+无 material drift：保持现有 mapping。
+
+命中 material drift 后，Agent 可以对 **明确属于 `HOST_MANAGED` 且 `relocatable=true`** 的目录自主重新选址和迁移，不需要仅为“移动 Host-managed bytes”设置礼仪式 Human Gate。典型触发包括：新增/替换存储、material capacity pressure、filesystem/locality/runtime-storage 变化、当前 root 不可写/不适合，以及其它有证据的 correctness/performance/failure-domain 原因。
+
+迁移必须按以下顺序收敛：
+
+```text
+PROBE
+ -> CLASSIFY ownership / trigger
+ -> RESOLVE target
+ -> QUIESCE writer if required
+ -> COPY/MOVE owned data
+ -> VERIFY bytes / structure / consumer readiness
+ -> SWITCH active mapping
+ -> UPDATE private-instance canonical HOST_AGENT
+ -> RE-MATERIALIZE Documents/HOST_AGENT.md
+ -> VERIFY fresh discovery/currentness
+ -> GC old location only after no-unique-state proof
+```
+
+默认不随上述授权自动迁移：raw Secrets / secret-store custody、device identity、Human-unique data、vendor-owned state、UNKNOWN ownership、dirty/unpushed unique Work、以及 repartition/format/RAID 等外部破坏性存储操作。这些仍按 owner/current authority fail closed。
+
+`RE_RESOLUTION != BLIND_MIGRATION`，但对于已明确分类为 Host-managed/relocatable 的 roots，material drift **可以**授予有证据的 autonomous relocation。
 
 ## 8. Cleanup / normalization lifecycle
 
@@ -179,10 +207,10 @@ read ai-use L0 + targeted Human Host protocol
 
 ## 12. Anti-patterns
 
-拒绝：复制另一台 canary 的路径；为目录整齐搬 vendor state；用 Cache 语义处理 State；把 Temp/Cache 当 durable Work；将 secret value 写进 Host Contract；把 **HOST_AGENT.md** 当成全机配置数据库或把所有软件配置全文复制进去；每个 AI 客户端维护独立 Host 规则正文；新增磁盘就自动搬家；不 probe 当前机器就沿用旧 **HOST_AGENT.md**；把 Host Contract 变成 Assets/Fleet/Work/Secret 第二 SSOT；为 headless server 强造 Human Documents 目录。
+拒绝：复制另一台 canary 的路径；为目录整齐搬 vendor state；用 Cache 语义处理 State；把 Temp/Cache 当 durable Work；将 secret value 写进 Host Contract；把 **HOST_AGENT.md** 当成全机配置数据库或把所有软件配置全文复制进去；每个 AI 客户端维护独立 Host 规则正文；仅因为“有新盘”而在没有 owner/benefit/currentness 证据时盲搬；迁移后不回写 durable canonical；不 probe 当前机器就沿用旧 **HOST_AGENT.md**；把 Host Contract 变成 Assets/Fleet/Work/Secret 第二 SSOT；为 headless server 强造 Human Documents 目录。
 
 ## 13. Minimum acceptance
 
-Human Host 已 resolved 的最低条件：Host identity/role/profile owner 可定位；七域边界可解释；semantic roots 已按现场 evidence 解析；**HOST_AGENT.md** 在 OS-native Documents surface 可发现；placement rationale 与关键 observation 可恢复；secret/state/vendor boundaries 明确；无明显第二套 host-managed roots；drift/cleanup expectations 已记录；Fresh Agent 不依赖历史聊天即可开始 targeted work。
+Human Host 已 resolved 的最低条件：Host identity/role/profile owner 可定位；七域边界可解释；semantic roots 已按现场 evidence 解析；private instance owner 中存在 current durable canonical HOST_AGENT copy，**HOST_AGENT.md** 在 OS-native Documents surface 可发现且可从 canonical copy 恢复；placement rationale 与关键 observation 可恢复；Host-managed roots 的 owner/relocatable 边界明确；secret/state/vendor boundaries 明确；无明显第二套 host-managed roots；drift/cleanup expectations 已记录；Fresh Agent 不依赖历史聊天即可开始 targeted work。
 
 可复制形态见 `50_TEMPLATES/HOST_AGENT_CONTRACT.md`。
