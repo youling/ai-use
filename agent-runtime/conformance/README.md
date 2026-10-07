@@ -18,3 +18,11 @@ exports package manifest and checks update/rollback semantics. No package push.
 No-secret scans are bounded heuristic defenses plus explicit build-context allowlist;
 they do not replace custody/semantic review. Exact-head CI and Architect review
 remain distinct acceptance gates.
+
+The fixed Debian GnuTLS library contains seven public cryptographic self-test key
+vectors. Each embedded block was matched byte-for-byte to the exact official
+Debian crypto-selftests-pk.c source. public-test-vectors.json records source,
+package, whole-binary and block hashes, without key bytes. The scanner allows only
+that exact path + whole-file digest + complete seven-vector hash set; any drift or
+other material-bearing file fails. Bare PEM parser delimiters are not key material.
+No deployment credential is exempted; the evidence records the public-vector count.

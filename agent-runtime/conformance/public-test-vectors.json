@@ -1,0 +1,18 @@
+{
+  "schema": "1.0.0",
+  "file": "usr/lib/x86_64-linux-gnu/libgnutls.so.30.40.3",
+  "file_sha256": "4b14edde42e7cbeefd8a6d88d035e096f2e6412a535388bb1d073a1c196e2822",
+  "package": "libgnutls30t64:amd64 3.8.9-3+deb13u4",
+  "source_url": "https://sources.debian.org/data/main/g/gnutls28/3.8.9-3%2Bdeb13u4/lib/crypto-selftests-pk.c",
+  "source_sha256": "fce9355507865b53ba0b5c5587932b9d8519be2cd195650b0d9ff69ac2c335c7",
+  "classification": "EXACT_PUBLIC_CRYPTOGRAPHIC_SELF_TEST_VECTORS_NOT_DEPLOYMENT_CREDENTIALS",
+  "block_sha256": [
+    "19eb40f0c2c341a16b99274151649822a7611744d99cf29ac8e1365d74a0a8bc",
+    "3aed91bdaf682226d080b2d6cd473ec542de17924db839ed58dc0247a1e2b5f8",
+    "c72070fc1ffb2df729650b949157c85ec03d8ec9743ba7956c03e21d385bce4e",
+    "3de5d1d9ca9af8e24d29bab925c3d500c2cdd11a06c4a2c6a6b336e73bb3ad56",
+    "b8369cc647a1e1e8f8e420b6b8580c36223f89b0f8e70281732d028aebf15fac",
+    "d653005e4d23cf91e3572fe8148ab6db2e474924d9711838521d3ba352b193f5",
+    "f4b1de2f94f1df2d588ff6c18290e0f7f5091267b9ef0da8433c622bad3d127a"
+  ]
+}
