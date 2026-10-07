@@ -35,6 +35,8 @@
 
 若只是修复“控制指令被误当素材”这类输入范围缺陷，而 Deposit schema 未改变，可升级 PATCH。
 
+如果执行接口本身发生显著行为重构（例如从“协议说明 + 指令”收缩为 command-only，并同时改变普通 Depositor 的 read/write authority boundary），即使 Deposit 主体仍可兼容，也应至少升级 MINOR。`0.1.3 -> 0.2.0` 属于这一类；旧 Deposit 继续保留原 prompt provenance。
+
 ## 证据绑定
 
 每个 Deposit 必须保留实际生成它的 Prompt 版本，例如：
