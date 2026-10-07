@@ -26,6 +26,7 @@ def file_hash(path):
 
 def safe_path(value):
     text=str(value)
+    if SECRET_PATTERN.search(text):raise SetupError('REFERENCE_ONLY_NO_SECRET_VALUE')
     if not text or any(c in text for c in '\r\n\x00,') or text.startswith(('\\\\','//')):
         raise SetupError('UNSAFE_PATH')
     if ':' in text and not re.fullmatch(r'[A-Za-z]:[/\\][^:]*',text):

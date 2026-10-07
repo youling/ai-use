@@ -101,6 +101,7 @@ def test_missing_private_destination_blocks_recovery_claim(setup):
 def test_credentials_values_rejected(setup):
     engine,_,_=setup
     with pytest.raises(SetupError,match='REFERENCE_ONLY'):engine.plan(engine.probe(),github={'ref':'token=not-a-reference'})
+    with pytest.raises(SetupError,match='REFERENCE_ONLY'):engine.plan(engine.probe(),github={'helper':('gh'+'p_')+'A'*40})
 
 def test_network_interruption_checkpoint_and_resume(setup):
     engine,adapter,_=setup
