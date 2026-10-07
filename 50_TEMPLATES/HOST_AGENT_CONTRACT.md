@@ -29,6 +29,17 @@ paths:
   secrets:
     catalog_ref: <logical pointer to the user's key/secret catalog, e.g. 我的文件夹/密钥>
     runtime_root: </run/secrets or platform-equivalent>
+    refs:
+      github_machine:
+        ref: <logical secret reference>
+        class: GITHUB_MACHINE_IDENTITY
+        custody: HOST_SECRET_STORE
+        materialize: SHORT_LIVED_RUNTIME_CREDENTIAL
+      model_provider:
+        ref: <logical secret reference>
+        class: MODEL_PROVIDER_AUTH
+        custody: HOST_SECRET_STORE
+        materialize: RUNTIME_SECRET_FILE
 
 agents:
   opencode:
@@ -56,6 +67,7 @@ agents:
 
 - `paths.*` is the common Agent collaboration context; do not copy the whole machine configuration into it.
 - `paths.secrets.catalog_ref` points to the Human-owned secret/key catalog. It may resolve to a local folder such as `我的文件夹/密钥`, but no key/token/private-key value enters `HOST_AGENT.md`.
+- Secret entries in V1 are classification metadata only: `ref / class / custody / materialize`. The initial classes are `GITHUB_MACHINE_IDENTITY` and `MODEL_PROVIDER_AUTH`; add new classes only when a real Agent/runtime need appears.
 - `agents.opencode.*` contains only OpenCode-specific launch/runtime context. Do not pre-create DSH/Claude Code fields in V1.
 - GitHub recovery is mandatory for the OpenCode runtime: a fresh runtime must be able to recover durable Work/source from GitHub using a Host-projected credential reference.
 - `state/cache/temp` are distinct even if a concrete Host maps some of them near each other physically.
