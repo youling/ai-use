@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "series": "3.14",
+  "acquisition_version": "3.14.8",
+  "architecture": "AMD64",
+  "release_page": "https://www.python.org/downloads/release/python-3148/",
+  "url": "https://www.python.org/ftp/python/3.14.8/python-3.14.8-amd64.exe",
+  "sha256": "759be887b96e736a3ca886daf8d575f18fcae1a09efab6902f42d59e8999f8ef",
+  "authenticode_status": "Valid",
+  "signer_organization": "Python Software Foundation",
+  "checked_at": "2026-10-08",
+  "existing_runtime_policy": "Valid PSF Authenticode signature; CPython 3.14.x final; isolated installer venv; no upgrades",
+  "acquisition_policy": "Explicit -ApprovePythonInstall; per-user private TargetDir; no PATH, launcher, file associations, shortcuts, or all-user install"
+}
