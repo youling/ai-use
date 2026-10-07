@@ -5,6 +5,64 @@
 > 默认 materialization：`<OS-native Documents folder>/HOST_AGENT.md`。
 > canonical resolved copy / owner pointer：`<deployment-local pointer>`
 
+## Initial V1 — minimum required shape
+
+Human current direction: initial `HOST_AGENT.md` should stay deliberately small. V1 only standardizes the common Agent directories/context already agreed plus the current OpenCode runtime projection. New Agent classes extend the file later with a new runtime block; they do not redesign the common section.
+
+```yaml
+host_agent_version: 1.0.0
+observed_at: <timestamp>
+
+durable:
+  work: <GitHub / owner durable pointer>
+  governance: <ai-use/current pointer>
+
+paths:
+  workspace: <resolved workspace root/policy>
+  config: <non-secret config + declared-variable area>
+  state: <Agent/application state area>
+  cache: <rebuildable cache area>
+  temp: <attempt-local temp area>
+  exchange:
+    in: <Host -> container bounded input>
+    out: <container -> Host bounded output>
+  secrets:
+    catalog_ref: <logical pointer to the user's key/secret catalog, e.g. 我的文件夹/密钥>
+    runtime_root: </run/secrets or platform-equivalent>
+
+agents:
+  opencode:
+    enabled: true
+    runtime: container
+    image: <immutable image/config/manifest pointer>
+    command: <foreground OpenCode entry, e.g. serve>
+    workspace: <Linux-native workspace policy/path>
+    config: <OpenCode non-secret config projection>
+    state: <OpenCode session/state lifecycle>
+    cache: <OpenCode cache path/lifecycle>
+    temp: <OpenCode temp path/lifecycle>
+    exchange:
+      in: <resolved input projection>
+      out: <resolved output projection>
+    github:
+      credential_ref: <logical machine-identity / short-lived token projection reference>
+      recovery_required: true
+    model_auth:
+      credential_ref: <logical provider SecretReference>
+      materialize: </run/secrets/opencode/...>
+```
+
+### V1 rules
+
+- `paths.*` is the common Agent collaboration context; do not copy the whole machine configuration into it.
+- `paths.secrets.catalog_ref` points to the Human-owned secret/key catalog. It may resolve to a local folder such as `我的文件夹/密钥`, but no key/token/private-key value enters `HOST_AGENT.md`.
+- `agents.opencode.*` contains only OpenCode-specific launch/runtime context. Do not pre-create DSH/Claude Code fields in V1.
+- GitHub recovery is mandatory for the OpenCode runtime: a fresh runtime must be able to recover durable Work/source from GitHub using a Host-projected credential reference.
+- `state/cache/temp` are distinct even if a concrete Host maps some of them near each other physically.
+- New Agent class = add a sibling runtime block under `agents:` and only extend common fields when that new runtime proves a genuinely shared need.
+
+---
+
 ## 0. Host identity / currentness
 
 ```text
