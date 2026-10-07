@@ -1,6 +1,6 @@
 # HOST_AGENT.md 可复制模板
 
-先读 `../30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md`。本模板是 **resolved Host Contract shape**，不是 desired profile、资产档案或 secret store。无适用项就删掉，不保留空壳。
+先读 `../30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md`。本模板是 **Agent-facing resolved Host Contract shape**：服务 AI Agent / Human-AI 协作所需的 Host 上下文发现，不是全机配置数据库、desired profile、资产档案、Work SSOT 或 secret store。无适用项就删掉，不保留空壳。
 
 > 默认 materialization：`<OS-native Documents folder>/HOST_AGENT.md`。
 > canonical resolved copy / owner pointer：`<deployment-local pointer>`
@@ -18,12 +18,14 @@ resolved_contract_owner: <pointer>
 
 ## 1. Agent entry rules
 
+- **本文件只面向 Agent 协作上下文。** Agent 应把它当 single discovery surface，不得推断成所有 Host 数据的唯一物理来源。
 - Durable Work/Knowledge：`<pointer>`
 - 本机只是 materialized execution environment；不要把本地 cache/temp/session 当 SSOT。
 - Secret 只用 reference，不读取/写入 raw value。
 - Vendor-owned runtime/state 不因存在共享工具就自动去重。
 - 路径是 current resolution，不是永恒配置；先做低成本 drift probe。
 - 有 material drift 才重新解析；重新解析不等于自动迁移。
+- 不同 Agent runtime 只读取与自己相关的字段；不要要求 OpenCode/DSH/Claude Code 复制维护各自一整套 Host 规则。
 
 ## 2. Placement-relevant observation
 
@@ -61,15 +63,47 @@ CACHE_ROOT       <path or DECLARE-ONLY/N/A>
 AGENT_TEMP_ROOT  <path or DECLARE-ONLY/N/A>
 ```
 
-## 5. Placement rationale
+## 5. Agent runtime projections
+
+只为实际存在/启用的 Agent runtime 建小节；每个 Agent 只记录会改变其启动、执行、恢复或权限判断的 Host-local 投影。
+
+```text
+agents:
+  opencode:
+    execution: <runtime/image/version pointer>
+    workspace: <resolved policy/path>
+    config: <non-secret config pointer / declared variables>
+    state: <session/state lifecycle pointer>
+    cache: <path/lifecycle>
+    temp: <path/lifecycle>
+    secrets:
+      - ref: <logical SecretReference>
+        materialize: </run/secrets/... or platform-equivalent>
+    broker: <Host authority/broker pointer or N/A>
+
+  dsh:
+    ...
+
+  claude-code:
+    ...
+```
+
+规则：
+- `secrets.ref` 只写逻辑 reference / custody / materialization metadata，不写 raw value；
+- image/config/owner 优先写 immutable pointer 或 canonical owner pointer，不复制完整配置正文；
+- Agent-specific runtime section 可以不同，但不能建立第二套 Host truth；
+- 没有实际启用的 Agent 就不保留空壳；
+- runtime session/history 可以是 State，但不得冒充 Durable Work truth。
+
+## 6. Placement rationale
 
 只记录不显然、容易被下一位 Agent 重新踩错的判断：root 为什么放这里；哪些 volume 属于同一物理设备；哪些 store 必须跟 workspace 同 filesystem；哪些统一配置会破坏 locality；哪些目录保持 vendor default。
 
-## 6. Do not duplicate / do not migrate
+## 7. Do not duplicate / do not migrate
 
 列出已经存在的 shared tool、必须保留的 vendor runtime、live package store、state/secret boundary。
 
-## 7. Durable pointers
+## 8. Durable pointers
 
 ```text
 governance: <ai-use/current governance pointer>
@@ -79,7 +113,7 @@ project/control-plane entry: <pointer>
 specialized follow-ups: <pointer(s)>
 ```
 
-## 8. Drift triggers
+## 9. Drift triggers
 
 disk/mount/drive-letter 变化、新增/移除高速 storage、filesystem/locality 能力变化、material capacity pressure、Host role 变化、WSL/container/runtime storage 模式变化、current root 不存在/不可写、desired profile material revision。
 
@@ -87,10 +121,10 @@ disk/mount/drive-letter 变化、新增/移除高速 storage、filesystem/locali
 RE_RESOLUTION != AUTOMATIC_MIGRATION
 ```
 
-## 9. Cleanup / rebuild expectations
+## 10. Cleanup / rebuild expectations
 
 说明 Cache/Temp 如何判断可删；released workspace 如何证明 durable；image/container 如何重建；哪些 state 必须 preserve；secret/device identity 如何重新 enrol/恢复而不保存 raw secret。
 
-## 10. Host-specific exceptions
+## 11. Host-specific exceptions
 
-仅保留会改变 Agent 行为的少数例外；不要把 **HOST_AGENT.md** 写成机器百科全书。
+仅保留会改变 Agent 行为的少数例外；不要把 **HOST_AGENT.md** 写成机器百科全书，也不要为了“只维护一个文件”把 Assets、Work、Secret、vendor database 或完整系统配置复制进来。
