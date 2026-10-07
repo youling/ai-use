@@ -1,0 +1,7 @@
+{
+  "schema": "1.0.0",
+  "action": "PUBLISH_CANDIDATE",
+  "revision": "f8a4a873933e8b0e8e36d2c82cc7ecd480eeecfa",
+  "tag": "2.0.22-runtime.1-candidate-f8a4a873",
+  "authority_pointer": "https://github.com/youling/ai-use/issues/123#issuecomment-6044153955"
+}
