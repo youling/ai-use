@@ -13,7 +13,7 @@
       "source_path": "fleet/10_platforms/windows/common/extensions/opencode_foreman_container/Dockerfile",
       "source_head": "72b96c8ebac9285f818d666061c1d83d85508e22",
       "source_sha256": "0974d4574afc1e7c86e0c833c8fa3257f9e2ca172c6c6c0f66579484bd55834e",
-      "target_sha256": "4a78adc263e3cf1b12f72fc4c25b6e02ff192ec957e59a78dafcc48b17cd5b64"
+      "target_sha256": "29d06a798867c8cf56d3f812d3829624b1c21da2f2a0df72e550eaa4ff073531"
     },
     {
       "target": "agent-runtime/opencode/package-manifest.observed.tsv",
@@ -55,7 +55,7 @@
       "source_path": "tests/fleet/test_opencode_host_projection.py",
       "source_head": "c0742f5a09845252fc082b3243da290906288dc0",
       "source_sha256": "b8ff8449287a04a82f1ce0950c2f54e8c3c0a9ddcbb3771c0c87cb60959ac90d",
-      "target_sha256": "af562dd60a40091080ed5e279a748328fdde45d5d910cc546bbb038d32c6b9f7"
+      "target_sha256": "f0e9d18b7a289b3b7d3fd3ff6375bb9225e80c74d9b9431cf85cf6ad8c591ad7"
     }
   ],
   "excluded": [
