@@ -16,13 +16,17 @@ import sys
 import ctypes
 from contextlib import contextmanager
 import threading
+import base64
 
 
 class BundleError(RuntimeError):
-    pass
+    def __init__(self, code, *, signature_phase=None):
+        super().__init__(code)
+        self.signature_phase = signature_phase if signature_phase in SIGNATURE_PHASES else None
 
 
 NATIVE_PROCESS_LOCK = threading.RLock()
+SIGNATURE_PHASES = frozenset({'STARTED', 'MODULE_LOADED', 'SIGNATURE_ENTER', 'SIGNATURE_RETURN'})
 PUBLIC_BUNDLE_CODES = frozenset({
     'BUNDLE_MANIFEST_MISSING', 'BUNDLE_MANIFEST_INVALID', 'BUNDLE_INVENTORY_INCOMPLETE',
     'BUNDLE_RESOURCE_INVALID', 'BUNDLE_RESOURCE_REPARSE', 'BUNDLE_RESOURCE_HASH_MISMATCH',
@@ -155,21 +159,34 @@ def psf_signature(path: Path) -> dict:
     powershell = trusted_windows_powershell()
     if not powershell:
         return {'status': 'UnknownError', 'signer': 'UNVERIFIED', 'reason': 'SIGNATURE_NATIVE_POWERSHELL_MISSING'}
+    # This is a public runtime file path, encoded as data into fixed source.
+    # DEVNULL avoids PS5 ReadToEnd/EOF behavior inside the frozen process.
+    encoded_path = base64.b64encode(str(path).encode('utf-8')).decode('ascii')
     script = r"""$ErrorActionPreference='Stop'; [Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false);
+[Console]::WriteLine('{"phase":"STARTED"}'); [Console]::Out.Flush();
 try { $env:PSModulePath=Join-Path $PSHOME 'Modules';
 Import-Module (Join-Path $PSHOME 'Modules\Microsoft.PowerShell.Security\Microsoft.PowerShell.Security.psd1') -ErrorAction Stop;
-$r=[Console]::In.ReadToEnd()|ConvertFrom-Json; $s=Get-AuthenticodeSignature -LiteralPath $r.path;
+[Console]::WriteLine('{"phase":"MODULE_LOADED"}'); [Console]::Out.Flush();
+$path=[System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('__PUBLIC_RUNTIME_PATH__'));
+[Console]::WriteLine('{"phase":"SIGNATURE_ENTER"}'); [Console]::Out.Flush();
+$s=Get-AuthenticodeSignature -LiteralPath $path;
+[Console]::WriteLine('{"phase":"SIGNATURE_RETURN"}'); [Console]::Out.Flush();
 $psf=$s.SignerCertificate -and $s.SignerCertificate.Subject -match '(?:^|,\s*)(?:CN|O)\s*=\s*"?Python Software Foundation"?(?:,|$)';
 @{status=[string]$s.Status;psf=[bool]$psf}|ConvertTo-Json -Compress
 } catch { @{status='UnknownError';psf=$false}|ConvertTo-Json -Compress }"""
+    script = script.replace('__PUBLIC_RUNTIME_PATH__', encoded_path)
+    encoded_command = base64.b64encode(script.encode('utf-16-le')).decode('ascii')
     try:
         with native_system_dll_search():
-            run = subprocess.run([powershell, '-NoLogo', '-NoProfile', '-NonInteractive', '-Command', script],
-                                 input=json.dumps({'path': str(path)}), capture_output=True,
+            run = subprocess.run([powershell, '-NoLogo', '-NoProfile', '-NonInteractive', '-EncodedCommand', encoded_command],
+                                 stdin=subprocess.DEVNULL, capture_output=True,
                                  encoding='utf-8', errors='replace', timeout=30)
         if run.returncode != 0 or len(run.stdout) > 4096:
             return {'status': 'UnknownError', 'signer': 'UNVERIFIED', 'reason': 'SIGNATURE_PROCESS_FAILED'}
-        result = json.loads(run.stdout)
+        lines = run.stdout.strip().splitlines()
+        if not lines:
+            raise ValueError('SIGNATURE_METADATA_MISSING')
+        result = json.loads(lines[-1])
         if not isinstance(result, dict):
             raise ValueError('SIGNATURE_METADATA_INVALID')
         status = result.get('status')
@@ -178,12 +195,29 @@ $psf=$s.SignerCertificate -and $s.SignerCertificate.Subject -match '(?:^|,\s*)(?
             status = 'UnknownError'
         return {'status': status,
                 'signer': 'Python Software Foundation' if result.get('psf') is True else 'UNVERIFIED'}
-    except subprocess.TimeoutExpired:
-        return {'status': 'UnknownError', 'signer': 'UNVERIFIED', 'reason': 'SIGNATURE_PROCESS_TIMEOUT'}
+    except subprocess.TimeoutExpired as error:
+        return {'status': 'UnknownError', 'signer': 'UNVERIFIED', 'reason': 'SIGNATURE_PROCESS_TIMEOUT',
+                'signature_phase': last_signature_phase(error.stdout)}
     except OSError:
         return {'status': 'UnknownError', 'signer': 'UNVERIFIED', 'reason': 'SIGNATURE_PROCESS_OS_ERROR'}
     except ValueError:
         return {'status': 'UnknownError', 'signer': 'UNVERIFIED', 'reason': 'SIGNATURE_METADATA_INVALID'}
+
+
+def last_signature_phase(raw) -> str:
+    if isinstance(raw, bytes):
+        raw = raw.decode('utf-8', errors='replace')
+    if not isinstance(raw, str) or len(raw) > 4096:
+        return 'UNKNOWN'
+    phase = 'UNKNOWN'
+    for line in raw.splitlines():
+        try:
+            value = json.loads(line)
+            if isinstance(value, dict) and value.get('phase') in SIGNATURE_PHASES:
+                phase = value['phase']
+        except (ValueError, TypeError):
+            pass
+    return phase
 
 
 def bundle_provenance() -> dict:
@@ -195,7 +229,8 @@ def bundle_provenance() -> dict:
         signature = psf_signature(root / 'runtime/python314.dll')
         if signature != {'status': 'Valid', 'signer': 'Python Software Foundation'}:
             reason = signature.get('reason', 'BUNDLED_RUNTIME_PSF_SIGNATURE_UNVERIFIED')
-            raise BundleError(reason if reason in PUBLIC_BUNDLE_CODES else 'BUNDLED_RUNTIME_PSF_SIGNATURE_UNVERIFIED')
+            raise BundleError(reason if reason in PUBLIC_BUNDLE_CODES else 'BUNDLED_RUNTIME_PSF_SIGNATURE_UNVERIFIED',
+                              signature_phase=signature.get('signature_phase'))
         return {'state': 'VERIFIED_CONTENT_UNSIGNED_TEST_ONLY', 'bundle_verified': True,
                 'python_verified': True, 'source_head': manifest['source_head'],
                 'python_version': manifest['python_version'], 'runtime_signature': signature,
@@ -203,5 +238,8 @@ def bundle_provenance() -> dict:
                 'host_apply': 'DENIED', 'reason': 'REVIEWED_SIGNED_DISTRIBUTION_AND_HUMAN_GATE_REQUIRED'}
     except (BundleError, OSError) as error:
         reason = str(error) if isinstance(error, BundleError) and str(error) in PUBLIC_BUNDLE_CODES else 'BUNDLE_PROVENANCE_UNVERIFIED'
-        return {'state': 'BLOCKED', 'bundle_verified': False, 'python_verified': False,
-                'publisher_trusted': False, 'host_apply': 'DENIED', 'reason': reason}
+        proof = {'state': 'BLOCKED', 'bundle_verified': False, 'python_verified': False,
+                 'publisher_trusted': False, 'host_apply': 'DENIED', 'reason': reason}
+        if isinstance(error, BundleError) and error.signature_phase:
+            proof['signature_phase'] = error.signature_phase
+        return proof

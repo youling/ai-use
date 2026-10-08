@@ -252,6 +252,25 @@ def test_signature_timeout_is_fixed_category_without_child_paths_or_raw_errors(m
     assert 'PRIVATE' not in json.dumps(signature)
 
 
+def test_signature_timeout_phase_is_finite_and_never_echoes_child_text(monkeypatch):
+    from agent_setup import windows
+    monkeypatch.setattr(windows, 'trusted_windows_powershell', lambda: 'PUBLIC_SYNTHETIC_NATIVE_PS')
+    def timeout(*a, **kw):
+        assert kw['stdin'] == subprocess.DEVNULL and 'input' not in kw
+        assert '-EncodedCommand' in a[0] and '-Command' not in a[0]
+        raise subprocess.TimeoutExpired('not-printed', 30,
+            output=b'{"phase":"STARTED"}\n{"phase":"SIGNATURE_ENTER"}\nPRIVATE_EXTERNAL_TEXT\n')
+    monkeypatch.setattr(packaging.subprocess, 'run', timeout)
+    signature = packaging.psf_signature(Path('PUBLIC_SYNTHETIC_RUNTIME'))
+    assert signature['signature_phase'] == 'SIGNATURE_ENTER'
+    assert 'PRIVATE_EXTERNAL_TEXT' not in json.dumps(signature)
+
+
+@pytest.mark.parametrize('raw', [None, '', 'PRIVATE_EXTERNAL_TEXT', '{"phase":"PRIVATE_EXTERNAL_VALUE"}', 'x'*4097])
+def test_unknown_signature_phase_is_not_echoed(raw):
+    assert packaging.last_signature_phase(raw) == 'UNKNOWN'
+
+
 def test_bundle_retains_only_finite_failure_cause(monkeypatch, tmp_path):
     root, _ = contract(tmp_path)
     monkeypatch.setattr(packaging, 'verified_bundle_root', lambda: root)

@@ -15,7 +15,7 @@ import sys
 from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from agent_setup.packaging import PUBLIC_BUNDLE_CODES
+from agent_setup.packaging import PUBLIC_BUNDLE_CODES, SIGNATURE_PHASES
 
 
 def validate_acceptance_receipt(receipt: dict) -> None:
@@ -52,16 +52,21 @@ def validate_acceptance_receipt(receipt: dict) -> None:
 
 def safe_failure(output: Path, exe: Path, mode: str, run) -> None:
     reason = 'FROZEN_CHILD_OUTPUT_UNVERIFIED'
+    phase = None
     try:
         parsed = json.loads(run.stdout) if len(run.stdout) <= 100000 else {}
         if isinstance(parsed, dict) and parsed.get('reason') in PUBLIC_BUNDLE_CODES:
             reason = parsed['reason']
+            if parsed.get('signature_phase') in SIGNATURE_PHASES:
+                phase = parsed['signature_phase']
     except (ValueError, TypeError):
         pass
     diagnostic = {'status': 'BLOCKED', 'mode': mode, 'exit_code': run.returncode,
                   'reason': reason, 'raw_stdout_stderr': 'NOT_RETAINED',
                   'exe_sha256': hashlib.sha256(exe.read_bytes()).hexdigest(),
                   'host_apply': 'DENIED', 'paths_emitted': False, 'credentials_read': False}
+    if phase:
+        diagnostic['signature_phase'] = phase
     (output / 'failure-diagnostic.json').write_text(json.dumps(diagnostic, indent=2) + '\n', encoding='utf-8')
     print(json.dumps(diagnostic), flush=True)
 

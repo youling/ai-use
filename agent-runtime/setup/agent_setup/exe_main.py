@@ -171,7 +171,8 @@ def main(argv=None) -> int:
     proof = bundle_provenance()
     if not proof.get('bundle_verified') or not proof.get('python_verified'):
         reason = proof.get('reason', 'BUNDLE_PROVENANCE_UNVERIFIED')
-        raise BundleError(reason if reason in PUBLIC_BUNDLE_CODES else 'BUNDLE_PROVENANCE_UNVERIFIED')
+        raise BundleError(reason if reason in PUBLIC_BUNDLE_CODES else 'BUNDLE_PROVENANCE_UNVERIFIED',
+                          signature_phase=proof.get('signature_phase'))
     if args.version:
         print(json.dumps({'product': 'AgentRuntimeSetup', 'source_head': proof['source_head'],
                           'python': proof['python_version'], 'distribution': 'UNSIGNED_TEST_ONLY'}))
@@ -206,7 +207,10 @@ def guarded_main(argv=None) -> int:
         result = main(argv)
     except Exception as error:
         reason = str(error) if isinstance(error, (SetupError, BundleError)) else 'STARTUP_FAILED'
-        print(json.dumps({'status': 'BLOCKED', 'reason': reason, 'raw_error': 'SUPPRESSED'}, ensure_ascii=False), flush=True)
+        failure = {'status': 'BLOCKED', 'reason': reason, 'raw_error': 'SUPPRESSED'}
+        if isinstance(error, BundleError) and error.signature_phase:
+            failure['signature_phase'] = error.signature_phase
+        print(json.dumps(failure, ensure_ascii=False), flush=True)
         result = 2
     # Double-click owns the console. Retain both successful exit and errors;
     # noninteractive diagnostics/CI have arguments and must never hang.
