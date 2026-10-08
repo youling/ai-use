@@ -19,7 +19,7 @@ SCENARIOS = ('fresh','legacy_v1','malformed_state','malformed_exchange',
              'extra_state','extra_exchange','stale','collision','junction')
 
 
-def owned_fixture_pipeline(root: Path, scenario: str = 'fresh', *, synthetic_wslc: bool = True) -> dict:
+def owned_fixture_pipeline(root: Path, scenario: str = 'fresh', *, synthetic_wslc: bool = True, force_ps_timeout: bool = False) -> dict:
     if scenario not in SCENARIOS:
         raise ValueError('ACCEPTANCE_SCENARIO_INVALID')
     root = Path(root).resolve(strict=True)
@@ -74,16 +74,16 @@ def owned_fixture_pipeline(root: Path, scenario: str = 'fresh', *, synthetic_wsl
         actual = list(argv)
         actual[0] = powershell
         native_calls.append('OS_INVENTORY' if '-File' in actual else 'PYTHON_SIGNATURE')
+        if force_ps_timeout and '-File' in actual:
+            raise subprocess.TimeoutExpired('OWNED_SCANNER_TIMEOUT_FIXTURE',25)
         result = native_system_run(actual, **kwargs)
         if '-File' in actual and result.returncode == 0:
             raw = json.loads(result.stdout)
             if not isinstance(raw,dict):raise RuntimeError('ACCEPTANCE_NATIVE_INVENTORY_INVALID')
-            # Deliberate runtime capability fixture, never a Host WSL PASS claim.
-            if synthetic_wslc:
-                raw.update(wsl_version_text='WSL version: 3.0.1.0',wslc_state='PASS',wslc_active_count=0)
             return SimpleNamespace(returncode=0,stdout=json.dumps(raw))
         return result
-    adapter = WindowsAdapter(runner=runner, known_folder_resolver=lambda:str(documents))
+    runtime_resolver=(lambda:{'wsl_version_text':'WSL version: 3.0.1.0','wslc_state':'PASS','wslc_active_count':0}) if synthetic_wslc else None
+    adapter = WindowsAdapter(runner=runner, known_folder_resolver=lambda:str(documents),runtime_capability_resolver=runtime_resolver)
     adapter.can_apply = False
     adapter.apply_authorized = False
     engine = SetupEngine(adapter)
@@ -96,7 +96,7 @@ def owned_fixture_pipeline(root: Path, scenario: str = 'fresh', *, synthetic_wsl
             'snapshot':snapshot,'documents':documents,'root':root,'native_calls':native_calls,
             'scenario':scenario,'expected_status':'READY' if scenario=='fresh' else 'BLOCKED',
             'expected_code':codes.get(scenario),
-            'evidence':{'native_metadata':'ACTUAL_WINDOWS_PS5','wslc_capability':'SYNTHETIC_ONLY' if synthetic_wslc else 'NATIVE_OBSERVED',
+            'evidence':{'native_metadata':observation.get('inventory_source','UNVERIFIED'),'wslc_capability':'SYNTHETIC_ONLY' if synthetic_wslc else 'NATIVE_OBSERVED',
                         'context_source':'OWNED_PUBLIC_FIXTURE','host_apply':'DENIED'}}
 
 

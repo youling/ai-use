@@ -55,3 +55,26 @@ def test_native_honest_runtime_gates_and_no_host_effects(tmp_path):
     assert result['volume_metadata']=='PASS'
     assert result['meaning']=='READ_ONLY_PLAN_COMPUTED_NOT_RUNTIME_READY'
     assert result['evidence']['wslc_capability']=='NATIVE_OBSERVED'
+
+
+@pytest.mark.parametrize('synthetic_wslc',[True,False])
+def test_native_provider_timeout_uses_actual_win32_without_granting_runtime_capability(tmp_path,synthetic_wslc):
+    data=owned_fixture_pipeline(tmp_path,synthetic_wslc=synthetic_wslc,force_ps_timeout=True)
+    assert data['observation']['inventory_source']=='WINDOWS_WIN32_FALLBACK'
+    assert data['observation']['volumes']
+    assert data['observation']['python_verified'] is True
+    plan=data['engine'].plan(data['observation'],overrides=data['overrides'])
+    if synthetic_wslc:
+        assert plan['status']=='READY'
+        assert data['observation']['runtime_inventory_source']=='OWNED_CAPABILITY_FIXTURE'
+        async def run():
+            app=SetupApp(data['engine']);app.overrides.update(data['overrides'])
+            async with app.run_test(size=(80,24)) as pilot:
+                app.query_one('#next',Button).focus();await pilot.press('enter');await pilot.pause(.6)
+                assert app.step==1 and not app.host_authorized
+        asyncio.run(run())
+    else:
+        assert plan['status']=='BLOCKED'
+        assert data['observation']['wslc_capability']['state']=='UNKNOWN'
+        assert data['observation']['runtime_inventory_source']=='NATIVE_OBSERVED'
+    assert_fixture_unchanged(data)

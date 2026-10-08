@@ -37,6 +37,8 @@ EXE 沿用同一 SetupEngine、Windows Adapter、HOST_AGENT 和固定公共 OCI�
 
 可执行文件默认不读取凭据库，不共享旧 OpenCode 的 auth/session/state，不发起模型推理。Windows 内置 PowerShell 5.1 作为固定的本地元数据 helper；冻结 DLL 的签名检查不再依赖其签名模块加载，用户无需另装 PowerShell 7。受保护服务器凭据目录的 SID/SYSTEM ACL 验证保持。
 
+卷元数据不足时，同一 Windows Adapter 使用 Windows 原生接口只读查询固定盘、文件系统、容量和当前可用空间。查询不出结果时仍阻止相关规划；磁盘总线、介质和物理身份无法确认时显示未知，不据此声称是 SSD。文件系统、容量、已有目录所有权及真实安装授权要求继续适用。
+
 ## 开发者入口
 
 源码 checkout 的 [bootstrap.ps1](bootstrap.ps1) 和 [V2 源码指南](V2_GUIDE.md) 是开发者回归入口，不是普通用户的安装前提。Windows 原生构建采用 [PyInstaller](https://pyinstaller.org/en/stable/) 的受锁定版本，构建和许可证明随 artifact 提供。构建产物只上传到本 PR 的 CI artifacts，本轮不发布 Stable Release、GHCR 或生产部署。

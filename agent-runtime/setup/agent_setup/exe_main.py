@@ -12,7 +12,7 @@ import copy
 from .engine import SetupEngine, SetupError
 from .packaging import BundleError, bundle_provenance, verified_bundle_root, validate_bundle, PUBLIC_BUNDLE_CODES
 from .windows import WindowsAdapter
-from .packaging import PUBLIC_EXE_CODES, ACCEPTANCE_STAGES, ACCEPTANCE_SCENARIOS
+from .packaging import PUBLIC_EXE_CODES, ACCEPTANCE_STAGES, ACCEPTANCE_SCENARIOS, INVENTORY_SOURCES
 
 _CURRENT_STAGE = None
 _CURRENT_SCENARIO = None
@@ -52,6 +52,7 @@ def readonly_native_bundle_scan() -> dict:
         raise ExeAcceptanceError('FROZEN_NATIVE_RESOURCE_SCAN_FAILED', checks=checks)
     return {'platform': 'windows', 'volume_count': len(metadata['volumes']),
             'resource_scan': 'PASS', 'host_apply': 'DENIED',
+            'inventory_source': metadata.get('inventory_source') if metadata.get('inventory_source') in INVENTORY_SOURCES else 'UNVERIFIED',
             'context_contents_read': False, 'credentials_read': False, 'paths_emitted': False}
 
 
@@ -113,7 +114,51 @@ async def frozen_self_test(output: Path) -> dict:
                           'metadata_errors': diagnostic.get('metadata_errors', []),
                           'production_pipeline': 'WINDOWS_ADAPTER_PROBE_ENGINE_PROBE_PLAN',
                           'existing_files': 'UNCHANGED', 'context_source': 'OWNED_PUBLIC_FIXTURE',
+                          'inventory_source': pipeline['evidence']['native_metadata'],
                           'runtime_capability': 'SYNTHETIC_WSLC_ONLY', 'host_apply': 'DENIED'})
+        fallback_cases = []
+        for scenario in ['fresh', 'legacy_v1']:
+            forced_root = root / ('forced-timeout-' + scenario)
+            forced_root.mkdir()
+            acceptance_stage('CONTEXT_FIXTURE_BUILD', scenario)
+            forced = owned_fixture_pipeline(forced_root, scenario, force_ps_timeout=True)
+            acceptance_stage('CONTEXT_PLAN', scenario)
+            forced_plan = forced['engine'].plan(forced['observation'], overrides=forced['overrides'])
+            if (forced['observation'].get('inventory_source') != 'WINDOWS_WIN32_FALLBACK'
+                or forced['observation'].get('runtime_inventory_source') != 'OWNED_CAPABILITY_FIXTURE'
+                or forced_plan['status'] != forced['expected_status']):
+                raise ExeAcceptanceError('SELF_TEST_FORCED_NATIVE_FALLBACK_FAILED',
+                    plan_gates={gate['code']: gate['state'] for gate in forced_plan['gates']})
+            app = SetupApp(forced['engine'], host_authorized=False)
+            app.overrides.update(forced['overrides'])
+            acceptance_stage('TUI_PROBE', scenario)
+            async with app.run_test(size=(80, 24)) as pilot:
+                acceptance_stage('TUI_NEXT', scenario)
+                app.query_one('#next', Button).focus()
+                await pilot.press('enter')
+                await pilot.pause(0.5)
+                if app.step != 1:
+                    raise SetupError('SELF_TEST_FORCED_NATIVE_FALLBACK_FIRST_NEXT_FAILED')
+                (output / f'actual-exe-forced-ps-timeout-{scenario}-80x24.svg').write_text(
+                    app.export_screenshot(title=f'FORCED PS TIMEOUT / ACTUAL WIN32 / OWNED {scenario} / WSLC FIXTURE'),
+                    encoding='utf-8')
+            assert_fixture_unchanged(forced)
+            fallback_cases.append({'scenario': scenario, 'provider_fault': 'FORCED_PS_TIMEOUT',
+                                   'inventory_source': 'WINDOWS_WIN32_FALLBACK',
+                                   'runtime_capability': 'SYNTHETIC_WSLC_ONLY', 'first_next': 'PASS',
+                                   'existing_files': 'UNCHANGED', 'host_apply': 'DENIED'})
+        no_fixture_root = root / 'forced-timeout-without-capability-fixture'
+        no_fixture_root.mkdir()
+        no_fixture = owned_fixture_pipeline(no_fixture_root, 'fresh', synthetic_wslc=False, force_ps_timeout=True)
+        no_fixture_plan = no_fixture['engine'].plan(no_fixture['observation'], overrides=no_fixture['overrides'])
+        if (no_fixture_plan['status'] != 'BLOCKED'
+            or no_fixture['observation']['wslc_capability']['state'] == 'PASS'):
+            raise SetupError('SELF_TEST_NATIVE_FALLBACK_RUNTIME_GATE_BYPASS')
+        assert_fixture_unchanged(no_fixture)
+        fallback_runtime = {'provider_fault': 'FORCED_PS_TIMEOUT',
+                            'inventory_source': no_fixture['observation']['inventory_source'],
+                            'runtime_fixture': False, 'plan_status': 'BLOCKED',
+                            'wslc_state': no_fixture['observation']['wslc_capability']['state']}
         engine = pipelines['fresh']['engine']
         negatives = []
         for name in ['WSLC_ABSENT', 'LOW_DISK']:
@@ -183,6 +228,7 @@ async def frozen_self_test(output: Path) -> dict:
                            'NATIVE_READ_ONLY_PLANNING_PASS': True, 'BOSS_CANARY': 'NOT_RETESTED',
                            'LAST_REPORTED_BOSS_CANARY': 'FAIL_EXISTING_ROOT_METADATA_INVALID'},
             'screens': records, 'context_cases': cases, 'host_apply': 'DENIED', 'native_opencode': 'UNCHANGED_OWNED_FIXTURE_STATE',
+            'forced_fallback_cases': fallback_cases, 'fallback_without_runtime_fixture': fallback_runtime,
             'credentials_read': False, 'network': 'NO_CREDENTIAL_OR_MODEL_CALLS',
             'provenance': proof, 'negative_cases': negatives,
             'native_metadata_scan': native_scan, 'native_read_only_planning': native_plan}

@@ -23,6 +23,53 @@ from datetime import datetime, timezone
 PINNED_IMAGE = "ghcr.io/youling/opencode-foreman@sha256:fa92f37752ff6132b161ed4c2563897c94b014ab70d650846dcb09f354f55261"
 
 
+def _volume_kernel():
+    """KnownDLL kernel32 is Windows-owned, never a caller/path-loaded helper."""
+    from ctypes import wintypes
+    kernel=ctypes.WinDLL('kernel32',use_last_error=True)
+    kernel.GetLogicalDrives.argtypes=[];kernel.GetLogicalDrives.restype=wintypes.DWORD
+    kernel.GetDriveTypeW.argtypes=[wintypes.LPCWSTR];kernel.GetDriveTypeW.restype=wintypes.UINT
+    kernel.GetVolumeInformationW.argtypes=[wintypes.LPCWSTR,wintypes.LPWSTR,wintypes.DWORD,
+        ctypes.POINTER(wintypes.DWORD),ctypes.POINTER(wintypes.DWORD),ctypes.POINTER(wintypes.DWORD),
+        wintypes.LPWSTR,wintypes.DWORD]
+    kernel.GetVolumeInformationW.restype=wintypes.BOOL
+    kernel.GetDiskFreeSpaceExW.argtypes=[wintypes.LPCWSTR,ctypes.POINTER(ctypes.c_ulonglong),
+        ctypes.POINTER(ctypes.c_ulonglong),ctypes.POINTER(ctypes.c_ulonglong)]
+    kernel.GetDiskFreeSpaceExW.restype=wintypes.BOOL
+    return kernel
+
+
+def native_volume_inventory() -> list[dict]:
+    """Actual fixed-drive metadata only; do not invent physical media identity."""
+    if sys.platform!='win32':return []
+    try:
+        kernel=_volume_kernel()
+        mask=kernel.GetLogicalDrives()
+        if not mask:return []
+        volumes=[]
+        for index in range(26):
+            if not mask & (1<<index):continue
+            mount=chr(65+index)+':\\'
+            if kernel.GetDriveTypeW(mount)!=3:continue # DRIVE_FIXED only
+            fs=ctypes.create_unicode_buffer(64)
+            if not kernel.GetVolumeInformationW(mount,None,0,None,None,None,fs,len(fs)):continue
+            available,total,free=(ctypes.c_ulonglong() for _ in range(3))
+            if not kernel.GetDiskFreeSpaceExW(mount,ctypes.byref(available),ctypes.byref(total),ctypes.byref(free)):continue
+            if not fs.value or total.value==0 or available.value>total.value or free.value>total.value:continue
+            filesystem={'NTFS':'NTFS','REFS':'ReFS'}.get(fs.value.upper(),fs.value)
+            volumes.append({'mount':mount,'fs':filesystem,'capacity_bytes':total.value,
+                            'free_bytes':available.value,'device_id':'UNKNOWN','media_type':'UNKNOWN','bus_type':'UNKNOWN'})
+        return volumes
+    except (OSError,AttributeError,ValueError):return []
+
+
+def _complete_volume_metadata(volumes) -> bool:
+    return bool(volumes and all(isinstance(v,dict) and isinstance(v.get('fs'),str)
+        and v['fs'] not in {'','UNKNOWN'} and type(v.get('capacity_bytes')) is int
+        and type(v.get('free_bytes')) is int and 0<=v['free_bytes']<=v['capacity_bytes']
+        and v['capacity_bytes']>0 for v in volumes))
+
+
 def trusted_windows_powershell() -> str | None:
     """Use the OS directory API, never PATH or caller-controlled SystemRoot."""
     if sys.platform != 'win32':
@@ -119,7 +166,7 @@ def normalize_inventory(raw: dict) -> dict:
 
 
 class WindowsAdapter:
-    def __init__(self, *, apply_authorized: bool = False, runner=None, credential_custodian=None, known_folder_resolver=None):
+    def __init__(self, *, apply_authorized: bool = False, runner=None, credential_custodian=None, known_folder_resolver=None, runtime_capability_resolver=None):
         self.platform = "windows" if sys.platform == "win32" else sys.platform
         self.can_apply = sys.platform == "win32" and not getattr(sys, 'frozen', False)
         # This candidate is an unsigned CI artifact, not a distribution authority.
@@ -133,6 +180,12 @@ class WindowsAdapter:
         # Dependency seam for disposable tests; no CLI/env Host-path override.
         # Production always calls the native Windows Known Folder API.
         self._known_folder_resolver = known_folder_resolver or documents_known_folder
+        # Narrow disposable acceptance dependency, not a production CLI/env
+        # setting. It cannot supply volume, Python provenance or root metadata.
+        self._runtime_capability_resolver = runtime_capability_resolver
+        if runtime_capability_resolver is not None:
+            self.can_apply=False
+            self.apply_authorized=False
 
     def discover_credentials(self) -> dict:
         # Executable existence is only an installation hint. Never execute an
@@ -203,6 +256,7 @@ try {
                        "python_version": platform.python_version(),
                        "python_verified": False,
                        "python_signature": {"state": "UNKNOWN", "status": "UnknownError", "signer": "UNVERIFIED"},
+                       'inventory_source':'UNVERIFIED','inventory_reason':'NATIVE_VOLUME_METADATA_UNAVAILABLE',
                        "documents": None, "volumes": [], "existing_roots": {},
                        "active_workloads": [], "wsl_app_version": None,
                        "wslc_capability": {"state": "UNKNOWN", "reason": "WINDOWS_REQUIRED"},
@@ -256,6 +310,39 @@ try {
                         observation.update(normalize_inventory(raw))
             except (OSError, ValueError, RuntimeError, subprocess.TimeoutExpired):
                 pass
+        valid_volumes=[volume for volume in observation['volumes'] if _complete_volume_metadata([volume])]
+        if valid_volumes:
+            observation['volumes']=valid_volumes
+            observation['inventory_source']='WINDOWS_POWERSHELL'
+            observation['inventory_reason']='NATIVE_VOLUME_METADATA_OBSERVED'
+        else:
+            # Storage CIM may be unavailable in an extracted/no-prerequisite
+            # process. Win32 queries actual OS metadata; other gates stay intact.
+            volumes=native_volume_inventory()
+            observation['volumes']=volumes
+            observation['storage_state']='PASS' if volumes else 'UNKNOWN'
+            if volumes:
+                observation['inventory_source']='WINDOWS_WIN32_FALLBACK'
+                observation['inventory_reason']='STORAGE_PROVIDER_METADATA_UNAVAILABLE_WIN32_OBSERVED'
+        observation['runtime_inventory_source']='NATIVE_OBSERVED'
+        if self._runtime_capability_resolver is not None:
+            try:
+                raw=self._runtime_capability_resolver()
+                allowed={'wsl_version_text','wslc_state','wslc_active_count'}
+                if not isinstance(raw,dict) or set(raw)!=allowed:raise ValueError('runtime fixture shape')
+                if (not isinstance(raw['wsl_version_text'],str) or len(raw['wsl_version_text'])>128
+                    or raw['wslc_state'] not in {'PASS','BLOCKED','UNKNOWN'}
+                    or type(raw['wslc_active_count']) is not int or raw['wslc_active_count']<0):
+                    raise ValueError('runtime fixture fields')
+                parsed=normalize_inventory(raw)
+                for name in ('wsl_app_version','wslc_capability','active_workloads'):
+                    observation[name]=parsed[name]
+                observation['runtime_inventory_source']='OWNED_CAPABILITY_FIXTURE'
+            except Exception:
+                observation['wsl_app_version']=None
+                observation['wslc_capability']={'state':'UNKNOWN','reason':'RUNTIME_CAPABILITY_FIXTURE_INVALID'}
+                observation['active_workloads']=[]
+                observation['runtime_inventory_source']='UNVERIFIED'
         # Existence metadata only, no traversal or reads of HOST_AGENT/credentials.
         documents = observation["documents"]
         observation['host_agent_present'] = bool(documents and (Path(documents) / 'HOST_AGENT.md').is_file())

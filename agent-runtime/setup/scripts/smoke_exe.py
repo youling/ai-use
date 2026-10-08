@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from agent_setup.packaging import (PUBLIC_BUNDLE_CODES, PUBLIC_EXE_CODES, SIGNATURE_PHASES,
                                    ACCEPTANCE_STAGES, ACCEPTANCE_SCENARIOS, NATIVE_CHECKS)
 from agent_setup.packaging import PUBLIC_PLAN_GATES
+from agent_setup.packaging import INVENTORY_SOURCES
 
 
 def validate_acceptance_receipt(receipt: dict) -> None:
@@ -39,12 +40,30 @@ def validate_acceptance_receipt(receipt: dict) -> None:
             or case.get('existing_files') != 'UNCHANGED'
             or case.get('context_source') != 'OWNED_PUBLIC_FIXTURE'
             or case.get('runtime_capability') != 'SYNTHETIC_WSLC_ONLY'
+            or case.get('inventory_source') not in (INVENTORY_SOURCES - {'UNVERIFIED'})
             or case.get('host_apply') != 'DENIED'):
             raise RuntimeError('FROZEN_ACCEPTANCE_CONTEXT_BOUNDARY_INVALID')
     native = receipt.get('native_read_only_planning', {})
     if (native.get('status') != 'PASS' or native.get('meaning') != 'READ_ONLY_PLAN_COMPUTED_NOT_RUNTIME_READY'
         or native.get('volume_metadata') != 'PASS'):
         raise RuntimeError('FROZEN_NATIVE_PLANNING_EVIDENCE_INCOMPLETE')
+    scan = receipt.get('native_metadata_scan', {})
+    if scan.get('inventory_source') not in (INVENTORY_SOURCES - {'UNVERIFIED'}):
+        raise RuntimeError('FROZEN_NATIVE_INVENTORY_SOURCE_UNVERIFIED')
+    forced = receipt.get('forced_fallback_cases', [])
+    if not isinstance(forced, list) or {case.get('scenario') for case in forced if isinstance(case, dict)} != {'fresh', 'legacy_v1'}:
+        raise RuntimeError('FROZEN_FORCED_FALLBACK_EVIDENCE_INCOMPLETE')
+    for case in forced:
+        if (case.get('provider_fault') != 'FORCED_PS_TIMEOUT'
+            or case.get('inventory_source') != 'WINDOWS_WIN32_FALLBACK'
+            or case.get('first_next') != 'PASS' or case.get('existing_files') != 'UNCHANGED'
+            or case.get('host_apply') != 'DENIED' or case.get('runtime_capability') != 'SYNTHETIC_WSLC_ONLY'):
+            raise RuntimeError('FROZEN_FORCED_FALLBACK_BOUNDARY_INVALID')
+    without = receipt.get('fallback_without_runtime_fixture', {})
+    if (without.get('runtime_fixture') is not False or without.get('plan_status') != 'BLOCKED'
+        or without.get('wslc_state') not in {'UNKNOWN', 'BLOCKED'}
+        or without.get('inventory_source') != 'WINDOWS_WIN32_FALLBACK'):
+        raise RuntimeError('FROZEN_FALLBACK_RUNTIME_GATE_UNVERIFIED')
     screens = receipt.get('screens', [])
     for scenario, result in [('fresh', 'PASS'), ('legacy_v1', 'PASS'), ('malformed_exchange', 'BLOCKED_OWNER_REVIEW')]:
         if not any(screen.get('scenario') == scenario and screen.get('size') == [80, 24]
