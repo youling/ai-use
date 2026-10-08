@@ -202,7 +202,7 @@ def test_native_windows_drive_root_is_readonly_inventory_anchor(tmp_path):
         'wsl_app_version':'3.0.1','wslc_capability':{'state':'PASS'},'documents':str(documents),
         'volumes':[{'mount':str(volume),'fs':'NTFS','device_id':'synthetic-disk-0',
                     'bus_type':'NVMe','media_type':'SSD','capacity_bytes':256*GIB,'free_bytes':80*GIB}],
-        'active_workloads':[],'existing_roots':[]}
+        'active_workloads':[],'existing_roots':{}}
     class ReadonlyWindowsInventory:
         can_apply=False
         def probe(self):return copy.deepcopy(observation)
