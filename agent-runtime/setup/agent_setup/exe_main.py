@@ -9,7 +9,7 @@ import tempfile
 import shutil
 
 from .engine import SetupEngine, SetupError
-from .packaging import BundleError, bundle_provenance, verified_bundle_root, validate_bundle
+from .packaging import BundleError, bundle_provenance, verified_bundle_root, validate_bundle, PUBLIC_BUNDLE_CODES
 from .windows import WindowsAdapter
 
 
@@ -131,7 +131,8 @@ def main(argv=None) -> int:
         raise SetupError('UNKNOWN_ARGUMENT')
     proof = bundle_provenance()
     if not proof.get('bundle_verified') or not proof.get('python_verified'):
-        raise BundleError('BUNDLE_PROVENANCE_UNVERIFIED')
+        reason = proof.get('reason', 'BUNDLE_PROVENANCE_UNVERIFIED')
+        raise BundleError(reason if reason in PUBLIC_BUNDLE_CODES else 'BUNDLE_PROVENANCE_UNVERIFIED')
     if args.version:
         print(json.dumps({'product': 'AgentRuntimeSetup', 'source_head': proof['source_head'],
                           'python': proof['python_version'], 'distribution': 'UNSIGNED_TEST_ONLY'}))

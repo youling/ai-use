@@ -11,6 +11,27 @@ import os
 from pathlib import Path
 import subprocess
 import tempfile
+import sys
+from types import SimpleNamespace
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from agent_setup.packaging import PUBLIC_BUNDLE_CODES
+
+
+def safe_failure(output: Path, exe: Path, mode: str, run) -> None:
+    reason = 'FROZEN_CHILD_OUTPUT_UNVERIFIED'
+    try:
+        parsed = json.loads(run.stdout) if len(run.stdout) <= 100000 else {}
+        if isinstance(parsed, dict) and parsed.get('reason') in PUBLIC_BUNDLE_CODES:
+            reason = parsed['reason']
+    except (ValueError, TypeError):
+        pass
+    diagnostic = {'status': 'BLOCKED', 'mode': mode, 'exit_code': run.returncode,
+                  'reason': reason, 'raw_stdout_stderr': 'NOT_RETAINED',
+                  'exe_sha256': hashlib.sha256(exe.read_bytes()).hexdigest(),
+                  'host_apply': 'DENIED', 'paths_emitted': False, 'credentials_read': False}
+    (output / 'failure-diagnostic.json').write_text(json.dumps(diagnostic, indent=2) + '\n', encoding='utf-8')
+    print(json.dumps(diagnostic), flush=True)
 
 
 def smoke(exe: Path, output: Path):
@@ -41,12 +62,23 @@ def smoke(exe: Path, output: Path):
                                     (['--host-authorized', '--check-only'], 2),
                                     (['--launcher-dispatch', '--local-only'], 2),
                                     (['--self-test', '--output-dir', str(output / 'screens')], 0)]:
-            run = subprocess.run([str(exe), *arguments], cwd=cwd, env=env, stdin=subprocess.DEVNULL,
-                                 capture_output=True, encoding='utf-8', errors='replace', timeout=180)
+            try:
+                run = subprocess.run([str(exe), *arguments], cwd=cwd, env=env, stdin=subprocess.DEVNULL,
+                                     capture_output=True, encoding='utf-8', errors='replace', timeout=180)
+            except subprocess.TimeoutExpired:
+                safe_failure(output, exe, arguments[0], SimpleNamespace(returncode=124, stdout=''))
+                raise RuntimeError('ACTUAL_FROZEN_EXE_PROCESS_TIMEOUT') from None
             if run.returncode != expected:
                 # Do not leak arbitrary stderr/tracebacks from third-party code.
+                safe_failure(output, exe, arguments[0], run)
                 raise RuntimeError('ACTUAL_FROZEN_EXE_RUN_FAILED:' + arguments[0])
-            parsed = json.loads(run.stdout.strip())
+            try:
+                parsed = json.loads(run.stdout.strip())
+                if not isinstance(parsed, dict):
+                    raise ValueError('METADATA_OBJECT_REQUIRED')
+            except ValueError:
+                safe_failure(output, exe, arguments[0], run)
+                raise RuntimeError('ACTUAL_FROZEN_EXE_OUTPUT_INVALID') from None
             if len(run.stdout) > 100000 or any(value in run.stdout for value in ['github_pat_', 'ghp_', '-----BEGIN PRIVATE KEY']):
                 raise RuntimeError('UNSAFE_FROZEN_OUTPUT')
             receipts.append({'mode': arguments[0], 'exit_code': run.returncode, 'result': parsed})

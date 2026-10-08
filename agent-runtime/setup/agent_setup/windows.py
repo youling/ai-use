@@ -125,6 +125,9 @@ class WindowsAdapter:
         # This candidate is an unsigned CI artifact, not a distribution authority.
         # A flag cannot promote its content hashes into trusted Host permission.
         self.apply_authorized = apply_authorized and not getattr(sys, 'frozen', False)
+        if runner is None and getattr(sys, "frozen", False):
+            from .packaging import native_system_run
+            runner = native_system_run
         self._runner = runner or subprocess.run
         self._credential_custodian = credential_custodian
 

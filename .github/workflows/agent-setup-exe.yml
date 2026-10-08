@@ -38,6 +38,14 @@ jobs:
         run: |
           & "${{ runner.temp }}/exe-build-venv/Scripts/python.exe" agent-runtime/setup/scripts/smoke_exe.py --exe "${{ runner.temp }}/setup-exe/AgentRuntimeSetup.exe" --output "${{ runner.temp }}/setup-exe/actual-run-evidence"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Retain only fixed-category diagnostics on smoke failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: SetupEXE-safe-failure-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/setup-exe/actual-run-evidence/failure-diagnostic.json
+          if-no-files-found: warn
+          retention-days: 14
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: AgentRuntimeSetup-UNSIGNED_TEST_ONLY-${{ github.event.pull_request.head.sha || github.sha }}

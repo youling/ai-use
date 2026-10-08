@@ -17,7 +17,7 @@ from agent_setup.engine import SetupEngine, FixtureAdapter, SetupError
     {'state': 'VERIFIED_CONTENT_UNSIGNED_TEST_ONLY', 'python_verified': True},
 ])
 def test_frozen_apply_flag_never_promotes_unsigned_distribution(proof):
-    with patch.object(sys, 'frozen', True, create=True), patch.object(sys, 'platform', 'win32'):
+    with patch.object(sys, 'frozen', True, create=True), patch.object(sys, 'platform', 'win32'), patch('agent_setup.windows.shutil.which', return_value=None):
         adapter = WindowsAdapter(apply_authorized=True, runner=lambda *a, **k: pytest.fail('Must not mutate'))
         with patch('agent_setup.windows.frozen_provenance', return_value=proof):
             assert adapter.apply_authorized is False
@@ -54,7 +54,7 @@ def test_embedded_python_content_proof_is_distinct_from_host_distribution(state,
     class Version:
         releaselevel='final'
         def __getitem__(self,key):return (3,14)
-    with patch.object(sys,'frozen',True,create=True),patch.object(sys,'platform','win32'),patch.object(sys,'version_info',Version()),patch('agent_setup.windows.frozen_provenance',return_value=proof),patch('agent_setup.windows.documents_known_folder',return_value=None),patch('agent_setup.windows.trusted_windows_powershell',return_value=None):
+    with patch.object(sys,'frozen',True,create=True),patch.object(sys,'platform','win32'),patch.object(sys,'version_info',Version()),patch('agent_setup.windows.frozen_provenance',return_value=proof),patch('agent_setup.windows.documents_known_folder',return_value=None),patch('agent_setup.windows.trusted_windows_powershell',return_value=None),patch('agent_setup.windows.shutil.which',return_value=None):
         adapter=WindowsAdapter(apply_authorized=True)
         observed=adapter.probe()
     assert observed['python_verified'] is expected

@@ -14,10 +14,59 @@ import platform
 import subprocess
 import sys
 import ctypes
+from contextlib import contextmanager
+import threading
 
 
 class BundleError(RuntimeError):
     pass
+
+
+NATIVE_PROCESS_LOCK = threading.RLock()
+PUBLIC_BUNDLE_CODES = frozenset({
+    'BUNDLE_MANIFEST_MISSING', 'BUNDLE_MANIFEST_INVALID', 'BUNDLE_INVENTORY_INCOMPLETE',
+    'BUNDLE_RESOURCE_INVALID', 'BUNDLE_RESOURCE_REPARSE', 'BUNDLE_RESOURCE_HASH_MISMATCH',
+    'FROZEN_BUNDLE_REQUIRED', 'WINDOWS_LOADED_RUNTIME_REQUIRED', 'LOADED_RUNTIME_MODULE_UNKNOWN',
+    'LOADED_RUNTIME_MODULE_OUTSIDE_BUNDLE', 'LOADED_RUNTIME_HASH_MISMATCH',
+    'BUNDLED_RUNTIME_VERSION_MISMATCH', 'BUNDLED_RUNTIME_PSF_SIGNATURE_UNVERIFIED',
+    'SIGNATURE_NATIVE_POWERSHELL_MISSING', 'SIGNATURE_PROCESS_TIMEOUT',
+    'SIGNATURE_PROCESS_FAILED', 'SIGNATURE_METADATA_INVALID', 'SIGNATURE_PROCESS_OS_ERROR',
+    'NATIVE_DLL_SEARCH_RESET_FAILED', 'NATIVE_DLL_SEARCH_RESTORE_FAILED',
+    'BUNDLE_PROVENANCE_UNVERIFIED'})
+
+
+@contextmanager
+def native_system_dll_search():
+    """Do not make native PS5 inherit PyInstaller's private DLL directory.
+
+    PyInstaller's documented Windows external-process contract requires this
+    reset. Restore the exact prior process DLL directory in finally; neither
+    PATH nor machine/user settings are changed. Serialized for our native calls.
+    """
+    if sys.platform != 'win32' or not getattr(sys, 'frozen', False):
+        yield
+        return
+    with NATIVE_PROCESS_LOCK:
+        kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+        kernel.GetDllDirectoryW.argtypes = [ctypes.c_uint32, ctypes.c_wchar_p]
+        kernel.GetDllDirectoryW.restype = ctypes.c_uint32
+        kernel.SetDllDirectoryW.argtypes = [ctypes.c_wchar_p]
+        kernel.SetDllDirectoryW.restype = ctypes.c_int
+        buffer = ctypes.create_unicode_buffer(32768)
+        length = kernel.GetDllDirectoryW(len(buffer), buffer)
+        if length >= len(buffer) or not kernel.SetDllDirectoryW(None):
+            raise BundleError('NATIVE_DLL_SEARCH_RESET_FAILED')
+        original = buffer.value if length else None
+        try:
+            yield
+        finally:
+            if not kernel.SetDllDirectoryW(original):
+                raise BundleError('NATIVE_DLL_SEARCH_RESTORE_FAILED')
+
+
+def native_system_run(*args, **kwargs):
+    with native_system_dll_search():
+        return subprocess.run(*args, **kwargs)
 
 
 REQUIRED = {'agent_setup/probe_windows.ps1', 'agent-runtime/host/windows/launch.py',
@@ -104,7 +153,7 @@ def psf_signature(path: Path) -> dict:
     from .windows import trusted_windows_powershell
     powershell = trusted_windows_powershell()
     if not powershell:
-        return {'status': 'UnknownError', 'signer': 'UNVERIFIED'}
+        return {'status': 'UnknownError', 'signer': 'UNVERIFIED', 'reason': 'SIGNATURE_NATIVE_POWERSHELL_MISSING'}
     script = r"""$ErrorActionPreference='Stop'; [Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false);
 try { $env:PSModulePath=Join-Path $PSHOME 'Modules';
 Import-Module (Join-Path $PSHOME 'Modules\Microsoft.PowerShell.Security\Microsoft.PowerShell.Security.psd1') -ErrorAction Stop;
@@ -113,10 +162,13 @@ $psf=$s.SignerCertificate -and $s.SignerCertificate.Subject -match '(?:^|,\s*)(?
 @{status=[string]$s.Status;psf=[bool]$psf}|ConvertTo-Json -Compress
 } catch { @{status='UnknownError';psf=$false}|ConvertTo-Json -Compress }"""
     try:
-        run = subprocess.run([powershell, '-NoLogo', '-NoProfile', '-NonInteractive', '-Command', script],
-                             input=json.dumps({'path': str(path)}), capture_output=True,
-                             encoding='utf-8', errors='replace', timeout=30)
-        result = json.loads(run.stdout) if run.returncode == 0 and len(run.stdout) <= 4096 else {}
+        with native_system_dll_search():
+            run = subprocess.run([powershell, '-NoLogo', '-NoProfile', '-NonInteractive', '-Command', script],
+                                 input=json.dumps({'path': str(path)}), capture_output=True,
+                                 encoding='utf-8', errors='replace', timeout=30)
+        if run.returncode != 0 or len(run.stdout) > 4096:
+            return {'status': 'UnknownError', 'signer': 'UNVERIFIED', 'reason': 'SIGNATURE_PROCESS_FAILED'}
+        result = json.loads(run.stdout)
         if not isinstance(result, dict):
             raise ValueError('SIGNATURE_METADATA_INVALID')
         status = result.get('status')
@@ -125,8 +177,12 @@ $psf=$s.SignerCertificate -and $s.SignerCertificate.Subject -match '(?:^|,\s*)(?
             status = 'UnknownError'
         return {'status': status,
                 'signer': 'Python Software Foundation' if result.get('psf') is True else 'UNVERIFIED'}
-    except (OSError, ValueError, subprocess.TimeoutExpired):
-        return {'status': 'UnknownError', 'signer': 'UNVERIFIED'}
+    except subprocess.TimeoutExpired:
+        return {'status': 'UnknownError', 'signer': 'UNVERIFIED', 'reason': 'SIGNATURE_PROCESS_TIMEOUT'}
+    except OSError:
+        return {'status': 'UnknownError', 'signer': 'UNVERIFIED', 'reason': 'SIGNATURE_PROCESS_OS_ERROR'}
+    except ValueError:
+        return {'status': 'UnknownError', 'signer': 'UNVERIFIED', 'reason': 'SIGNATURE_METADATA_INVALID'}
 
 
 def bundle_provenance() -> dict:
@@ -137,12 +193,14 @@ def bundle_provenance() -> dict:
             raise BundleError('BUNDLED_RUNTIME_VERSION_MISMATCH')
         signature = psf_signature(root / 'runtime/python314.dll')
         if signature != {'status': 'Valid', 'signer': 'Python Software Foundation'}:
-            raise BundleError('BUNDLED_RUNTIME_PSF_SIGNATURE_UNVERIFIED')
+            reason = signature.get('reason', 'BUNDLED_RUNTIME_PSF_SIGNATURE_UNVERIFIED')
+            raise BundleError(reason if reason in PUBLIC_BUNDLE_CODES else 'BUNDLED_RUNTIME_PSF_SIGNATURE_UNVERIFIED')
         return {'state': 'VERIFIED_CONTENT_UNSIGNED_TEST_ONLY', 'bundle_verified': True,
                 'python_verified': True, 'source_head': manifest['source_head'],
                 'python_version': manifest['python_version'], 'runtime_signature': signature,
                 'distribution': 'UNSIGNED_TEST_ONLY', 'publisher_trusted': False,
                 'host_apply': 'DENIED', 'reason': 'REVIEWED_SIGNED_DISTRIBUTION_AND_HUMAN_GATE_REQUIRED'}
-    except (BundleError, OSError):
+    except (BundleError, OSError) as error:
+        reason = str(error) if isinstance(error, BundleError) and str(error) in PUBLIC_BUNDLE_CODES else 'BUNDLE_PROVENANCE_UNVERIFIED'
         return {'state': 'BLOCKED', 'bundle_verified': False, 'python_verified': False,
-                'publisher_trusted': False, 'host_apply': 'DENIED', 'reason': 'BUNDLE_PROVENANCE_UNVERIFIED'}
+                'publisher_trusted': False, 'host_apply': 'DENIED', 'reason': reason}

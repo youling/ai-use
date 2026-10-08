@@ -4,6 +4,8 @@ from pathlib import Path
 import sys
 import platform
 from types import SimpleNamespace
+import subprocess
+import runpy
 import pytest
 
 from agent_setup import packaging
@@ -217,3 +219,69 @@ def test_native_scanner_missing_proof_is_fail_closed(monkeypatch, missing):
     monkeypatch.setattr(exe_main, 'WindowsAdapter', Adapter)
     with pytest.raises(SetupError, match='FROZEN_NATIVE_RESOURCE_SCAN_FAILED'):
         exe_main.readonly_native_bundle_scan()
+
+
+def test_native_child_dll_directory_is_reset_then_restored_even_on_failure(monkeypatch):
+    calls = []
+    def get_directory(length, buffer):
+        buffer.value = 'PUBLIC_SYNTHETIC_BUNDLE_DIRECTORY'
+        return len(buffer.value)
+    def set_directory(value):
+        calls.append(value)
+        return 1
+    kernel = SimpleNamespace(GetDllDirectoryW=get_directory, SetDllDirectoryW=set_directory)
+    monkeypatch.setattr(packaging.sys, 'platform', 'win32')
+    monkeypatch.setattr(packaging.sys, 'frozen', True, raising=False)
+    monkeypatch.setattr(packaging.ctypes, 'WinDLL', lambda *a, **kw: kernel, raising=False)
+    with pytest.raises(RuntimeError, match='SYNTHETIC_CHILD_FAILURE'):
+        with packaging.native_system_dll_search():
+            assert calls == [None]
+            raise RuntimeError('SYNTHETIC_CHILD_FAILURE')
+    assert calls == [None, 'PUBLIC_SYNTHETIC_BUNDLE_DIRECTORY']
+
+
+def test_signature_timeout_is_fixed_category_without_child_paths_or_raw_errors(monkeypatch):
+    from agent_setup import windows
+    monkeypatch.setattr(windows, 'trusted_windows_powershell', lambda: 'PUBLIC_SYNTHETIC_NATIVE_PS')
+    def timeout(*a, **kw):
+        raise subprocess.TimeoutExpired('PRIVATE_PROCESS_ARGUMENTS_NOT_LOGGED', 30,
+                                        output='PRIVATE_RAW_OUTPUT_NOT_LOGGED')
+    monkeypatch.setattr(packaging.subprocess, 'run', timeout)
+    signature = packaging.psf_signature(Path('PUBLIC_SYNTHETIC_RUNTIME'))
+    assert signature['reason'] == 'SIGNATURE_PROCESS_TIMEOUT'
+    assert 'PRIVATE' not in json.dumps(signature)
+
+
+def test_bundle_retains_only_finite_failure_cause(monkeypatch, tmp_path):
+    root, _ = contract(tmp_path)
+    monkeypatch.setattr(packaging, 'verified_bundle_root', lambda: root)
+    monkeypatch.setattr(packaging, 'psf_signature', lambda path:
+                        {'status': 'UnknownError', 'signer': 'UNVERIFIED', 'reason': 'SIGNATURE_PROCESS_TIMEOUT'})
+    proof = packaging.bundle_provenance()
+    assert proof['reason'] == 'SIGNATURE_PROCESS_TIMEOUT' and not proof['python_verified']
+    def private_failure():
+        raise packaging.BundleError('PRIVATE_EXTERNAL_VALUE_NOT_LOGGED')
+    monkeypatch.setattr(packaging, 'verified_bundle_root', private_failure)
+    proof = packaging.bundle_provenance()
+    assert proof['reason'] == 'BUNDLE_PROVENANCE_UNVERIFIED'
+    assert 'PRIVATE' not in json.dumps(proof)
+
+
+def test_exe_reports_fixed_provenance_timeout_instead_of_generic_reason(monkeypatch, capsys):
+    monkeypatch.setattr(exe_main, 'bundle_provenance', lambda:
+                        {'bundle_verified': False, 'python_verified': False, 'reason': 'SIGNATURE_PROCESS_TIMEOUT'})
+    assert exe_main.guarded_main(['--version']) == 2
+    assert json.loads(capsys.readouterr().out)['reason'] == 'SIGNATURE_PROCESS_TIMEOUT'
+
+
+def test_smoke_failure_artifact_rejects_arbitrary_child_output(tmp_path, capsys):
+    script = Path(__file__).resolve().parents[1] / 'scripts/smoke_exe.py'
+    safe_failure = runpy.run_path(str(script), run_name='synthetic_smoke_test')['safe_failure']
+    exe = tmp_path / 'synthetic.exe'
+    exe.write_text('PUBLIC_SYNTHETIC_BINARY', encoding='utf-8')
+    run = SimpleNamespace(returncode=2, stdout=json.dumps({'reason': 'PRIVATE_EXTERNAL_DETAIL_NOT_LOGGED'}))
+    safe_failure(tmp_path, exe, '--version', run)
+    artifact = (tmp_path / 'failure-diagnostic.json').read_text(encoding='utf-8')
+    assert 'PRIVATE_EXTERNAL_DETAIL' not in artifact
+    assert 'FROZEN_CHILD_OUTPUT_UNVERIFIED' in artifact and 'NOT_RETAINED' in artifact
+    assert 'PRIVATE_EXTERNAL_DETAIL' not in capsys.readouterr().out
