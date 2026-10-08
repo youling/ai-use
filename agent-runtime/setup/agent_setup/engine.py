@@ -241,8 +241,22 @@ class SetupEngine:
         docs_parent=bool(observation.get('documents')) and documents.exists() and documents.is_dir()
         gate('DOCUMENTS_KNOWN_FOLDER',docs_parent,'Use resolved OS-native Documents; do not invent fallback placement')
         # Bind every selected managed root to its actual volume, including advanced overrides.
+        def volume_anchor(mount):
+            # Drive roots are read-only inventory anchors, not eligible install
+            # destinations. Keep safe_path() root rejection for every managed
+            # workspace/config/cache/temp/exchange target.
+            raw=str(mount)
+            if os.name=='nt' and re.fullmatch(r'[A-Za-z]:[/\\]',raw):
+                root=Path(raw)
+                if not root.is_absolute() or root.parent!=root:
+                    raise SetupError('UNSAFE_VOLUME_ANCHOR')
+                if root.is_symlink() or (root.exists() and getattr(root.lstat(),'st_file_attributes',0)&0x400):
+                    raise SetupError('REPARSE_PATH_DENIED')
+                return root.resolve()
+            return safe_path(raw)
         def volume_for(path):
-            matches=[v for v in volumes if safe_path(path).is_relative_to(safe_path(v['mount']))]
+            destination=safe_path(path)
+            matches=[v for v in volumes if destination.is_relative_to(volume_anchor(v['mount']))]
             return max(matches,key=lambda v:len(str(v['mount']))) if matches else None
         storage_bindings=[]
         rows=[]
