@@ -1,6 +1,6 @@
 # Agent Runtime 首次安装向导 — Windows WSLC V1
 
-这是待独立 Architect exact-head review 的 Windows V1 实现。默认只检查或生成计划；运行 Host apply 还需要明确 Host authority、审阅后的计划及批准。不会通过本工单发布新镜像、升级 WSL、重启机器或操作其他 Host。
+公共 Windows V1 安装器源码已通过 Architect exact-head Review（PR #128，审阅 head `c57eeb6b9b59538a138154589ddb304fa79ff6d1`）并合并至 `main`（`871bff1c82ded7c6db0146dbdad2b1bbed208e6e`）。真实宿主机首次安装与认证、凭据 owner adapter、模型可用性仍为 #127 独立待验收事项。默认只检查或生成计划；运行 Host apply 还需要明确 Host authority、审阅后的计划及批准。不会因源码合并而自动发布新镜像、升级 WSL、重启机器或操作其他 Host。
 
 从已审查的 `youling/ai-use` checkout 根目录运行一个命令，建立当前 checkout 专属的依赖环境并打开 Textual 预览向导：
 
