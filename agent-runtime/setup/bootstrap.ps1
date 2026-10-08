@@ -82,7 +82,7 @@ foreach ($name in @('python.exe', 'python3.exe')) {
 $python = $null
 foreach ($candidate in ($candidates | Select-Object -Unique)) {
     if (Test-DiscoveredPython314 $candidate) { $python = $candidate; break }
-    if ($PythonPath) { throw 'Explicit PythonPath must be a PSF-signed stable CPython 3.14.x.' }
+    if ($PythonPath) { throw 'Explicit PythonPath signature must verify as PSF-signed stable CPython 3.14.x.' }
 }
 if (-not $python) {
     # Metadata-only discovery prevents acquisition from upgrading a registered
