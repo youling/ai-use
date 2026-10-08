@@ -81,6 +81,26 @@ def test_bootstrap_to_real_tui_fixture_review_and_apply(tmp_path,monkeypatch,aut
 
 
 @pytest.mark.skipif(os.name != "nt" or not shutil.which("pwsh"), reason="Windows PowerShell boundary")
+def test_unsigned_python_first_on_path_does_not_abort_discovery(tmp_path):
+    """Do not execute an unsigned PATH shim; keep the read-only check usable."""
+    for name in ("bootstrap.ps1", "python-runtime.json", "requirements.lock"):
+        shutil.copyfile(ROOT / name, tmp_path / name)
+    untrusted = tmp_path / "untrusted-bin"
+    untrusted.mkdir()
+    (untrusted / "python.exe").write_bytes(b"fake executable: must never run")
+    env = os.environ.copy()
+    env["PATH"] = str(untrusted) + os.pathsep + env.get("PATH", "")
+    result = subprocess.run(
+        [shutil.which("pwsh"), "-NoProfile", "-File", str(tmp_path / "bootstrap.ps1"), "-CheckOnly"],
+        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30, env=env,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "HOST_UNCHANGED" in result.stdout
+    assert "Python Authenticode signature" not in result.stderr
+    assert not (tmp_path / ".setup-runtime").exists()
+
+
+@pytest.mark.skipif(os.name != "nt" or not shutil.which("pwsh"), reason="Windows PowerShell boundary")
 def test_check_only_is_nonmutating(tmp_path):
     for name in ("bootstrap.ps1", "python-runtime.json", "requirements.lock"):
         shutil.copyfile(ROOT / name, tmp_path / name)
