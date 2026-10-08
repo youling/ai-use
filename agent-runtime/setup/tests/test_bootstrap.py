@@ -60,9 +60,9 @@ def test_bootstrap_to_real_tui_fixture_review_and_apply(tmp_path,monkeypatch,aut
         async def flow():
             app=SetupApp(engine,**options)
             async with app.run_test(size=(110,50)) as pilot:
-                for _ in range(5):
+                for _ in range(3):
                     await pilot.click('#next');await pilot.pause(0.25)
-                assert app.step==5
+                assert app.step==3
                 app.query_one('#approve',Checkbox).value=True
                 await pilot.pause()
                 assert app.query_one('#apply',Button).disabled is not authorized
@@ -70,7 +70,7 @@ def test_bootstrap_to_real_tui_fixture_review_and_apply(tmp_path,monkeypatch,aut
                     approved_fingerprint=app.plan_data['fingerprint']
                     app.query_one('#apply',Button).focus()
                     await pilot.press('enter');await pilot.pause(0.25)
-                    assert app.step==6 and app.result['status']=='CONFIGURED_PENDING_AUTH'
+                    assert app.step==4 and app.result['status']=='CONFIGURED_PENDING_AUTH'
                     receipt=json.loads(Path(app.result['receipt']).read_text())
                     assert receipt['fingerprint']==approved_fingerprint
                 else:assert not (sandbox/'Documents/HOST_AGENT.md').exists()
