@@ -14,6 +14,10 @@ import re
 import shutil
 import subprocess
 import sys
+import socket
+
+from .credentials import KINDS, unavailable, validated_metadata
+from .engine import SECRET_PATTERN, SetupError, safe_path
 from datetime import datetime, timezone
 
 PINNED_IMAGE = "ghcr.io/youling/opencode-foreman@sha256:fa92f37752ff6132b161ed4c2563897c94b014ab70d650846dcb09f354f55261"
@@ -84,11 +88,44 @@ def normalize_inventory(raw: dict) -> dict:
 
 
 class WindowsAdapter:
-    def __init__(self, *, apply_authorized: bool = False, runner=None):
+    def __init__(self, *, apply_authorized: bool = False, runner=None, credential_custodian=None):
         self.platform = "windows" if sys.platform == "win32" else sys.platform
         self.can_apply = sys.platform == "win32"
         self.apply_authorized = apply_authorized
         self._runner = runner or subprocess.run
+        self._credential_custodian = credential_custodian
+
+    def discover_credentials(self) -> dict:
+        # Executable existence is only an installation hint. Never execute an
+        # arbitrary gh on PATH or inspect native application authentication DBs.
+        found = {kind: unavailable(kind, installed=kind == 'github' and bool(shutil.which('gh.exe'))) for kind in KINDS}
+        if self._credential_custodian is not None:
+            for kind in KINDS:
+                try:
+                    found[kind] = validated_metadata(kind, self._credential_custodian.discover(kind))
+                except Exception:
+                    found[kind] = unavailable(kind)
+        return found
+
+    def connect_credential(self, kind: str, mode: str = 'auto', approved: bool = False) -> dict:
+        if kind not in KINDS or mode not in {'auto', 'manual'}:
+            return {'state': 'BLOCKED', 'reason_code': 'CREDENTIAL_SELECTION_INVALID', 'plan_inputs': {}}
+        entry = self.discover_credentials()[kind]
+        if not approved:
+            return {**entry, 'state': 'NOT_AUTHORIZED', 'reason_code': 'ACCOUNT_SCOPE_CONSENT_REQUIRED', 'plan_inputs': {}}
+        if not self.can_apply or not self.apply_authorized:
+            return {**entry, 'state': 'HUMAN_GATE', 'reason_code': 'REAL_HOST_CONNECTION_NOT_AUTHORIZED', 'plan_inputs': {}}
+        # Manual OAuth belongs to the existing Host custody owner. The TUI never
+        # runs a shell login or collects a raw credential as an installation input.
+        if self._credential_custodian is None:
+            return {**entry, 'state': 'NEEDS_CONNECTION', 'reason_code': 'TRUSTED_HOST_LOGIN_REQUIRED', 'plan_inputs': {}}
+        if mode == 'auto' and not entry['reusable']:
+            return {**entry, 'plan_inputs': {}}
+        try:
+            proof = validated_metadata(kind, self._credential_custodian.connect(kind, mode=mode))
+        except Exception:
+            proof = unavailable(kind)
+        return {**proof, 'state': 'CONNECTION_PENDING_PROJECTION' if proof['reusable'] else proof['state'], 'plan_inputs': {}}
 
     def _python_signature(self, powershell: str) -> dict:
         # Verify the base executable, not a potentially unsigned venv launcher.
@@ -135,16 +172,16 @@ try {
             return observation
         observation["documents"] = documents_known_folder()
         powershell = shutil.which("pwsh.exe") or shutil.which("powershell.exe")
-        gh=shutil.which('gh.exe')
-        if gh:
-            try:
-                state=self._runner([gh,'auth','status','--active','--hostname','github.com','--json','hosts'],capture_output=True,encoding='utf-8',timeout=15)
-                metadata=json.loads(state.stdout) if state.returncode==0 and len(state.stdout)<16384 else {}
-                entries=metadata.get('hosts',{}).get('github.com',[])
-                observation['github']['native_store_discovered']=any(item.get('active') is True for item in entries if isinstance(item,dict))
-                observation['github']['runtime_projection']='NOT_AUTHORIZED_HOST_LOGIN_IS_NOT_RUNTIME_CUSTODY'
-            except (OSError,ValueError,TypeError,subprocess.TimeoutExpired):
-                observation['github']['native_store_discovered']=False
+        observation['github'].update(self.discover_credentials()['github'])
+        observation['model'].update(self.discover_credentials()['model'])
+        observation['wslc_storage'] = {'state': 'UNKNOWN', 'reason': 'ACTUAL_WSLC_STORAGE_NOT_OBSERVED'}
+        try:
+            with socket.socket() as port_probe:
+                port_probe.settimeout(0.2)
+                observation['local_port'] = {'port': 4096, 'occupied': port_probe.connect_ex(('127.0.0.1', 4096)) == 0,
+                                            'action': 'PRESERVE_EXISTING_SERVICE_LOCAL_PROFILE_HAS_NO_HOST_PUBLISH'}
+        except OSError:
+            observation['local_port'] = {'port': 4096, 'state': 'UNKNOWN'}
         if powershell:
             observation["python_signature"] = self._python_signature(powershell)
             observation["python_verified"] = (sys.version_info[:2] == (3, 14)
@@ -218,14 +255,14 @@ try {
             output = {"state": raw["state"]}
             for key in ("projection_directory", "server_env"):
                 value = raw.get(key)
-                if isinstance(value, str) and len(value) <= 4096 and not any(c in value for c in "\r\n\x00") and Path(value).is_absolute():
+                if isinstance(value, str) and not SECRET_PATTERN.search(value) and len(value) <= 4096 and not any(c in value for c in "\r\n\x00") and Path(value).is_absolute():
                     output[key] = value
             for key, pattern in (("work", r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#[1-9][0-9]*"),
                                  ("model_ref", r"[A-Za-z0-9_.:/#-]{1,256}"),
                                  ("repo", r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"),
                                  ("context_sha256", r"[a-f0-9]{64}"),
                                  ("durable_destination", r"https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/blob/[A-Za-z0-9_./-]+")):
-                if isinstance(raw.get(key), str) and re.fullmatch(pattern, raw[key]):
+                if isinstance(raw.get(key), str) and not SECRET_PATTERN.search(raw[key]) and re.fullmatch(pattern, raw[key]):
                     output[key] = raw[key]
             for key in ("authenticated_api", "github_read", "github_write", "fresh_recovery", "private_destination", "model_ready"):
                 if type(raw.get(key)) is bool:
@@ -273,6 +310,35 @@ try {
             return {"state": "PASS", "context_sha256": sha, "durable_destination": destination}
         return {"state": "NOT_AUTHORIZED", "reason": "DURABLE_CONTEXT_WRITEBACK_UNVERIFIED"}
 
+    def start_local_runtime(self, plan: dict, host_path: Path) -> dict:
+        if not self.can_apply or not self.apply_authorized:
+            return {'state': 'NOT_AUTHORIZED', 'reason': 'WINDOWS_APPLY_AUTHORITY_REQUIRED'}
+        runtime = plan.get('runtime', {})
+        name = runtime.get('name', '')
+        if not re.fullmatch(r'[a-z][a-z0-9-]{1,60}', name) or not all(runtime.get(k) for k in ('attempt', 'incoming', 'outgoing')):
+            return {'state': 'BLOCKED', 'reason': 'BOUNDED_RUNTIME_PATHS_REQUIRED'}
+        wslc = shutil.which('wslc.exe')
+        if not wslc:
+            return {'state': 'BLOCKED', 'reason': 'WSLC_EXECUTABLE_ABSENT'}
+        launcher = Path(__file__).resolve().parents[2] / 'host' / 'windows' / 'launch.py'
+        argv = [sys.executable, str(launcher), '--host-agent', str(host_path), '--wslc', wslc,
+                '--attempt', str(runtime['attempt']), '--name', name, '--local-only',
+                '--input', str(runtime['incoming']), '--output', str(runtime['outgoing'])]
+        try:
+            result = self._runner(argv, capture_output=True, encoding='utf-8', timeout=45)
+            receipt = json.loads(result.stdout) if result.returncode == 0 and len(result.stdout) <= 16384 else {}
+            local_hash = hashlib.sha256(Path(host_path).read_bytes()).hexdigest()
+            if (receipt.get('started') is not True or receipt.get('name') != name
+                or receipt.get('local_only') is not True or receipt.get('network') != 'none'
+                or receipt.get('scoped_auth') is not True or receipt.get('host_agent_sha256') != local_hash
+                or not re.fullmatch(r'sha256:[a-f0-9]{64}', receipt.get('image', ''))):
+                return {'state': 'BLOCKED', 'reason': 'LOCAL_PROFILE_LAUNCH_UNVERIFIED'}
+            return {'state': 'READY', 'name': name, 'config_id': receipt['image'],
+                    'host_agent_sha256': local_hash, 'local_only': True, 'scoped_auth': 'CONFIGURED',
+                    'reason': 'NETWORK_DISABLED_OWNED_LOCAL_PROFILE_VERIFY_REQUIRED'}
+        except (OSError, ValueError, subprocess.TimeoutExpired):
+            return {'state': 'BLOCKED', 'reason': 'LOCAL_PROFILE_LAUNCH_FAILED'}
+
     def start_runtime(self, plan: dict, host_path: Path) -> dict:
         if not self.can_apply or not self.apply_authorized:
             return {"state": "NOT_AUTHORIZED", "reason": "WINDOWS_APPLY_AUTHORITY_REQUIRED"}
@@ -314,7 +380,30 @@ try {
         except (OSError, ValueError, subprocess.TimeoutExpired):
             return {"state": "BLOCKED", "reason": "EXISTING_LAUNCHER_START_FAILED"}
 
-    def verify_runtime(self, name: str, host_path: Path, *, expected_config_id: str) -> dict:
+    @staticmethod
+    def _local_mounts_verified(mounts, expected_sources) -> bool:
+        """Missing backend evidence is denial, never a reason to skip isolation."""
+        modes = {'/host-context': False, '/exchange/in': False, '/exchange/out': True}
+        if (not isinstance(mounts, list) or len(mounts) != len(modes)
+            or not isinstance(expected_sources, dict) or set(expected_sources) != set(modes)):
+            return False
+        seen = set()
+        try:
+            for mount in mounts:
+                if not isinstance(mount, dict):return False
+                destination = mount.get('Destination')
+                if (not isinstance(destination, str) or destination not in modes or destination in seen
+                    or mount.get('Type') != 'bind' or mount.get('RW') is not modes[destination]):return False
+                source, expected = mount.get('Source'), expected_sources[destination]
+                if (not isinstance(source, str) or not isinstance(expected, str)
+                    or not Path(source).is_absolute() or not Path(expected).is_absolute()
+                    or safe_path(source) != safe_path(expected)):return False
+                seen.add(destination)
+        except (SetupError, OSError, ValueError, TypeError):
+            return False
+        return seen == set(modes)
+
+    def verify_runtime(self, name: str, host_path: Path, *, expected_config_id: str, expected_local: bool = False, expected_mount_sources: dict | None = None) -> dict:
         if not self.can_apply or not re.fullmatch(r"[a-z][a-z0-9-]{1,60}", name) or not re.fullmatch(r"sha256:[a-f0-9]{64}", expected_config_id):
             return {"state": "BLOCKED", "reason": "RUNTIME_VERIFICATION_INPUT_INVALID"}
         wslc = shutil.which("wslc.exe")
@@ -325,12 +414,39 @@ try {
             info = json.loads(result.stdout)[0] if result.returncode == 0 else {}
             if info.get("Config", {}).get("Labels", {}).get("agent.attempt") != name or info.get("Image") != expected_config_id:
                 return {"state": "BLOCKED", "reason": "OWNED_IMAGE_OR_LEASE_UNVERIFIED"}
+            if expected_local and info.get('Config', {}).get('Labels', {}).get('agent.setup.profile') != 'local-only':
+                return {'state': 'BLOCKED', 'reason': 'LOCAL_PROFILE_IDENTITY_UNVERIFIED'}
+            if (info.get('Config', {}).get('Labels', {}).get('agent.setup.profile') == 'local-only'
+                and not self._local_mounts_verified(info.get('Mounts'), expected_mount_sources)):
+                return {'state': 'BLOCKED', 'reason': 'LOCAL_MOUNT_BOUNDARY_UNVERIFIED'}
             # Fixed command with no auth/env printing; read only the bounded context.
             script = "import os,hashlib,json;print(json.dumps({'uid':os.getuid(),'hash':hashlib.sha256(open('/host-context/HOST_AGENT.md','rb').read()).hexdigest()}))"
             result = self._runner([wslc, "exec", name, "python3", "-c", script], capture_output=True, encoding="utf-8", timeout=15)
             observed = json.loads(result.stdout) if result.returncode == 0 else {}
             if observed.get("uid") != 1000 or observed.get("hash") != hashlib.sha256(Path(host_path).read_bytes()).hexdigest():
                 return {"state": "BLOCKED", "reason": "NONROOT_CONTEXT_READ_UNVERIFIED"}
-            return {"state": "PASS", "nonroot": True, "local_context_read": True, "config_id": expected_config_id}
+            proof = {"state": "PASS", "nonroot": True, "local_context_read": True, "config_id": expected_config_id}
+            if info.get('Config', {}).get('Labels', {}).get('agent.setup.profile') == 'local-only':
+                if (info.get('HostConfig', {}).get('NetworkMode') != 'none'
+                    or info.get('HostConfig', {}).get('PortBindings')
+                    or str(info.get('Config', {}).get('User')) not in {'1000', '1000:1000'}):
+                    return {'state': 'BLOCKED', 'reason': 'LOCAL_NETWORK_BOUNDARY_UNVERIFIED'}
+                # Auth is used internally, never exported in stdout or argv.
+                script = """import os,json,base64,urllib.request,urllib.error
+u='http://127.0.0.1:4096/global/health'
+def call(auth=False):
+ r=urllib.request.Request(u)
+ if auth:r.add_header('Authorization','Basic '+base64.b64encode(('opencode:'+os.environ['OPENCODE_SERVER_PASSWORD']).encode()).decode())
+ try:
+  with urllib.request.urlopen(r,timeout=3) as x:return x.status
+ except urllib.error.HTTPError as e:return e.code
+try: print(json.dumps({'denied':call()==401,'authenticated':call(True)==200}))
+except Exception: print(json.dumps({'denied':False,'authenticated':False}))
+"""
+                result = self._runner([wslc, 'exec', name, 'python3', '-c', script], capture_output=True, encoding='utf-8', timeout=15)
+                api = json.loads(result.stdout) if result.returncode == 0 and len(result.stdout) <= 4096 else {}
+                proof.update(local_only=True, network_disabled=True,
+                             server_authenticated='PASS' if api.get('denied') is True and api.get('authenticated') is True else 'NOT_VERIFIED')
+            return proof
         except (OSError, ValueError, TypeError, IndexError, subprocess.TimeoutExpired):
             return {"state": "BLOCKED", "reason": "RUNTIME_READBACK_FAILED"}

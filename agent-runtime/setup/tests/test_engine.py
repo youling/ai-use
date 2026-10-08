@@ -96,7 +96,10 @@ def test_preserve_existing_classified_root_never_move(setup,tmp_path):
 
 def test_missing_private_destination_blocks_recovery_claim(setup):
     engine,_,_=setup
-    assert engine.plan(engine.probe(),github={'recovery_requested':True,'authorized':True})['status']=='BLOCKED'
+    plan=engine.plan(engine.probe(),github={'recovery_requested':True,'authorized':True})
+    assert plan['status']=='READY' and plan['recovery_authorized'] is False
+    result=engine.apply({**plan,'host_authorized':True,'fingerprint':digest({**{k:v for k,v in plan.items() if k!='fingerprint'},'host_authorized':True})},approved=True)
+    assert result['capabilities']['fresh_recovery']['state']=='NOT_VERIFIED'
 
 def test_credentials_values_rejected(setup):
     engine,_,_=setup

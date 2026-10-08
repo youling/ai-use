@@ -14,11 +14,12 @@ def test_recipe_pins_and_context_allowlist():
     assert 'MIT License' in (ROOT/'opencode/LICENSE.opencode').read_text()
 
 def test_public_source_has_no_instance_or_raw_secret():
-    forbidden=re.compile(rb'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|(?:gh[pousr]_[A-Za-z0-9]{30,}|sk-proj-[A-Za-z0-9_-]{30,})')
+    forbidden=re.compile(rb'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|(?:gh[pousr]_[A-Za-z0-9]{30,}|(?i:github_pat_)[A-Za-z0-9_]{20,}|sk-proj-[A-Za-z0-9_-]{30,})')
     for p in ROOT.rglob('*'):
         if not p.is_file() or '__pycache__' in p.parts or p.suffix=='.pyc':continue
         value=p.read_bytes()
-        assert not forbidden.search(value),p
+        secret_found=forbidden.search(value) is not None
+        assert not secret_found,p
         assert ('D:'+chr(92)).encode() not in value and ('C:'+chr(92)+'Users'+chr(92)).encode() not in value,p
         assert ('youling-'+'jige-agent').encode() not in value,p
 

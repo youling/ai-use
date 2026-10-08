@@ -8,17 +8,19 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+import os
+import secrets
 import yaml
 
-def read_host(path):
+def read_host(path, *, local_only=False):
     text=Path(path).read_text(encoding='utf-8')
     match=re.search(r'```yaml\s*\n(.*?)\n```',text,re.S)
     if not match:
         raise ValueError('HOST_AGENT_V1_REQUIRED')
     value=yaml.safe_load(match[1])
-    if value.get('host_agent_version')!='1.0.0' or not value['agents']['opencode']['enabled']:
+    if value.get('host_agent_version')!='1.0.0' or (not local_only and not value['agents']['opencode']['enabled']):
         raise ValueError('OPENCODE_PROJECTION_DISABLED')
-    if not value['agents']['opencode']['github']['recovery_required']:
+    if not local_only and not value['agents']['opencode']['github']['recovery_required']:
         raise ValueError('GITHUB_RECOVERY_REQUIRED')
     return value
 
@@ -26,9 +28,53 @@ def ordinary(path):
     path=Path(path).absolute()
     if any(p.is_symlink() or (p.exists() and getattr(p.lstat(),'st_file_attributes',0)&0x400) for p in (path,*path.parents)):
         raise ValueError('REPARSE_PATH_DENIED')
-    if ',' in str(path) or '\n' in str(path):
+    if any(c in str(path) for c in ',\r\n\x00') or str(path).startswith(('\\\\', '//')) or '..' in path.parts:
         raise ValueError('MOUNT_PATH_INVALID')
     return path.resolve()
+
+def local_server_auth(root):
+    """Host-owned attempt auth; no external identity, secret result or reuse.
+
+    Protect the empty directory before writing. On Windows set and read back
+    a non-inherited ACL restricted to the current SID and SYSTEM, failing shut.
+    """
+    custody=ordinary(root/'auth')
+    custody.mkdir(mode=0o700)
+    if os.name=='nt':
+        ps=shutil.which('pwsh.exe')
+        if not ps:
+            raise ValueError('PROTECTED_HOST_AUTH_CUSTODY_UNAVAILABLE')
+        script=r"""$ErrorActionPreference='Stop';
+try {
+ $p=([Console]::In.ReadToEnd()|ConvertFrom-Json).path;
+ $sid=[System.Security.Principal.WindowsIdentity]::GetCurrent().User;
+ $system=[System.Security.Principal.SecurityIdentifier]::new('S-1-5-18');
+ $acl=[System.Security.AccessControl.DirectorySecurity]::new();
+ $acl.SetAccessRuleProtection($true,$false); $acl.SetOwner($sid);
+ foreach($identity in @($sid,$system)) {
+  $rule=[System.Security.AccessControl.FileSystemAccessRule]::new($identity,'FullControl','ContainerInherit,ObjectInherit','None','Allow');
+  $acl.AddAccessRule($rule);
+ }
+ Set-Acl -LiteralPath $p -AclObject $acl;
+ $got=Get-Acl -LiteralPath $p;
+ $rules=@($got.GetAccessRules($true,$true,[System.Security.Principal.SecurityIdentifier]));
+ $ok=$got.AreAccessRulesProtected -and $got.GetOwner([System.Security.Principal.SecurityIdentifier]).Value -eq $sid.Value -and $rules.Count -eq 2;
+ foreach($r in $rules) { if($r.IsInherited -or $r.IdentityReference.Value -notin @($sid.Value,'S-1-5-18') -or $r.AccessControlType -ne 'Allow' -or $r.FileSystemRights -ne [System.Security.AccessControl.FileSystemRights]::FullControl -or $r.InheritanceFlags -ne ([System.Security.AccessControl.InheritanceFlags]::ContainerInherit -bor [System.Security.AccessControl.InheritanceFlags]::ObjectInherit)) {$ok=$false} }
+ @{protected=[bool]$ok}|ConvertTo-Json -Compress
+} catch { '{"protected":false}' }
+"""
+        check=subprocess.run([ps,'-NoLogo','-NoProfile','-NonInteractive','-Command',script],
+                             input=json.dumps({'path':str(custody)}),capture_output=True,text=True,timeout=20)
+        proof=json.loads(check.stdout) if check.returncode==0 and len(check.stdout)<4096 else {}
+        if proof.get('protected') is not True:
+            raise ValueError('PROTECTED_HOST_AUTH_CUSTODY_UNVERIFIED')
+    elif custody.stat().st_mode & 0o077:
+        raise ValueError('PROTECTED_HOST_AUTH_CUSTODY_UNVERIFIED')
+    target=custody/'server.env'
+    fd=os.open(target,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
+    with os.fdopen(fd,'w',encoding='utf-8',newline='\n') as out:
+        out.write('OPENCODE_SERVER_PASSWORD='+secrets.token_urlsafe(48)+'\n')
+    return target
 
 def main():
     p=argparse.ArgumentParser()
@@ -36,7 +82,8 @@ def main():
     p.add_argument('--wslc',required=True)
     p.add_argument('--attempt',required=True)
     p.add_argument('--name',required=True)
-    p.add_argument('--github-projection',required=True)
+    p.add_argument('--github-projection')
+    p.add_argument('--local-only',action='store_true')
     p.add_argument('--input',required=True)
     p.add_argument('--output',required=True)
     p.add_argument('--canary',action='store_true')
@@ -44,7 +91,11 @@ def main():
     p.add_argument('--host-port',type=int,default=4096)
     p.add_argument('--stop',action='store_true')
     a=p.parse_args()
-    host=read_host(a.host_agent)
+    source=ordinary(a.host_agent)
+    source_hash=hashlib.sha256(source.read_bytes()).hexdigest()
+    host=read_host(source, local_only=a.local_only)
+    if a.local_only and (a.canary or a.github_projection or a.server_env):
+        raise ValueError('LOCAL_EXTERNAL_AUTH_PROJECTION_DENIED')
     if not re.fullmatch(r'[a-z][a-z0-9-]{1,60}',a.name):
         raise ValueError('INVALID_ATTEMPT_NAME')
     image=host['agents']['opencode']['image']
@@ -71,33 +122,52 @@ def main():
     temp=ordinary(host['paths']['temp']['path'])
     if not root.is_relative_to(temp):
         raise ValueError('ATTEMPT_OUTSIDE_DECLARED_ROOT')
-    incoming,outgoing,credential=map(ordinary,[a.input,a.output,a.github_projection])
+    incoming,outgoing=map(ordinary,[a.input,a.output])
     if (not incoming.is_relative_to(ordinary(host['paths']['exchange']['in']))
         or not outgoing.is_relative_to(ordinary(host['paths']['exchange']['out']))):
         raise ValueError('EXCHANGE_OUTSIDE_DECLARED_ROOTS')
-    if not incoming.is_dir() or not outgoing.is_dir() or not (credential/'credential.json').is_file():
-        raise ValueError('PROJECTION_NOT_READY')
-    if len({incoming,outgoing,credential})!=3 or any(x.is_relative_to(y) for x in (incoming,outgoing,credential) for y in (incoming,outgoing,credential) if x!=y):
-        raise ValueError('PROJECTION_OVERLAP')
-    if any(p.name not in {'credential.json','server.env'} or not p.is_file() or p.is_symlink() for p in credential.iterdir()):
-        raise ValueError('UNDECLARED_SECRET_PROJECTION_CONTENT')
-    if host['paths']['secrets']['refs']['github_machine']['ref']!=host['agents']['opencode']['github']['credential_ref']:
-        raise ValueError('SECRET_REFERENCE_MISMATCH')
+    if not incoming.is_dir() or not outgoing.is_dir() or incoming==outgoing or incoming.is_relative_to(outgoing) or outgoing.is_relative_to(incoming):
+        raise ValueError('EXCHANGE_PROJECTION_INVALID')
+    credential=None
+    if not a.local_only:
+        if not a.github_projection:
+            raise ValueError('PROJECTION_NOT_READY')
+        credential=ordinary(a.github_projection)
+        if not (credential/'credential.json').is_file():
+            raise ValueError('PROJECTION_NOT_READY')
+        if len({incoming,outgoing,credential})!=3 or any(x.is_relative_to(y) for x in (incoming,outgoing,credential) for y in (incoming,outgoing,credential) if x!=y):
+            raise ValueError('PROJECTION_OVERLAP')
+        if any(p.name not in {'credential.json','server.env'} or not p.is_file() or p.is_symlink() for p in credential.iterdir()):
+            raise ValueError('UNDECLARED_SECRET_PROJECTION_CONTENT')
+        if host['paths']['secrets']['refs']['github_machine']['ref']!=host['agents']['opencode']['github']['credential_ref']:
+            raise ValueError('SECRET_REFERENCE_MISMATCH')
+    if a.local_only:
+        # Read back the released manifest/config before creating any attempt.
+        checked=subprocess.run([a.wslc,'inspect',image,'--format','json'],capture_output=True,text=True,timeout=15)
+        info=json.loads(checked.stdout)[0] if checked.returncode==0 else {}
+        released='ghcr.io/youling/opencode-foreman@sha256:fa92f37752ff6132b161ed4c2563897c94b014ab70d650846dcb09f354f55261'
+        if info.get('Id',info.get('ID'))!=image or released not in info.get('RepoDigests',[]):
+            raise ValueError('RELEASED_LOCAL_IMAGE_READBACK_REQUIRED')
     # Only declared context file is projected; never the Documents/catalog parent.
     context=root/'context'
     context.mkdir(parents=True)
     shutil.copyfile(a.host_agent,context/'HOST_AGENT.md')
     before=hashlib.sha256(Path(a.host_agent).read_bytes()).hexdigest()
-    if before!=hashlib.sha256((context/'HOST_AGENT.md').read_bytes()).hexdigest():
+    if before!=source_hash or before!=hashlib.sha256((context/'HOST_AGENT.md').read_bytes()).hexdigest():
         raise ValueError('HOST_CONTEXT_COPY_MISMATCH')
     (root/'owner.json').write_text(json.dumps({'name':a.name,'image':image,'host_agent_sha256':before}))
     argv=[a.wslc,'run','--rm','--detach','--name',a.name,'--cpus','4','--memory','4G',
           '--label','agent.attempt='+a.name,
           '--mount',f'type=bind,source={context},target=/host-context,readonly',
           '--mount',f'type=bind,source={incoming},target=/exchange/in,readonly',
-          '--mount',f'type=bind,source={outgoing},target=/exchange/out',
-          '--mount',f'type=bind,source={credential},target=/run/secrets/github,readonly']
-    if a.canary:
+          '--mount',f'type=bind,source={outgoing},target=/exchange/out']
+    if credential is not None:
+        argv+=['--mount',f'type=bind,source={credential},target=/run/secrets/github,readonly']
+    if a.local_only:
+        envfile=local_server_auth(root)
+        argv+=['--user','1000:1000','--network','none','--env-file',str(envfile),
+               '--label','agent.setup.profile=local-only', image,'serve','--hostname','127.0.0.1','--port','4096']
+    elif a.canary:
         for name in ('work.json','github_recovery.py','github_credential.py'):
             if not (incoming/name).is_file():
                 raise ValueError('CANARY_INPUT_MISSING')
@@ -126,7 +196,7 @@ def main():
     result=subprocess.run(argv,capture_output=True,text=True,timeout=30)
     if result.returncode:
         raise RuntimeError('WSLC_START_FAILED')
-    print(json.dumps({'started':True,'name':a.name,'image':image,'host_agent_sha256':before,'secret_output':'NONE'}))
+    print(json.dumps({'started':True,'name':a.name,'image':image,'host_agent_sha256':before,'secret_output':'NONE','local_only':a.local_only,'network':'none' if a.local_only else 'default','scoped_auth':bool(a.local_only or a.server_env)}))
 
 if __name__=='__main__':
     try:

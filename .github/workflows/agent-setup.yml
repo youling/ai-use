@@ -1,4 +1,4 @@
-name: Agent setup Windows V1 and Linux contracts
+name: Agent setup Windows V2 and Linux contracts
 on:
   pull_request:
     paths: ['agent-runtime/setup/**', '.github/workflows/agent-setup.yml']
@@ -36,3 +36,12 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: ./agent-runtime/setup/bootstrap.ps1 -CheckOnly
+      - name: Reproducible synthetic Textual screens
+        env:
+          PYTHONPATH: agent-runtime/setup
+        run: python agent-runtime/setup/scripts/capture_v2.py --output-dir "${{ runner.temp }}/setup-v2-ui"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: setup-v2-ui-${{ matrix.os }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/setup-v2-ui
+          if-no-files-found: error

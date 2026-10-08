@@ -1,0 +1,95 @@
+{
+  "evidence": "actual Textual render / synthetic engine only / no Host acceptance",
+  "screenshots": [
+    {
+      "file": "v2-check-80x24.svg",
+      "sha256": "364fa898fe19a1ffa025a00c22d0c2980a9f0f1169696b74fc57db2b16fcbc62",
+      "size": [
+        80,
+        24
+      ],
+      "scenario": "check"
+    },
+    {
+      "file": "v2-placement-80x24.svg",
+      "sha256": "007f02ddd5a3006700c9e1d90201ee1bc1684b25131c9bb45c298bd2ece862d8",
+      "size": [
+        80,
+        24
+      ],
+      "scenario": "placement"
+    },
+    {
+      "file": "v2-accounts-80x24.svg",
+      "sha256": "6a5231a04a51ecf155208c4fd52bf9a7c5eca509a56e3930542781154abc6ead",
+      "size": [
+        80,
+        24
+      ],
+      "scenario": "accounts"
+    },
+    {
+      "file": "v2-review-80x24.svg",
+      "sha256": "cf52441e49152c0117762829fdd1d117db140e2f819c239c3d30b90cecdd981a",
+      "size": [
+        80,
+        24
+      ],
+      "scenario": "review"
+    },
+    {
+      "file": "v2-results-80x24.svg",
+      "sha256": "410b9bdb7406a97c08c2783779f7b1b74ce98b2b8a11c8eac9f183e287d16493",
+      "size": [
+        80,
+        24
+      ],
+      "scenario": "results"
+    },
+    {
+      "file": "v2-check-120x40.svg",
+      "sha256": "f7e34cd8587c72befec9b5c64e436a87bf964caa64a4ee8f2fabc896a792e0c8",
+      "size": [
+        120,
+        40
+      ],
+      "scenario": "check"
+    },
+    {
+      "file": "v2-placement-120x40.svg",
+      "sha256": "db71f153216ec2baf93b0d4cde35e193050c044687f64e22f224b64f7f25a051",
+      "size": [
+        120,
+        40
+      ],
+      "scenario": "placement"
+    },
+    {
+      "file": "v2-accounts-120x40.svg",
+      "sha256": "f065a9127adb9fa8995fc0e61b251b30ff0ce8eb5dc14d1a9edd8115580f9551",
+      "size": [
+        120,
+        40
+      ],
+      "scenario": "accounts"
+    },
+    {
+      "file": "v2-review-120x40.svg",
+      "sha256": "ed9f1a926de57e22f77ea011ac7d2d4d7bd20cfdf3800875d6daf83d52276343",
+      "size": [
+        120,
+        40
+      ],
+      "scenario": "review"
+    },
+    {
+      "file": "v2-results-120x40.svg",
+      "sha256": "ab8e6ec79612668e79ba0715dd46cf8b757912da595402768c526422922c277f",
+      "size": [
+        120,
+        40
+      ],
+      "scenario": "results"
+    }
+  ]
+}

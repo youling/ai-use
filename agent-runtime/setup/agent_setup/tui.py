@@ -1,59 +1,95 @@
-"""Keyboard-first presentation only; all Host decisions belong to SetupEngine."""
+"""Human-facing V2 presentation; the accepted SetupEngine owns every effect."""
 from __future__ import annotations
 
 import asyncio
+import re
 from typing import Any
 
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, VerticalScroll
-from textual.widgets import Button, Checkbox, Footer, Input, Label, Static
+from textual.widgets import Button, Checkbox, Collapsible, Footer, Input, Label, Static
 
 
 TEXT = {
     "zh": {
-        "title": "Agent Runtime 首次设置", "steps": ["欢迎 / 预检", "存储检查", "目录方案", "GitHub 身份", "模型身份", "审查 / 应用", "验证 / 结果"],
-        "back": "上一步", "next": "下一步", "apply": "应用已审查方案", "verify": "验证", "repair": "生成修复方案", "approve": "我已审查并授权本次 Host 变更", "blocked": "等待具体 Host 授权；当前可审查方案", "error": "操作失败；未显示原始错误。请检查恢复方案。", "intro": "只检查当前环境并生成方案。不会自动升级 WSL、重启或迁移现有数据。", "identity": "填写引用与已批准 helper 路径。不要输入 token、密码或私钥。", "free": "公共免费路由是可选项，不代表付费身份验证通过。", "review": "检查各目录、原因与权限后，再明确授权应用。", "busy": "正在检查…",
+        "title": "Agent Runtime 安装向导", "steps": ["电脑检查", "安装位置", "账户连接", "预览与安装", "安装结果"],
+        "back": "上一步", "next": "下一步", "apply": "安装", "verify": "重新验收", "repair": "恢复建议",
+        "approve": "我已审查并批准这次安装", "blocked": "当前为安全预览。实际安装需要另行取得电脑所有者授权。",
+        "intro": "检查电脑，然后推荐安装位置。已有程序和数据保留原位。",
+        "busy": "正在处理，请稍候…", "error": "操作未完成。请返回检查方案，或交由电脑所有者处理。",
+        "details": "技术详情", "advanced": "高级：自定义安装目录", "recompute": "重新规划",
+        "placement": "推荐位置 · 保留已有目录，不搬迁数据", "accounts": "账户可分别连接，也可稍后再配置。只显示非敏感身份/软件线索，不读取密钥。",
+        "auto": "自动检测并复用（推荐）", "manual": "手动配置凭据", "connect": "连接", "skip": "暂时跳过",
+        "credential_approve": "批准下方账户及权限对应的连接操作", "local": "安装本地容器", "review": "请审查以下实际变更，再批准安装。账户连接与本地安装独立验收。",
+        "pending": "尚未验证", "needs": "需连接", "passed": "已验证", "skipped": "已跳过", "failed": "需要处理",
+        "missing": "没有可安全复用的身份。使用受信任的登录入口，或暂时跳过。",
+        "preview": "仅预览：未执行安装", "scope": "连接权限与操作", "github": "GitHub", "model": "AI 模型",
+        "checks": ["系统", "Python", "WSL / 容器", "存储"], "result_labels": ["本地容器已安装", "GitHub 已连接", "模型已就绪", "GitHub 恢复已验证"],
+        "paths": ["工作区", "配置", "缓存", "临时文件", "Exchange", "HOST_AGENT.md"],
     },
     "en": {
-        "title": "Agent Runtime first-run setup", "steps": ["Welcome / preflight", "Storage", "Placement", "GitHub identity", "Model identity", "Review / apply", "Verify / results"],
-        "back": "Back", "next": "Next", "apply": "Apply reviewed plan", "verify": "Verify", "repair": "Plan repair", "approve": "I reviewed and authorize these Host changes", "blocked": "Concrete Host authority required; plan review available", "error": "Operation failed; raw error suppressed. Check the recovery plan.", "intro": "Inspect and plan first. No automatic WSL upgrade, reboot, or existing-data migration.", "identity": "Enter references and approved helper paths only. Never enter tokens, passwords, or private keys.", "free": "Optional public free route does not prove paid-provider authentication.", "review": "Review roots, reasons, and authority before explicitly applying.", "busy": "Checking…",
+        "title": "Agent Runtime setup", "steps": ["Computer check", "Install location", "Connect accounts", "Review and install", "Results"],
+        "back": "Back", "next": "Next", "apply": "Install", "verify": "Verify again", "repair": "Recovery advice",
+        "approve": "I reviewed and approve this installation", "blocked": "Safe preview. Installation needs separate computer-owner authority.",
+        "intro": "Check this computer and recommend locations. Preserve existing programs and data.",
+        "busy": "Working…", "error": "Operation incomplete. Review the plan or ask the computer owner to resolve it.",
+        "details": "Technical details", "advanced": "Advanced: customize directories", "recompute": "Recalculate",
+        "placement": "Recommended locations · preserve existing data", "accounts": "Connect independently or later. Only non-sensitive identity/software hints are shown; no keys are read.",
+        "auto": "Detect and reuse (recommended)", "manual": "Configure manually", "connect": "Connect", "skip": "Skip for now",
+        "credential_approve": "Approve the displayed account, permissions and connection", "local": "Install local container", "review": "Review the actual changes before approving. Local installation and account access are verified independently.",
+        "pending": "Not yet verified", "needs": "Connection needed", "passed": "Verified", "skipped": "Skipped", "failed": "Needs attention",
+        "missing": "No safely reusable identity. Use the trusted login entry point, or skip for now.",
+        "preview": "Preview only: installation has not run", "scope": "Connection scope and action", "github": "GitHub", "model": "AI model",
+        "checks": ["System", "Python", "WSL / containers", "Storage"], "result_labels": ["Local container installed", "GitHub connected", "Model ready", "GitHub recovery verified"],
+        "paths": ["Workspace", "Configuration", "Cache", "Temporary files", "Exchange", "HOST_AGENT.md"],
     },
 }
-TEXT["zh"].update(github_ref="GitHub 身份引用", helper="已批准 helper 路径", durable="私有持久目标（可选，由所有者选择）", model_ref="模型身份引用", free_route="选用公共免费路由", root_override="可选：已批准目录覆盖")
-TEXT["en"].update(github_ref="GitHub SecretReference", helper="Approved helper path", durable="Owner-selected private durable destination (optional)", model_ref="Model SecretReference", free_route="Optional public free route", root_override="Optional approved root override")
-TEXT["zh"].update(work="GitHub Work 坐标", helper_approved="批准查询现有 helper 的身份元数据", github_authorized="授权本次 Work 的 GitHub 读写", durable_authorized="授权所选私有持久目标", recovery_requested="请求验证 GitHub fresh recovery", runtime_requested="请求拉取固定镜像并启动本次 runtime", declarations="这些选项是授权声明；只有实际验证通过才能报告 READY。")
-TEXT["en"].update(work="GitHub Work coordinate", helper_approved="Approve metadata queries of existing helper", github_authorized="Authorize GitHub read/write for this Work", durable_authorized="Authorize selected private durable destination", recovery_requested="Request GitHub fresh recovery verification", runtime_requested="Request pinned-image pull and runtime start", declarations="These selections declare authority; READY still requires actual proof.")
+
+_SECRET = re.compile(r"(?:gh[pousr]_|github_pat_|sk-|-----BEGIN .*PRIVATE KEY|password\s*=|token\s*=)", re.I)
+
+
+def display(value: Any, limit: int = 240) -> str:
+    """Only scalar metadata, never provider dictionaries, traces or terminal controls."""
+    if not isinstance(value, (str, int, float)) or isinstance(value, bool):
+        return "—"
+    text = str(value)
+    if _SECRET.search(text):
+        return "[REDACTED]"
+    text = "".join(c for c in text if c >= " " and c != "\x7f")
+    return text[:limit] + ("…" if len(text) > limit else "")
 
 
 class SetupApp(App):
-    """An injected engine enables deterministic headless tests without Host mutation."""
-
     CSS = """
     Screen { background: $surface; }
-    #heading { height: 3; content-align: center middle; text-style: bold; }
-    #body { height: 1fr; padding: 1 2; }
-    #status { height: auto; min-height: 2; padding: 0 2; }
-    #controls { height: auto; padding: 1 2; }
-    Button { margin-right: 1; }
+    #heading { height: 2; content-align: center middle; text-style: bold; background: $primary; }
+    #body { height: 1fr; padding: 0 1; }
+    #status { height: auto; max-height: 3; padding: 0 1; color: $warning; }
+    #controls { height: 3; padding: 0 1; }
+    Button { min-width: 10; margin-right: 1; }
     Input { margin-bottom: 1; }
-    .summary { height: auto; margin-bottom: 1; }
+    Static { height: auto; }
+    .section { text-style: bold; margin-top: 1; color: $accent; }
+    .summary { margin-bottom: 1; }
+    .account-actions { height: 3; }
+    Collapsible { padding: 0; }
+    Checkbox { height: auto; }
     """
     BINDINGS = [("escape", "back", "Back"), ("ctrl+q", "quit", "Quit"), ("up", "focus_previous", "Previous"), ("down", "focus_next", "Next")]
 
     def __init__(self, engine: Any, *, locale: str = "zh", host_authorized: bool = False):
         super().__init__()
-        self.engine = engine
+        self.engine, self.host_authorized = engine, host_authorized
         self.words = TEXT.get(locale, TEXT["zh"])
-        self.host_authorized = host_authorized
         self.step = 0
-        self.probe_data: dict = {}
-        self.plan_data: dict = {}
-        self.result: dict = {}
-        self.overrides: dict = {"host_authorized": True} if host_authorized else {}
-        self.github: dict = {}
-        self.model: dict = {}
-        self.durable: dict = {}
+        self.probe_data, self.plan_data, self.result = {}, {}, {}
+        self.github, self.model, self.durable = {}, {}, {}
+        self.overrides = {"host_authorized": True} if host_authorized else {}
+        self.overrides["runtime"] = True
+        self.credentials: dict = {}
+        self.mode = "auto"
         self.busy = False
+        self.approved_fingerprint: str | None = None
 
     def compose(self) -> ComposeResult:
         yield Static(self.words["title"], id="heading", markup=False)
@@ -66,77 +102,167 @@ class SetupApp(App):
 
     async def on_mount(self) -> None:
         await self.render_step()
+        result = await self.invoke("probe")
+        if result is not None:
+            self.probe_data = result
+            self.set_status("")
+            await self.render_step()
 
-    def summary(self, data: dict) -> str:
-        # Engine returns only safe metadata. Project a bounded, intentional surface,
-        # never arbitrary nested provider output or exception text.
-        lines = []
-        for key in ("status", "reason", "reasons", "platform", "python_version", "wsl_app_version", "wslc_capability", "storage_state", "active_workloads", "gates", "placement", "roots", "exchange", "domains", "operations", "checks"):
-            if key in data:
-                lines.append(f"{key}: {data[key]}")
-        for volume in data.get("volumes", []):
-            if isinstance(volume, dict):
-                free = volume.get("free_bytes")
-                capacity = volume.get("capacity_bytes")
-                space = f"{free / 2**30:.1f}/{capacity / 2**30:.1f} GiB free" if isinstance(free, int) and isinstance(capacity, int) else "capacity UNKNOWN"
-                lines.append(f"{volume.get('mount', '?')} · {volume.get('fs', '?')} · {volume.get('media_type', '?')} · {volume.get('bus_type', '?')} · {space}")
-        return "\n".join(lines) or "—"
+    def state_label(self, state: Any) -> str:
+        return self.words["passed"] if state == "PASS" else self.words["skipped"] if state == "SKIPPED" else self.words["failed"] if state in {"FAIL", "BLOCKED", "REVOKED", "EXPIRED"} else self.words["needs"] if state in {"REUSE_NOT_SUPPORTED", "NEEDS_CONNECTION", "MISSING", "NOT_AUTHORIZED"} else self.words["pending"]
+
+    def checks_summary(self) -> str:
+        p = self.probe_data
+        states = [p.get("platform") == "windows", p.get("python_verified") is True and str(p.get("python_version", "")).startswith("3.14."), p.get("wslc_capability", {}).get("state") == "PASS" and str(p.get("wsl_app_version", "")).split(".")[0].isdigit() and int(str(p.get("wsl_app_version", "0")).split(".")[0]) >= 3, any(v.get("free_bytes", 0) >= 8 * 2**30 and v.get("fs") in {"NTFS", "ReFS"} for v in p.get("volumes", []))]
+        remedies = ["需要 Windows；当前环境不能执行安装", "需要官方签名的 Python 3.14", "需要 WSL 应用 3.0+ 与可用容器能力", "需要本地 NTFS/ReFS 磁盘与至少 8 GiB 余量"] if self.words is TEXT["zh"] else ["Windows required for installation", "Verified official Python 3.14 required", "WSL application 3.0+ and container capability required", "Local NTFS/ReFS with at least 8 GiB free required"]
+        return "\n".join(f"{'✔' if state else '○'} {label} · {self.words['passed'] if state else remedies[i] if p else self.words['pending']}" for i, (label, state) in enumerate(zip(self.words["checks"], states)))
+
+    def placement_summary(self) -> str:
+        rows = self.plan_data.get("placement_rows", [])
+        if rows:
+            labels = dict(zip(("workspace", "config", "cache", "temp", "exchange", "host_agent"), self.words["paths"]))
+            formatted = []
+            for row in rows:
+                label = labels.get(row.get("name"), row.get("label") or row.get("name"))
+                media = row.get("media") or " / ".join(display(row.get(key)) for key in ("bus_type", "media_type"))
+                free = row.get("free") or (f"{row['free_bytes'] / 2**30:.1f} GiB" if isinstance(row.get("free_bytes"), int) else "—")
+                reason = self.placement_reason(row.get("name"), row.get("reason"))
+                formatted.append(f"{display(label)}  {display(row.get('path'), 500)}\n  {display(media)} · {display(free)} · {reason}")
+            return "\n".join(formatted)
+        roots = self.plan_data.get("roots", {})
+        entries = [(label, roots.get(key, {}).get("path")) for label, key in zip(self.words["paths"][:4], ("workspace", "config", "cache", "temp"))]
+        entries += [(self.words["paths"][4], self.plan_data.get("exchange", {}).get("in")), (self.words["paths"][5], self.plan_data.get("host_agent"))]
+        storage = self.plan_data.get("storage", {})
+        free = storage.get("free_bytes")
+        explanation = "NO_MOVE · " + display(storage.get("media_type")) + (f" · {free / 2**30:.1f} GiB" if isinstance(free, int) else "")
+        return "\n".join(f"{label}  {display(path, 500)}\n  {explanation}" for label, path in entries)
+
+    def placement_reason(self, name: str | None, reason: Any) -> str:
+        zh = self.words is TEXT["zh"]
+        root = self.plan_data.get("roots", {}).get(name, {})
+        if root.get("owner") == "UNKNOWN":
+            return "目录所有权需核验" if zh else "Ownership needs verification"
+        if name == "host_agent":
+            redirected = self.plan_data.get("documents_state") == "ONEDRIVE_REDIRECTED"
+            return ("OneDrive 重定向；原版本保护" if redirected else "系统文档目录；原版本保护") if zh else ("OneDrive; existing-version guard" if redirected else "Known Folder; existing-version guard")
+        if name == "exchange":
+            return "独立交换目录；保留原生状态" if zh else "Scoped exchange; preserve native state"
+        if isinstance(reason, str) and ("NO_MOVE" in reason or "preserve" in reason.lower()):
+            return "保留已有目录，不搬迁数据" if zh else "Preserve existing root; no migration"
+        return "新建目录；当前磁盘规划" if zh else "New root on selected local storage"
+
+    def result_summary(self) -> str:
+        capabilities = self.result.get("capabilities", {})
+        return "\n".join(f"{'✔' if capabilities.get(key, {}).get('state') == 'PASS' else '○'} {label} · {self.state_label(capabilities.get(key, {}).get('state'))}" for key, label in zip(("local_install", "github", "model", "fresh_recovery"), self.words["result_labels"]))
+
+    def account_summary(self, kind: str) -> str:
+        data = self.credentials.get(kind, {})
+        identity = display(data.get("account") or data.get("provider") or data.get("label"))
+        return f"{self.words[kind]} · {identity} · {self.state_label(data.get('state'))}\n{self.account_action(kind, data)}"
+
+    def account_action(self, kind: str, data: dict) -> str:
+        zh = self.words is TEXT["zh"]
+        code = data.get("next_action")
+        if code == "HOST_GITHUB_DEVICE_LOGIN":
+            return "先由可信 GitHub 客户端发起设备授权，再按提示在 github.com/login/device 确认一次性代码。容器授权由电脑所有者另行完成；不要在向导输入密钥。" if zh else "Start device authorization in a trusted GitHub client, then confirm its one-time code at github.com/login/device. The owner separately authorizes runtime access; never enter keys here."
+        if code == "HOST_PROVIDER_LOGIN":
+            return "请使用所选提供商的官方登录或受保护输入，再由电脑所有者授权模型连接；也可暂时跳过。" if zh else "Use your provider's official sign-in or protected input, then ask the owner to authorize model access; or skip for now."
+        if code == "REVIEW_SCOPED_CONNECTION":
+            return "先核对下方账户、目标与权限，再明确批准短期连接。仍须实际验证才能就绪。" if zh else "Review the account, target and permissions below before approving bounded access. Actual verification is still required."
+        return self.words["missing"]
+
+    def plan_blocker(self) -> str:
+        if self.plan_data.get("status") != "BLOCKED":
+            return ""
+        gate = next((item for item in self.plan_data.get("gates", []) if isinstance(item, dict) and item.get("state") == "BLOCKED"), {})
+        raw = gate.get("code", "PLAN_BLOCKED")
+        code = raw if isinstance(raw, str) and re.fullmatch(r"[A-Z0-9_]{1,64}", raw) else "PLAN_BLOCKED"
+        zh = self.words is TEXT["zh"]
+        if code.startswith("ROOT_"):
+            remedy = "已有目录所有权无法确认。保留数据，改用新的目录或请所有者确认。" if zh else "Existing root ownership is unverified. Preserve data; select a new root or ask its owner."
+        elif code.startswith("PLACEMENT_") or code == "STORAGE_CAPACITY":
+            remedy = "请选择本地 NTFS/ReFS 目录，并保留至少 8 GiB 余量。" if zh else "Choose local NTFS/ReFS storage with at least 8 GiB free."
+        elif code in {"CONTEXT_CURRENT", "DOCUMENTS_KNOWN_FOLDER"}:
+            remedy = "请由电脑所有者核对系统文档目录及现有配置；不会覆盖未知数据。" if zh else "Ask the owner to verify Documents and existing configuration; unknown data remains untouched."
+        elif code.startswith("WSL"):
+            remedy = "需要 WSL 应用 3.0+ 与可用容器能力；请由所有者处理系统变更。" if zh else "WSL application 3.0+ and containers are required. System changes need the owner."
+        elif code == "PYTHON_314":
+            remedy = "需要官方签名的 Python 3.14；请返回受信任的启动入口。" if zh else "Verified official Python 3.14 is required; return to the trusted bootstrap."
+        else:
+            remedy = "安装前提未满足。保留当前数据，交由电脑所有者检查。" if zh else "Installation prerequisites are unmet. Preserve current data and ask the owner to check."
+        return f"[{code}] {remedy}"
+
+    def scope_summary(self, kind: str) -> str:
+        data = self.credentials.get(kind, {})
+        # Approved owners supply only metadata. Missing scope never silently authorizes.
+        labels = ("账户", "仓库", "权限", "操作") if self.words is TEXT["zh"] else ("Account", "Repository", "Permissions", "Action")
+        permissions = data.get("permissions") or data.get("scope")
+        if isinstance(permissions, dict):
+            permissions = ", ".join(f"{key}: {display(permissions[key], 16)}" for key in ("contents", "issues") if key in permissions)
+        if data.get("next_action") in {"HOST_GITHUB_DEVICE_LOGIN", "HOST_PROVIDER_LOGIN"}:
+            permissions = "尚未请求容器权限" if self.words is TEXT["zh"] else "No runtime permission requested"
+        action = "所有者确认后连接" if self.words is TEXT["zh"] else "Connect after owner approval"
+        fields = list(zip(labels, (data.get("account") or data.get("provider"), data.get("repository") or data.get("repo"), permissions, action)))
+        return " · ".join(f"{label}: {display(value)}" for label, value in fields)
 
     async def render_step(self) -> None:
-        self.query_one("#heading", Static).update(f"{self.words['title']} · {self.step + 1}/7 · {self.words['steps'][self.step]}")
+        self.query_one("#heading", Static).update(f"{self.words['title']} · {min(self.step + 1, 4)}/4 · {self.words['steps'][self.step]}")
         body = self.query_one("#body", VerticalScroll)
         await body.remove_children()
         widgets: list = []
         if self.step == 0:
-            widgets = [Static(self.words["intro"], markup=False)]
+            widgets = [Static(self.words["intro"], markup=False), Static(self.checks_summary(), id="checks", classes="summary", markup=False)]
+            details = "Python: " + display(self.probe_data.get("python_version")) + "\nWSL: " + display(self.probe_data.get("wsl_app_version"))
+            widgets.append(Collapsible(Static(details, markup=False), title=self.words["details"], collapsed=True))
         elif self.step == 1:
-            widgets = [Static(self.summary(self.probe_data), classes="summary", markup=False)]
+            widgets = [Static(self.words["placement"], classes="section", markup=False), Static(self.placement_summary(), id="placement", markup=False)]
+            advanced: list = []
+            for key, label in zip(("workspace", "config", "cache", "temp"), self.words["paths"]):
+                advanced += [Label(label), Input(value=self.overrides.get(key, ""), placeholder=display(self.plan_data.get("roots", {}).get(key, {}).get("path")), id=f"root-{key}")]
+            advanced.append(Button(self.words["recompute"], id="recompute"))
+            widgets.append(Collapsible(*advanced, title=self.words["advanced"], collapsed=True, id="advanced"))
         elif self.step == 2:
-            widgets = [Static(self.summary(self.plan_data), classes="summary", markup=False)]
-            for key in ("workspace", "config", "cache", "temp"):
-                widgets.extend([Label(key), Input(value=self.overrides.get(key, ""), placeholder=self.words["root_override"], id=f"root-{key}")])
+            widgets = [Static(self.words["accounts"], markup=False), Horizontal(Button(self.words["auto"], id="mode-auto", variant="primary" if self.mode == "auto" else "default"), Button(self.words["manual"], id="mode-manual", variant="primary" if self.mode == "manual" else "default"), classes="account-actions")]
+            for kind in ("github", "model"):
+                data = self.credentials.get(kind, {})
+                diagnostic = "\n".join(display(data.get(key)) for key in ("reason_code", "manual_next_action", "next_action"))
+                widgets += [Static(self.account_summary(kind), id=f"account-{kind}", classes="section", markup=False), Static(self.scope_summary(kind), markup=False), Checkbox(f"{self.words[kind]}: {self.words['credential_approve']}", id=f"approve-{kind}"), Horizontal(Button(self.words["connect"], id=f"connect-{kind}", disabled=True), Button(self.words["skip"], id=f"skip-{kind}"), classes="account-actions"), Collapsible(Static(diagnostic, markup=False), title=self.words["details"], collapsed=True)]
         elif self.step == 3:
-            widgets = [
-                Static(self.words["identity"], markup=False),
-                Label(self.words["github_ref"]), Input(value=self.github.get("ref", ""), id="github-reference"),
-                Label(self.words["helper"]), Input(value=self.github.get("helper", ""), id="github-helper"),
-                Label(self.words["work"]), Input(value=self.github.get("work", ""), placeholder="owner/repository#123", id="github-work"),
-                Checkbox(self.words["helper_approved"], value=bool(self.github.get("helper_approved")), id="github-helper-approved"),
-                Checkbox(self.words["github_authorized"], value=bool(self.github.get("authorized")), id="github-authorized"),
-                Label(self.words["durable"]), Input(value=self.durable.get("destination", ""), placeholder="owner/repository", id="durable-repository"),
-                Checkbox(self.words["durable_authorized"], value=bool(self.durable.get("authorized")), id="durable-authorized"),
-                Checkbox(self.words["recovery_requested"], value=bool(self.github.get("recovery_requested")), id="recovery-requested"),
-                Static(self.words["declarations"], markup=False),
-            ]
-        elif self.step == 4:
-            widgets = [Static(self.words["free"], markup=False), Label(self.words["model_ref"]), Input(value=self.model.get("ref", ""), id="model-reference"), Label(self.words["helper"]), Input(value=self.model.get("helper", ""), id="model-helper"), Checkbox(self.words["free_route"], value=bool(self.model.get("free_route")), id="free-route")]
-        elif self.step == 5:
-            widgets = [Static(self.words["review"], markup=False), Static(self.summary(self.plan_data), classes="summary", markup=False), Checkbox(self.words["runtime_requested"], value=bool(self.overrides.get("runtime")), id="runtime-requested"), Static(self.words["declarations"], markup=False), Checkbox(self.words["approve"], id="approve"), Button(self.words["apply"], id="apply", disabled=True)]
+            changes = "核验安装目录并写入 HOST_AGENT.md。" if self.words is TEXT["zh"] else "Verify owned roots and write HOST_AGENT.md."
+            if self.overrides.get("runtime"):
+                changes += " 拉取固定公开镜像；启动隔离本地验证容器（暂不联网）。" if self.words is TEXT["zh"] else " Pull the pinned public image; start an isolated local verification container (offline)."
+            widgets = [Static(self.words["review"], markup=False), Static(changes, markup=False), Static(self.placement_summary(), classes="summary", markup=False), Checkbox(self.words["local"], value=bool(self.overrides.get("runtime")), id="runtime-requested"), Checkbox(self.words["approve"], id="approve"), Button(self.words["apply"], id="apply", disabled=True)]
         else:
-            widgets = [Static(self.summary(self.result), classes="summary", markup=False), Button(self.words["verify"], id="verify"), Button(self.words["repair"], id="repair")]
+            widgets = [Static(self.result_summary(), id="results", classes="summary", markup=False), Button(self.words["verify"], id="verify"), Button(self.words["repair"], id="repair")]
+            if not self.result:
+                widgets.insert(0, Static(self.words["preview"], markup=False))
         await body.mount(*widgets)
         self.query_one("#back", Button).disabled = self.step == 0 or self.busy
-        self.query_one("#next", Button).disabled = self.step == 6 or self.busy
+        self.query_one("#next", Button).disabled = self.step == 4 or self.busy
         self.query_one("#next", Button).focus()
-        if self.step == 5 and not self.host_authorized:
+        blocker = self.plan_blocker() if self.step in {1, 3} else ""
+        if blocker:
+            self.set_status(blocker)
+        elif self.step == 3 and not self.host_authorized:
             self.set_status(self.words["blocked"])
 
     def set_status(self, value: str) -> None:
         self.query_one("#status", Static).update(value)
 
+    def invalidate_approval(self) -> None:
+        self.approved_fingerprint = None
+        if self.step == 3 and self.query("#approve"):
+            self.query_one("#approve", Checkbox).value = False
+            self.query_one("#apply", Button).disabled = True
+
     def save_fields(self) -> None:
-        if self.step == 2:
-            runtime = self.overrides.get("runtime", False)
-            self.overrides = {key: self.query_one(f"#root-{key}", Input).value.strip() for key in ("workspace", "config", "cache", "temp") if self.query_one(f"#root-{key}", Input).value.strip()}
-            if runtime:
-                self.overrides["runtime"] = True
-            if self.host_authorized:
-                self.overrides["host_authorized"] = True
-        elif self.step == 3:
-            self.github = {"ref": self.query_one("#github-reference", Input).value.strip(), "helper": self.query_one("#github-helper", Input).value.strip(), "work": self.query_one("#github-work", Input).value.strip(), "helper_approved": self.query_one("#github-helper-approved", Checkbox).value, "authorized": self.query_one("#github-authorized", Checkbox).value, "recovery_requested": self.query_one("#recovery-requested", Checkbox).value}
-            self.durable = {"destination": self.query_one("#durable-repository", Input).value.strip(), "authorized": self.query_one("#durable-authorized", Checkbox).value}
-        elif self.step == 4:
-            self.model = {"ref": self.query_one("#model-reference", Input).value.strip(), "helper": self.query_one("#model-helper", Input).value.strip(), "free_route": self.query_one("#free-route", Checkbox).value}
+        if self.step == 1:
+            for key in ("workspace", "config", "cache", "temp"):
+                value = self.query_one(f"#root-{key}", Input).value.strip()
+                if value:
+                    self.overrides[key] = value
+                else:
+                    self.overrides.pop(key, None)
 
     async def invoke(self, phase: str, *args: Any, **kwargs: Any) -> dict | None:
         self.busy = True
@@ -144,15 +270,22 @@ class SetupApp(App):
         try:
             return await asyncio.to_thread(getattr(self.engine, phase), *args, **kwargs)
         except Exception as exc:
-            # Exception messages and traces may contain credentials or raw helper output.
-            category = "INPUT" if isinstance(exc, (ValueError, TypeError)) else "OPERATION"
-            self.set_status(f"{self.words['error']} [{category}]")
+            self.set_status(f"{self.words['error']} [{'INPUT' if isinstance(exc, (ValueError, TypeError)) else 'OPERATION'}]")
             return None
         finally:
             self.busy = False
 
+    async def replan(self) -> bool:
+        self.invalidate_approval()
+        result = await self.invoke("plan", self.probe_data, overrides=self.overrides, github=self.github, model=self.model, durable=self.durable)
+        if result is None:
+            return False
+        self.plan_data = result
+        self.set_status("")
+        return True
+
     async def advance(self) -> None:
-        if self.busy or self.step == 6:
+        if self.busy or self.step == 4:
             return
         self.save_fields()
         if self.step == 0:
@@ -160,52 +293,81 @@ class SetupApp(App):
             if result is None:
                 return
             self.probe_data = result
-        if self.step in (1, 2, 3, 4):
-            result = await self.invoke("plan", self.probe_data, overrides=self.overrides, github=self.github, model=self.model, durable=self.durable)
-            if result is None:
-                return
-            self.plan_data = result
-        self.set_status("")
+        if not await self.replan():
+            return
+        if self.step == 1:
+            result = await self.invoke("discover_credentials")
+            if result is not None:
+                self.credentials = result
         self.step += 1
+        self.set_status("")
         await self.render_step()
 
     async def action_back(self) -> None:
         if self.step and not self.busy:
             self.save_fields()
+            self.invalidate_approval()
             self.step -= 1
             self.set_status("")
             await self.render_step()
 
+    async def on_input_changed(self, event: Input.Changed) -> None:
+        self.invalidate_approval()
+
     async def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
-        if event.checkbox.id == "runtime-requested" and self.step == 5 and event.value != bool(self.overrides.get("runtime")):
+        if event.checkbox.id in {"approve-github", "approve-model"}:
+            kind = event.checkbox.id.removeprefix("approve-")
+            self.query_one(f"#connect-{kind}", Button).disabled = not (event.value and self.host_authorized)
+        elif event.checkbox.id == "runtime-requested" and self.step == 3 and event.value != bool(self.overrides.get("runtime")):
             self.overrides["runtime"] = event.value
-            self.query_one("#approve", Checkbox).value = False
-            self.query_one("#apply", Button).disabled = True
-            self.plan_data = {}
-            result = await self.invoke("plan", self.probe_data, overrides=self.overrides, github=self.github, model=self.model, durable=self.durable)
-            if result is not None:
-                self.plan_data = result
-                self.set_status("")
-                await self.render_step()
-            return
-        if event.checkbox.id == "approve" and self.step == 5:
+            await self.replan()
+            await self.render_step()
+        elif event.checkbox.id == "approve" and self.step == 3:
+            self.approved_fingerprint = self.plan_data.get("fingerprint") if event.value else None
             self.query_one("#apply", Button).disabled = not (event.value and self.host_authorized and self.plan_data.get("status") == "READY" and self.plan_data.get("host_authorized") is True and not self.busy)
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         if self.busy:
             return
-        action = event.button.id
+        action = event.button.id or ""
         if action == "next":
             await self.advance()
         elif action == "back":
             await self.action_back()
+        elif action == "recompute":
+            self.save_fields()
+            if await self.replan():
+                await self.render_step()
+        elif action.startswith("mode-"):
+            self.mode = action.removeprefix("mode-")
+            self.invalidate_approval()
+            await self.render_step()
+        elif action.startswith("skip-"):
+            kind = action.removeprefix("skip-")
+            setattr(self, kind, {})
+            self.credentials[kind] = {"state": "SKIPPED"}
+            self.invalidate_approval()
+            await self.render_step()
+        elif action.startswith("connect-"):
+            kind = action.removeprefix("connect-")
+            if not self.host_authorized or not self.query_one(f"#approve-{kind}", Checkbox).value:
+                return
+            result = await self.invoke("connect_credential", kind, self.mode, approved=True)
+            if result is not None:
+                self.credentials[kind] = result
+                inputs = result.get("plan_inputs", {})
+                if isinstance(inputs, dict) and isinstance(inputs.get(kind), dict):
+                    setattr(self, kind, inputs[kind])
+                else:
+                    setattr(self, kind, {})
+                self.invalidate_approval()
+                await self.render_step()
         elif action == "apply":
-            if self.step != 5 or not self.host_authorized or self.plan_data.get("host_authorized") is not True or self.plan_data.get("status") != "READY" or not self.query_one("#approve", Checkbox).value:
+            if self.step != 3 or not self.host_authorized or self.plan_data.get("host_authorized") is not True or self.plan_data.get("status") != "READY" or not self.query_one("#approve", Checkbox).value or self.approved_fingerprint != self.plan_data.get("fingerprint"):
                 return
             result = await self.invoke("apply", self.plan_data, approved=True)
             if result is not None:
-                self.result = result
-                self.step = 6
+                self.result, self.step = result, 4
                 self.set_status("")
                 await self.render_step()
         elif action in ("verify", "repair"):
