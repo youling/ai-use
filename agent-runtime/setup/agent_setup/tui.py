@@ -270,7 +270,12 @@ class SetupApp(App):
         try:
             return await asyncio.to_thread(getattr(self.engine, phase), *args, **kwargs)
         except Exception as exc:
-            self.set_status(f"{self.words['error']} [{'INPUT' if isinstance(exc, (ValueError, TypeError)) else 'OPERATION'}]")
+            # SetupError carries stable internal codes, not upstream text or
+            # secrets. Keep unexpected exceptions generic and unexposed.
+            from .engine import SetupError
+            code=str(exc) if isinstance(exc,SetupError) else ''
+            safe_code=code if re.fullmatch(r'[A-Z][A-Z0-9_]{1,63}',code) else ('INPUT' if isinstance(exc,(ValueError,TypeError)) else 'OPERATION')
+            self.set_status(f"{self.words['error']} [{safe_code}]")
             return None
         finally:
             self.busy = False
