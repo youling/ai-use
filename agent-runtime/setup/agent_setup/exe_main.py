@@ -12,6 +12,23 @@ import copy
 from .engine import SetupEngine, SetupError
 from .packaging import BundleError, bundle_provenance, verified_bundle_root, validate_bundle, PUBLIC_BUNDLE_CODES
 from .windows import WindowsAdapter
+from .packaging import PUBLIC_EXE_CODES, ACCEPTANCE_STAGES, ACCEPTANCE_SCENARIOS
+
+_CURRENT_STAGE = None
+_CURRENT_SCENARIO = None
+
+
+def acceptance_stage(stage, scenario=None):
+    global _CURRENT_STAGE, _CURRENT_SCENARIO
+    _CURRENT_STAGE = stage if stage in ACCEPTANCE_STAGES else None
+    _CURRENT_SCENARIO = scenario if scenario in ACCEPTANCE_SCENARIOS else None
+
+
+class ExeAcceptanceError(SetupError):
+    def __init__(self, code, *, checks=None, plan_gates=None):
+        super().__init__(code)
+        self.checks = checks or {}
+        self.plan_gates = plan_gates or {}
 
 
 def readonly_native_bundle_scan() -> dict:
@@ -23,13 +40,16 @@ def readonly_native_bundle_scan() -> dict:
     adapter = WindowsAdapter(apply_authorized=False)
     metadata = adapter.probe()
     proof = metadata.get('runtime_provenance', {})
-    if (adapter.can_apply or metadata.get('platform') != 'windows'
-        or not isinstance(metadata.get('documents'), str) or not metadata['documents']
-        or not isinstance(metadata.get('volumes'), list) or not metadata['volumes']
-        or metadata.get('python_verified') is not True
-        or proof.get('bundle_verified') is not True or proof.get('python_verified') is not True
-        or proof.get('state') != 'VERIFIED_CONTENT_UNSIGNED_TEST_ONLY'):
-        raise SetupError('FROZEN_NATIVE_RESOURCE_SCAN_FAILED')
+    checks = {'platform_windows': metadata.get('platform') == 'windows',
+              'mutation_disabled': not adapter.can_apply,
+              'documents_metadata_present': isinstance(metadata.get('documents'), str) and bool(metadata['documents']),
+              'volumes_metadata_present': isinstance(metadata.get('volumes'), list) and bool(metadata['volumes']),
+              'python_verified': metadata.get('python_verified') is True,
+              'bundle_verified': proof.get('bundle_verified') is True,
+              'bundle_python_verified': proof.get('python_verified') is True,
+              'bundle_state_verified': proof.get('state') == 'VERIFIED_CONTENT_UNSIGNED_TEST_ONLY'}
+    if not all(checks.values()):
+        raise ExeAcceptanceError('FROZEN_NATIVE_RESOURCE_SCAN_FAILED', checks=checks)
     return {'platform': 'windows', 'volume_count': len(metadata['volumes']),
             'resource_scan': 'PASS', 'host_apply': 'DENIED',
             'context_contents_read': False, 'credentials_read': False, 'paths_emitted': False}
@@ -46,15 +66,18 @@ async def frozen_self_test(output: Path) -> dict:
     from textual.widgets import Button
     from .read_only_acceptance import (SCENARIOS, owned_fixture_pipeline,
                                        assert_fixture_unchanged, native_read_only_planning)
+    acceptance_stage('BUNDLE_PROVENANCE')
     proof = bundle_provenance()
     if proof.get('bundle_verified') is not True or proof.get('python_verified') is not True:
         raise BundleError('BUNDLE_PROVENANCE_UNVERIFIED')
+    acceptance_stage('NATIVE_RESOURCE_SCAN')
     native_scan = readonly_native_bundle_scan()
     output.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='setup-exe-fixture-') as scratch:
         root = Path(scratch)
         native_root = root / 'native-read-only'
         native_root.mkdir()
+        acceptance_stage('NATIVE_READ_ONLY_PLANNING')
         native_plan = native_read_only_planning(native_root)
         if native_plan['status'] != 'PASS' or native_plan['volume_metadata'] != 'PASS':
             raise SetupError('SELF_TEST_NATIVE_PLANNING_FAILED')
@@ -62,20 +85,28 @@ async def frozen_self_test(output: Path) -> dict:
         for scenario in SCENARIOS:
             scenario_root = root / scenario
             scenario_root.mkdir()
+            acceptance_stage('CONTEXT_FIXTURE_BUILD', scenario)
             pipeline = owned_fixture_pipeline(scenario_root, scenario)
             pipelines[scenario] = pipeline
             if not isinstance(pipeline['adapter'], WindowsAdapter) or pipeline['adapter'].can_apply:
                 raise SetupError('SELF_TEST_PRODUCTION_ADAPTER_OR_AUTHORITY_FAILED')
             if pipeline['native_calls'].count('OS_INVENTORY') < 1:
                 raise SetupError('SELF_TEST_NATIVE_PIPELINE_NOT_EXERCISED')
-            code, plan_status = None, 'BLOCKED'
+            code, plan_status, plan_gates = None, 'BLOCKED', {}
+            acceptance_stage('CONTEXT_PLAN', scenario)
             try:
                 plan = pipeline['engine'].plan(pipeline['observation'], overrides=pipeline['overrides'])
                 plan_status = plan['status']
+                plan_gates = {gate['code']: gate['state'] for gate in plan['gates']}
             except SetupError as error:
                 code = str(error)
             if code != pipeline['expected_code'] or plan_status != pipeline['expected_status']:
-                raise SetupError('SELF_TEST_EXISTING_CONTEXT_CASE_FAILED')
+                raise ExeAcceptanceError('SELF_TEST_EXISTING_CONTEXT_CASE_FAILED', plan_gates=plan_gates,
+                    checks={'case_plan_ready': plan_status == 'READY',
+                            'storage_capacity_pass': plan_gates.get('STORAGE_CAPACITY') == 'PASS',
+                            'root_placement_capacity_pass': all(state == 'PASS' for gate, state in plan_gates.items()
+                                                               if gate.startswith('PLACEMENT_'))})
+            acceptance_stage('CONTEXT_SNAPSHOT_CHECK', scenario)
             assert_fixture_unchanged(pipeline)
             diagnostic = pipeline['engine'].diagnose_root_plan(pipeline['observation'], overrides=pipeline['overrides'])
             cases.append({'scenario': scenario, 'plan_status': plan_status, 'code': code,
@@ -86,6 +117,7 @@ async def frozen_self_test(output: Path) -> dict:
         engine = pipelines['fresh']['engine']
         negatives = []
         for name in ['WSLC_ABSENT', 'LOW_DISK']:
+            acceptance_stage('PREFLIGHT_COUNTEREXAMPLE', 'fresh')
             metadata = copy.deepcopy(engine.probe())
             if name == 'WSLC_ABSENT':
                 metadata['wslc_capability'] = {'state': 'BLOCKED'}
@@ -100,6 +132,7 @@ async def frozen_self_test(output: Path) -> dict:
                 raise SetupError('SELF_TEST_EXPECTED_PREFLIGHT_GATE_NOT_BLOCKED')
             negatives.append({'case': name, 'result': 'BLOCKED'})
         copied = root / 'corrupt-extraction'
+        acceptance_stage('CORRUPTION_COUNTEREXAMPLE')
         shutil.copytree(verified_bundle_root(), copied)
         (copied / 'agent_setup/probe_windows.ps1').write_text('PUBLIC_SYNTHETIC_TAMPER', encoding='utf-8')
         try:
@@ -114,6 +147,7 @@ async def frozen_self_test(output: Path) -> dict:
             for size in sizes:
                 app = SetupApp(pipeline['engine'], host_authorized=False)
                 app.overrides.update(pipeline['overrides'])
+                acceptance_stage('TUI_PROBE', scenario)
                 async with app.run_test(size=size) as pilot:
                     await pilot.pause(0.3)
                     if app.probe_data.get('python_verified') is not True:
@@ -121,6 +155,7 @@ async def frozen_self_test(output: Path) -> dict:
                     title = f'NATIVE PIPELINE / OWNED CONTEXT {scenario} / WSLC FIXTURE'
                     (output / f'actual-exe-{scenario}-check-{size[0]}x{size[1]}.svg').write_text(
                         app.export_screenshot(title=title), encoding='utf-8')
+                    acceptance_stage('TUI_NEXT', scenario)
                     app.query_one('#next', Button).focus()
                     await pilot.press('enter')
                     await pilot.pause(0.5)
@@ -138,9 +173,11 @@ async def frozen_self_test(output: Path) -> dict:
                     records.append({'scenario': scenario, 'size': list(size),
                                     'first_next': 'BLOCKED_OWNER_REVIEW' if blocked else 'PASS',
                                     'context_source': 'OWNED_PUBLIC_FIXTURE', 'host_authorized': False})
+                acceptance_stage('TUI_SNAPSHOT', scenario)
                 assert_fixture_unchanged(pipeline)
         for pipeline in pipelines.values():
             assert_fixture_unchanged(pipeline)
+    acceptance_stage('COMPLETE')
     return {'status': 'PASS', 'execution': 'ACTUAL_FROZEN_EXE', 'metadata': 'NATIVE_WINDOWS_WITH_OWNED_CONTEXT_FIXTURES',
             'acceptance': {'BUNDLE_EXECUTION_PASS': True, 'SYNTHETIC_HOST_WIZARD_PASS': True,
                            'NATIVE_READ_ONLY_PLANNING_PASS': True, 'BOSS_CANARY': 'NOT_RETESTED',
@@ -184,6 +221,7 @@ def main(argv=None) -> int:
         if args.output_dir is None:
             raise SetupError('SELF_TEST_OUTPUT_REQUIRED')
         result = asyncio.run(frozen_self_test(args.output_dir))
+        acceptance_stage('SELF_TEST_RECEIPT_WRITE')
         (args.output_dir / 'frozen-self-test.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
         print(json.dumps(result))
     elif args.diagnose_root_plan:
@@ -203,13 +241,26 @@ def main(argv=None) -> int:
 
 
 def guarded_main(argv=None) -> int:
+    acceptance_stage(None)
     try:
         result = main(argv)
     except Exception as error:
-        reason = str(error) if isinstance(error, (SetupError, BundleError)) else 'STARTUP_FAILED'
+        raw_code = str(error)
+        reason = raw_code if raw_code in (PUBLIC_EXE_CODES | PUBLIC_BUNDLE_CODES) else 'STARTUP_FAILED'
         failure = {'status': 'BLOCKED', 'reason': reason, 'raw_error': 'SUPPRESSED'}
         if isinstance(error, BundleError) and error.signature_phase:
             failure['signature_phase'] = error.signature_phase
+        if _CURRENT_STAGE in ACCEPTANCE_STAGES:
+            failure['acceptance_stage'] = _CURRENT_STAGE
+        if _CURRENT_SCENARIO in ACCEPTANCE_SCENARIOS:
+            failure['acceptance_scenario'] = _CURRENT_SCENARIO
+        if isinstance(error, ExeAcceptanceError):
+            from .packaging import NATIVE_CHECKS, PUBLIC_PLAN_GATES
+            failure['native_checks'] = {key: value for key, value in error.checks.items()
+                                       if key in NATIVE_CHECKS and type(value) is bool}
+            if error.plan_gates:
+                failure['plan_gates'] = {key: value for key, value in error.plan_gates.items()
+                                        if key in PUBLIC_PLAN_GATES and type(value) is str and value in {'PASS', 'BLOCKED'}}
         print(json.dumps(failure, ensure_ascii=False), flush=True)
         result = 2
     # Double-click owns the console. Retain both successful exit and errors;

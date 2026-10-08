@@ -15,7 +15,9 @@ import sys
 from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from agent_setup.packaging import PUBLIC_BUNDLE_CODES, SIGNATURE_PHASES
+from agent_setup.packaging import (PUBLIC_BUNDLE_CODES, PUBLIC_EXE_CODES, SIGNATURE_PHASES,
+                                   ACCEPTANCE_STAGES, ACCEPTANCE_SCENARIOS, NATIVE_CHECKS)
+from agent_setup.packaging import PUBLIC_PLAN_GATES
 
 
 def validate_acceptance_receipt(receipt: dict) -> None:
@@ -53,12 +55,22 @@ def validate_acceptance_receipt(receipt: dict) -> None:
 def safe_failure(output: Path, exe: Path, mode: str, run) -> None:
     reason = 'FROZEN_CHILD_OUTPUT_UNVERIFIED'
     phase = None
+    safe_stage = {}
     try:
         parsed = json.loads(run.stdout) if len(run.stdout) <= 100000 else {}
-        if isinstance(parsed, dict) and parsed.get('reason') in PUBLIC_BUNDLE_CODES:
+        if isinstance(parsed, dict) and parsed.get('reason') in (PUBLIC_BUNDLE_CODES | PUBLIC_EXE_CODES):
             reason = parsed['reason']
             if parsed.get('signature_phase') in SIGNATURE_PHASES:
                 phase = parsed['signature_phase']
+            for key, allowed in [('acceptance_stage', ACCEPTANCE_STAGES), ('acceptance_scenario', ACCEPTANCE_SCENARIOS)]:
+                if parsed.get(key) in allowed:
+                    safe_stage[key] = parsed[key]
+            if isinstance(parsed.get('native_checks'), dict):
+                safe_stage['native_checks'] = {key: value for key, value in parsed['native_checks'].items()
+                                               if key in NATIVE_CHECKS and type(value) is bool}
+            if isinstance(parsed.get('plan_gates'), dict):
+                safe_stage['plan_gates'] = {key: value for key, value in parsed['plan_gates'].items()
+                                           if key in PUBLIC_PLAN_GATES and type(value) is str and value in {'PASS', 'BLOCKED'}}
     except (ValueError, TypeError):
         pass
     diagnostic = {'status': 'BLOCKED', 'mode': mode, 'exit_code': run.returncode,
@@ -67,6 +79,7 @@ def safe_failure(output: Path, exe: Path, mode: str, run) -> None:
                   'host_apply': 'DENIED', 'paths_emitted': False, 'credentials_read': False}
     if phase:
         diagnostic['signature_phase'] = phase
+    diagnostic.update(safe_stage)
     (output / 'failure-diagnostic.json').write_text(json.dumps(diagnostic, indent=2) + '\n', encoding='utf-8')
     print(json.dumps(diagnostic), flush=True)
 

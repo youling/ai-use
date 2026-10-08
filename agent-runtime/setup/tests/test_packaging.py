@@ -304,3 +304,36 @@ def test_smoke_failure_artifact_rejects_arbitrary_child_output(tmp_path, capsys)
     assert 'PRIVATE_EXTERNAL_DETAIL' not in artifact
     assert 'FROZEN_CHILD_OUTPUT_UNVERIFIED' in artifact and 'NOT_RETAINED' in artifact
     assert 'PRIVATE_EXTERNAL_DETAIL' not in capsys.readouterr().out
+
+
+def test_selftest_fixed_native_failure_retains_finite_stage_and_boolean_checks(monkeypatch, capsys):
+    def fail(argv):
+        exe_main.acceptance_stage('NATIVE_RESOURCE_SCAN')
+        raise exe_main.ExeAcceptanceError('FROZEN_NATIVE_RESOURCE_SCAN_FAILED', checks=
+            {'volumes_metadata_present': False, 'documents_metadata_present': True,
+             'PRIVATE_EXTERNAL_FIELD': 'PRIVATE_EXTERNAL_VALUE', 'python_verified': 'unsafe-scalar'})
+    monkeypatch.setattr(exe_main, 'main', fail)
+    assert exe_main.guarded_main(['--self-test']) == 2
+    output = capsys.readouterr().out
+    result = json.loads(output)
+    assert result['reason'] == 'FROZEN_NATIVE_RESOURCE_SCAN_FAILED'
+    assert result['acceptance_stage'] == 'NATIVE_RESOURCE_SCAN'
+    assert result['native_checks'] == {'volumes_metadata_present': False, 'documents_metadata_present': True}
+    assert 'PRIVATE_EXTERNAL' not in output
+
+
+def test_smoke_keeps_registered_setup_reason_and_rejects_arbitrary_stage_scenario(tmp_path, capsys):
+    script = Path(__file__).resolve().parents[1] / 'scripts/smoke_exe.py'
+    safe_failure = runpy.run_path(str(script), run_name='synthetic_smoke_test')['safe_failure']
+    exe = tmp_path / 'synthetic.exe'
+    exe.write_text('PUBLIC_SYNTHETIC_BINARY', encoding='utf-8')
+    payload = {'reason': 'SELF_TEST_EXISTING_CONTEXT_CASE_FAILED',
+               'acceptance_stage': 'CONTEXT_PLAN', 'acceptance_scenario': 'legacy_v1',
+               'native_checks': {'volumes_metadata_present': False, 'private_path': 'PRIVATE_VALUE'}}
+    safe_failure(tmp_path, exe, '--self-test', SimpleNamespace(returncode=2, stdout=json.dumps(payload)))
+    artifact = json.loads((tmp_path / 'failure-diagnostic.json').read_text())
+    assert artifact['reason'] == payload['reason'] and artifact['acceptance_scenario'] == 'legacy_v1'
+    assert artifact['acceptance_stage'] == 'CONTEXT_PLAN' and 'PRIVATE_VALUE' not in json.dumps(artifact)
+    payload.update(acceptance_stage='PRIVATE_VALUE', acceptance_scenario='PRIVATE_VALUE')
+    safe_failure(tmp_path, exe, '--self-test', SimpleNamespace(returncode=2, stdout=json.dumps(payload)))
+    assert 'PRIVATE_VALUE' not in (tmp_path / 'failure-diagnostic.json').read_text()
