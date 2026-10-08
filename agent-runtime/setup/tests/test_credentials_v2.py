@@ -34,7 +34,8 @@ def test_consent_host_gate_and_revocation_are_fresh():
         def discover(self,kind):return {**proof(kind), 'revoked':self.revoked}
         def connect(self,kind,mode='auto'):return self.discover(kind)
     owner=Custodian()
-    with patch('agent_setup.windows.sys.platform','win32'):
+    # Model a Windows adapter without switching POSIX shutil into WinAPI calls.
+    with patch('agent_setup.windows.sys.platform','win32'), patch('agent_setup.windows.shutil.which',return_value=None):
         a=WindowsAdapter(credential_custodian=owner)
         assert a.connect_credential('github')['state']=='NOT_AUTHORIZED'
         assert a.connect_credential('github',approved=True)['state']=='HUMAN_GATE'
