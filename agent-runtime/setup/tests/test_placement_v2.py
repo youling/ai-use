@@ -142,6 +142,9 @@ def test_local_and_model_proofs_are_independent_and_revocation_is_current(machin
     monkeypatch.setattr(adapter,'verify_runtime',native_verify,raising=False)
     assert engine.verify(plan)['capabilities']['local_install']['state']=='NOT_VERIFIED'
     assert options[0]['expected_local'] is True
+    assert options[0]['expected_mount_sources']=={
+        '/host-context':str(Path(plan['runtime']['attempt'])/'context'),
+        '/exchange/in':plan['runtime']['incoming'],'/exchange/out':plan['runtime']['outgoing']}
 
 
 @pytest.mark.parametrize('failure',['missing','denied','exception','wrong_hash'])

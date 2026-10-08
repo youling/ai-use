@@ -23,6 +23,13 @@ def fixture(tmp_path):
           '--input',str(incoming),'--output',str(outgoing),'--local-only']
     return host,args,temp/'attempt'
 
+
+def mount_evidence(args, attempt):
+    sources={'/host-context':str(attempt/'context'), '/exchange/in':args[args.index('--input')+1],
+             '/exchange/out':args[args.index('--output')+1]}
+    return sources,[{'Destination':name,'Type':'bind','Source':source,'RW':name=='/exchange/out'}
+                    for name,source in sources.items()]
+
 def test_local_profile_uses_existing_launcher_no_external_mount_or_host_publish(tmp_path,capsys):
     host,args,attempt=fixture(tmp_path);calls=[]
     def run(argv,**kwargs):
@@ -64,19 +71,20 @@ def test_local_auth_acl_unverified_fails_before_secret_file(tmp_path):
     assert not (tmp_path/'auth/server.env').exists()
 
 def test_verification_requires_local_network_uid_scope_and_api_auth(tmp_path):
-    host,_,_=fixture(tmp_path)
+    host,args,attempt=fixture(tmp_path)
+    sources,mounts=mount_evidence(args,attempt)
     import hashlib
-    info={'Image':CONFIG,'Config':{'User':'1000:1000','Labels':{'agent.attempt':'setup-fixture','agent.setup.profile':'local-only'}},'HostConfig':{'NetworkMode':'none','PortBindings':{}}}
+    info={'Image':CONFIG,'Config':{'User':'1000:1000','Labels':{'agent.attempt':'setup-fixture','agent.setup.profile':'local-only'}},'HostConfig':{'NetworkMode':'none','PortBindings':{}},'Mounts':mounts}
     for denied,authenticated,state in [(True,True,'PASS'),(False,True,'NOT_VERIFIED'),(True,False,'NOT_VERIFIED')]:
         results=iter([SimpleNamespace(returncode=0,stdout=json.dumps([info])),SimpleNamespace(returncode=0,stdout=json.dumps({'uid':1000,'hash':hashlib.sha256(host.read_bytes()).hexdigest()})),SimpleNamespace(returncode=0,stdout=json.dumps({'denied':denied,'authenticated':authenticated}))])
         with patch('agent_setup.windows.sys.platform','win32'),patch('agent_setup.windows.shutil.which',return_value='synthetic-wslc'):
-            observed=WindowsAdapter(runner=lambda *a,**k:next(results)).verify_runtime('setup-fixture',host,expected_config_id=CONFIG,expected_local=True)
+            observed=WindowsAdapter(runner=lambda *a,**k:next(results)).verify_runtime('setup-fixture',host,expected_config_id=CONFIG,expected_local=True,expected_mount_sources=sources)
         assert observed['server_authenticated']==state
     for bad in ({'Config':{'User':'1000','Labels':{'agent.attempt':'setup-fixture'}}},{'HostConfig':{'NetworkMode':'default'}}):
         mutated={**info,**bad}
         responses=iter([SimpleNamespace(returncode=0,stdout=json.dumps([mutated])),SimpleNamespace(returncode=0,stdout=json.dumps({'uid':1000,'hash':hashlib.sha256(host.read_bytes()).hexdigest()}))])
         with patch('agent_setup.windows.sys.platform','win32'),patch('agent_setup.windows.shutil.which',return_value='synthetic-wslc'):
-            assert WindowsAdapter(runner=lambda *a,**k:next(responses)).verify_runtime('setup-fixture',host,expected_config_id=CONFIG,expected_local=True)['state']=='BLOCKED'
+            assert WindowsAdapter(runner=lambda *a,**k:next(responses)).verify_runtime('setup-fixture',host,expected_config_id=CONFIG,expected_local=True,expected_mount_sources=sources)['state']=='BLOCKED'
 
 def test_synthetic_windows_custody_protects_before_auth_generation(tmp_path):
     proxy=SimpleNamespace(name='nt',open=launch.os.open,fdopen=launch.os.fdopen,O_WRONLY=launch.os.O_WRONLY,O_CREAT=launch.os.O_CREAT,O_EXCL=launch.os.O_EXCL)
@@ -120,11 +128,49 @@ def test_full_profile_rejects_credential_exchange_same_directory(tmp_path):
     assert not attempt.exists()
 
 def test_local_verification_rejects_secret_or_writable_context_mount(tmp_path):
-    host,_,_=fixture(tmp_path)
+    host,args,attempt=fixture(tmp_path)
+    sources,mounts=mount_evidence(args,attempt)
     import hashlib
-    mounts=[{'Destination':'/host-context','Type':'bind','RW':False},{'Destination':'/exchange/in','Type':'bind','RW':False},{'Destination':'/exchange/out','Type':'bind','RW':True}]
     for changed in ([*mounts,{'Destination':'/run/secrets/github','Type':'bind','RW':False}], [{**mounts[0],'RW':True},*mounts[1:]]):
         info={'Image':CONFIG,'Config':{'User':'1000:1000','Labels':{'agent.attempt':'setup-fixture','agent.setup.profile':'local-only'}},'HostConfig':{'NetworkMode':'none','PortBindings':{}},'Mounts':changed}
         results=iter([SimpleNamespace(returncode=0,stdout=json.dumps([info])),SimpleNamespace(returncode=0,stdout=json.dumps({'uid':1000,'hash':hashlib.sha256(host.read_bytes()).hexdigest()}))])
         with patch('agent_setup.windows.sys.platform','win32'),patch('agent_setup.windows.shutil.which',return_value='synthetic-wslc'):
-            assert WindowsAdapter(runner=lambda *a,**k:next(results)).verify_runtime('setup-fixture',host,expected_config_id=CONFIG,expected_local=True)['reason']=='LOCAL_MOUNT_BOUNDARY_UNVERIFIED'
+            assert WindowsAdapter(runner=lambda *a,**k:next(results)).verify_runtime('setup-fixture',host,expected_config_id=CONFIG,expected_local=True,expected_mount_sources=sources)['reason']=='LOCAL_MOUNT_BOUNDARY_UNVERIFIED'
+
+
+@pytest.mark.parametrize('case', ['missing','null','empty','not-list','non-object','duplicate','missing-mode',
+    'integer-mode','string-mode','missing-source','relative-source','wrong-source','bad-type','bad-destination',
+    'extra-secret','extra-root','writable-context','writable-input','readonly-output','missing-expected-sources'])
+def test_local_mount_evidence_fails_closed_before_any_container_exec(tmp_path,case):
+    host,args,attempt=fixture(tmp_path)
+    sources,mounts=mount_evidence(args,attempt)
+    if case=='null':mounts=None
+    elif case=='empty':mounts=[]
+    elif case=='not-list':mounts={'mounts':mounts}
+    elif case=='non-object':mounts[0]=None
+    elif case=='duplicate':mounts[1]=dict(mounts[0])
+    elif case=='missing-mode':mounts[0].pop('RW')
+    elif case=='integer-mode':mounts[0]['RW']=0
+    elif case=='string-mode':mounts[0]['RW']='false'
+    elif case=='missing-source':mounts[0].pop('Source')
+    elif case=='relative-source':mounts[0]['Source']='relative/context'
+    elif case=='wrong-source':mounts[0]['Source']=str(tmp_path/'foreign-context')
+    elif case=='bad-type':mounts[0]['Type']='volume'
+    elif case=='bad-destination':mounts[0]['Destination']=['/host-context']
+    elif case=='extra-secret':mounts.append({'Destination':'/run/secrets/github','Type':'bind','Source':str(tmp_path/'secret'),'RW':False})
+    elif case=='extra-root':mounts.append({'Destination':'/','Type':'bind','Source':str(tmp_path),'RW':True})
+    elif case=='writable-context':mounts[0]['RW']=True
+    elif case=='writable-input':mounts[1]['RW']=True
+    elif case=='readonly-output':mounts[2]['RW']=False
+    elif case=='missing-expected-sources':sources=None
+    info={'Image':CONFIG,'Config':{'User':'1000:1000','Labels':{'agent.attempt':'setup-fixture','agent.setup.profile':'local-only'}},'HostConfig':{'NetworkMode':'none','PortBindings':{}}}
+    if case!='missing':info['Mounts']=mounts
+    calls=[]
+    def run(argv,**kwargs):
+        calls.append(argv)
+        assert argv[1]=='inspect','Unproven mounts must stop before exec/authentication'
+        return SimpleNamespace(returncode=0,stdout=json.dumps([info]))
+    with patch('agent_setup.windows.sys.platform','win32'),patch('agent_setup.windows.shutil.which',return_value='synthetic-wslc'):
+        observed=WindowsAdapter(runner=run).verify_runtime('setup-fixture',host,expected_config_id=CONFIG,expected_local=True,expected_mount_sources=sources)
+    assert observed=={'state':'BLOCKED','reason':'LOCAL_MOUNT_BOUNDARY_UNVERIFIED'}
+    assert len(calls)==1

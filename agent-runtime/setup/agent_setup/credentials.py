@@ -5,6 +5,8 @@ or an auth.json file. The shipping adapter has no cross-provider custodian.
 """
 from datetime import datetime, timezone, timedelta
 import re
+import json
+from .engine import SECRET_PATTERN
 
 KINDS = ('github', 'model')
 
@@ -20,6 +22,11 @@ def validated_metadata(kind, raw):
     """Require fresh, scoped owner attestations; an account name is not proof."""
     result = unavailable(kind)
     if not isinstance(raw, dict):
+        return result
+    try:
+        if SECRET_PATTERN.search(json.dumps(raw)):
+            return {**result, 'reason_code': 'SENSITIVE_METADATA_REJECTED'}
+    except (ValueError, TypeError):
         return result
     for key in ('account', 'provider'):
         value = raw.get(key, '')

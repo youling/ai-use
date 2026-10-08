@@ -17,6 +17,7 @@ import sys
 import socket
 
 from .credentials import KINDS, unavailable, validated_metadata
+from .engine import SECRET_PATTERN, SetupError, safe_path
 from datetime import datetime, timezone
 
 PINNED_IMAGE = "ghcr.io/youling/opencode-foreman@sha256:fa92f37752ff6132b161ed4c2563897c94b014ab70d650846dcb09f354f55261"
@@ -254,14 +255,14 @@ try {
             output = {"state": raw["state"]}
             for key in ("projection_directory", "server_env"):
                 value = raw.get(key)
-                if isinstance(value, str) and len(value) <= 4096 and not any(c in value for c in "\r\n\x00") and Path(value).is_absolute():
+                if isinstance(value, str) and not SECRET_PATTERN.search(value) and len(value) <= 4096 and not any(c in value for c in "\r\n\x00") and Path(value).is_absolute():
                     output[key] = value
             for key, pattern in (("work", r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#[1-9][0-9]*"),
                                  ("model_ref", r"[A-Za-z0-9_.:/#-]{1,256}"),
                                  ("repo", r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"),
                                  ("context_sha256", r"[a-f0-9]{64}"),
                                  ("durable_destination", r"https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/blob/[A-Za-z0-9_./-]+")):
-                if isinstance(raw.get(key), str) and re.fullmatch(pattern, raw[key]):
+                if isinstance(raw.get(key), str) and not SECRET_PATTERN.search(raw[key]) and re.fullmatch(pattern, raw[key]):
                     output[key] = raw[key]
             for key in ("authenticated_api", "github_read", "github_write", "fresh_recovery", "private_destination", "model_ready"):
                 if type(raw.get(key)) is bool:
@@ -379,7 +380,30 @@ try {
         except (OSError, ValueError, subprocess.TimeoutExpired):
             return {"state": "BLOCKED", "reason": "EXISTING_LAUNCHER_START_FAILED"}
 
-    def verify_runtime(self, name: str, host_path: Path, *, expected_config_id: str, expected_local: bool = False) -> dict:
+    @staticmethod
+    def _local_mounts_verified(mounts, expected_sources) -> bool:
+        """Missing backend evidence is denial, never a reason to skip isolation."""
+        modes = {'/host-context': False, '/exchange/in': False, '/exchange/out': True}
+        if (not isinstance(mounts, list) or len(mounts) != len(modes)
+            or not isinstance(expected_sources, dict) or set(expected_sources) != set(modes)):
+            return False
+        seen = set()
+        try:
+            for mount in mounts:
+                if not isinstance(mount, dict):return False
+                destination = mount.get('Destination')
+                if (not isinstance(destination, str) or destination not in modes or destination in seen
+                    or mount.get('Type') != 'bind' or mount.get('RW') is not modes[destination]):return False
+                source, expected = mount.get('Source'), expected_sources[destination]
+                if (not isinstance(source, str) or not isinstance(expected, str)
+                    or not Path(source).is_absolute() or not Path(expected).is_absolute()
+                    or safe_path(source) != safe_path(expected)):return False
+                seen.add(destination)
+        except (SetupError, OSError, ValueError, TypeError):
+            return False
+        return seen == set(modes)
+
+    def verify_runtime(self, name: str, host_path: Path, *, expected_config_id: str, expected_local: bool = False, expected_mount_sources: dict | None = None) -> dict:
         if not self.can_apply or not re.fullmatch(r"[a-z][a-z0-9-]{1,60}", name) or not re.fullmatch(r"sha256:[a-f0-9]{64}", expected_config_id):
             return {"state": "BLOCKED", "reason": "RUNTIME_VERIFICATION_INPUT_INVALID"}
         wslc = shutil.which("wslc.exe")
@@ -392,6 +416,9 @@ try {
                 return {"state": "BLOCKED", "reason": "OWNED_IMAGE_OR_LEASE_UNVERIFIED"}
             if expected_local and info.get('Config', {}).get('Labels', {}).get('agent.setup.profile') != 'local-only':
                 return {'state': 'BLOCKED', 'reason': 'LOCAL_PROFILE_IDENTITY_UNVERIFIED'}
+            if (info.get('Config', {}).get('Labels', {}).get('agent.setup.profile') == 'local-only'
+                and not self._local_mounts_verified(info.get('Mounts'), expected_mount_sources)):
+                return {'state': 'BLOCKED', 'reason': 'LOCAL_MOUNT_BOUNDARY_UNVERIFIED'}
             # Fixed command with no auth/env printing; read only the bounded context.
             script = "import os,hashlib,json;print(json.dumps({'uid':os.getuid(),'hash':hashlib.sha256(open('/host-context/HOST_AGENT.md','rb').read()).hexdigest()}))"
             result = self._runner([wslc, "exec", name, "python3", "-c", script], capture_output=True, encoding="utf-8", timeout=15)
@@ -404,14 +431,6 @@ try {
                     or info.get('HostConfig', {}).get('PortBindings')
                     or str(info.get('Config', {}).get('User')) not in {'1000', '1000:1000'}):
                     return {'state': 'BLOCKED', 'reason': 'LOCAL_NETWORK_BOUNDARY_UNVERIFIED'}
-                if 'Mounts' in info:
-                    mounts = info['Mounts']
-                    expected_mounts = {'/host-context': False, '/exchange/in': False, '/exchange/out': True}
-                    if (not isinstance(mounts, list) or len(mounts) != 3
-                        or {m.get('Destination') for m in mounts if isinstance(m, dict)} != set(expected_mounts)
-                        or any(not isinstance(m, dict) or m.get('Type') != 'bind'
-                               or m.get('RW') is not expected_mounts.get(m.get('Destination')) for m in mounts)):
-                        return {'state': 'BLOCKED', 'reason': 'LOCAL_MOUNT_BOUNDARY_UNVERIFIED'}
                 # Auth is used internally, never exported in stdout or argv.
                 script = """import os,json,base64,urllib.request,urllib.error
 u='http://127.0.0.1:4096/global/health'

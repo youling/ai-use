@@ -13,7 +13,7 @@ import yaml
 IMAGE='ghcr.io/youling/opencode-foreman@sha256:fa92f37752ff6132b161ed4c2563897c94b014ab70d650846dcb09f354f55261'
 SCHEMA='1.0.0'
 DOMAINS=('Execution','Workspace','Config','State','Cache','Temp','Secrets')
-SECRET_PATTERN=re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY|gh[pousr]_[A-Za-z0-9]{30,}|sk-proj-[A-Za-z0-9_-]{30,}|(?im:^\s*(?:token|password|api_key|private_key|secret_value)\s*:)')
+SECRET_PATTERN=re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY|gh[pousr]_[A-Za-z0-9]{30,}|(?i:github_pat_)|sk-proj-[A-Za-z0-9_-]{30,}|(?im:^\s*(?:token|password|api_key|private_key|secret_value)\s*:)')
 
 class SetupError(Exception):
     """Only stable codes reach UI/logs; never interpolate external exceptions."""
@@ -42,11 +42,12 @@ def safe_path(value):
 def reference(value):
     value=str(value or '')
     if not value:return ''
-    if re.search(r'(?i)(?:gh[pousr]_|sk-|-----BEGIN|password=|token=)',value) or not re.fullmatch(r'[A-Za-z0-9_.:/#-]{1,256}',value):
+    if SECRET_PATTERN.search(value) or re.search(r'(?i)(?:gh[pousr]_|sk-|-----BEGIN|password=|token=)',value) or not re.fullmatch(r'[A-Za-z0-9_.:/#-]{1,256}',value):
         raise SetupError('REFERENCE_ONLY_NO_SECRET_VALUE')
     return value
 
 def atomic_json(path,value):
+    if SECRET_PATTERN.search(json.dumps(value)):raise SetupError('REFERENCE_ONLY_NO_SECRET_VALUE')
     path=safe_path(path)
     temporary=path.with_name(path.name+'.new-'+uuid.uuid4().hex)
     with temporary.open('x',encoding='utf-8',newline='\n') as out:
@@ -140,7 +141,7 @@ class SetupEngine:
         observation=self.adapter.probe()
         # Adapters return allowlisted metadata only; refuse token-like input data.
         raw=json.dumps(observation)
-        if re.search(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY|gh[pousr]_[A-Za-z0-9]{30,}|sk-proj-[A-Za-z0-9_-]{30,}',raw):
+        if SECRET_PATTERN.search(raw):
             raise SetupError('UNSAFE_PROBE_DATA')
         observation['schema']=SCHEMA
         observation.setdefault('observed_at',dt.datetime.now(dt.timezone.utc).isoformat())
@@ -280,6 +281,7 @@ class SetupEngine:
         return result
 
     def _validate(self,plan):
+        if SECRET_PATTERN.search(json.dumps(plan)):raise SetupError('REFERENCE_ONLY_NO_SECRET_VALUE')
         original=dict(plan);fingerprint=original.pop('fingerprint',None)
         if fingerprint!=digest(original) or plan.get('schema')!=SCHEMA or plan.get('image')!=IMAGE:raise SetupError('PLAN_DRIFT')
         if plan.get('platform')!='windows' or not self.adapter.can_apply:raise SetupError('UNSUPPORTED_PLATFORM')
@@ -310,6 +312,7 @@ class SetupEngine:
         return outcome
 
     def context(self,plan,config_id=None,readiness=None):
+        if SECRET_PATTERN.search(json.dumps(plan)):raise SetupError('REFERENCE_ONLY_NO_SECRET_VALUE')
         readiness=readiness or {}
         enabled=bool(config_id and readiness.get('credentials')=='PASS' and readiness.get('model')=='PASS')
         paths={k:{key:v[key] for key in ('path','owner','relocatable','reason') if key in v} for k,v in plan['roots'].items()}
@@ -459,7 +462,10 @@ class SetupEngine:
         current_readiness=self.adapter.runtime_readiness(plan) if hasattr(self.adapter,'runtime_readiness') else {}
         if runtime.get('state') in {'PASS','READY'} and not getattr(self.adapter,'fixture',False):
             verify_options={'expected_config_id':receipt['image']['config_id']}
-            if runtime.get('local_only') is True:verify_options['expected_local']=True
+            if runtime.get('local_only') is True:
+                verify_options.update(expected_local=True,expected_mount_sources={
+                    '/host-context':str(Path(plan['runtime']['attempt'])/'context'),
+                    '/exchange/in':plan['runtime']['incoming'],'/exchange/out':plan['runtime']['outgoing']})
             runtime=self.adapter.verify_runtime(plan['runtime']['name'],Path(plan['host_agent']),**verify_options)
             if runtime.get('state')=='PASS' and plan['github'].get('helper_approved'):
                 proof=self.adapter.helper_status(plan['github']['helper'],approved=True,operation='verify')
