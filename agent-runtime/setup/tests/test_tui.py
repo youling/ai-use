@@ -238,3 +238,20 @@ def test_shipping_login_actions_are_localized_in_both_modes():
         assert "官方登录" in app.account_summary("model")
         assert "HOST_PROVIDER_LOGIN" not in app.account_summary("model")
         assert "raw owner" not in app.account_summary("github")
+
+
+def test_real_planning_error_shows_fixed_code_not_raw_exception():
+    """Expected SetupError diagnostics are actionable; other exceptions stay generic."""
+    from agent_setup.engine import SetupError
+    class FailingPlanner(FakeEngine):
+        def plan(self,probe,**kwargs):
+            raise SetupError('UNSAFE_ROOT')
+    async def scenario():
+        app=SetupApp(FailingPlanner())
+        async with app.run_test(size=(80,24)) as pilot:
+            await press_button(app,pilot,'#next')
+            assert app.step==0
+            notice=str(app.query_one('#status',Static).render())
+            assert '[UNSAFE_ROOT]' in notice
+            assert 'Traceback' not in notice
+    asyncio.run(scenario())
