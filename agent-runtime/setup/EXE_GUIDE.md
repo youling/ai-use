@@ -33,7 +33,9 @@ SmartScreen/Defender 可能提示未识别或未签名程序。不要关闭安�
 
 EXE 沿用同一 SetupEngine、Windows Adapter、HOST_AGENT 和固定公共 OCI。冻结模式核对实际加载的 Python DLL、PSF 签名、内嵌资源/依赖锁及构建源；脚本模式继续使用既有官方 Python 签名与 hash 门禁。“内嵌内容核验成功”与“发布者可信”“真实安装已完成”是不同状态。
 
-可执行文件默认不读取凭据库，不共享旧 OpenCode 的 auth/session/state，不发起模型推理。Windows 内置 PowerShell 5.1 仅作为固定的本地元数据/签名 helper，用户无需另装 PowerShell 7；受保护服务器凭据目录的 SID/SYSTEM ACL 验证保持。
+冻结 DLL 的签名通过 Windows 原生 WinVerifyTrust 验证，检查实际文件和完整证书链，并从同一已验证结果读取 PSF 签名者。使用缓存执行撤销检查，不联网补取、不给签名对话框，也不跳过检查；缓存不足或信任未知时仍阻止启动。该检查不能将未签名 EXE 变成可信发布版本。[Microsoft 的参数说明](https://learn.microsoft.com/en-us/windows/win32/api/wintrust/ns-wintrust-wintrust_data)定义了完整证书链、缓存撤销及无界面选项。
+
+可执行文件默认不读取凭据库，不共享旧 OpenCode 的 auth/session/state，不发起模型推理。Windows 内置 PowerShell 5.1 作为固定的本地元数据 helper；冻结 DLL 的签名检查不再依赖其签名模块加载，用户无需另装 PowerShell 7。受保护服务器凭据目录的 SID/SYSTEM ACL 验证保持。
 
 ## 开发者入口
 

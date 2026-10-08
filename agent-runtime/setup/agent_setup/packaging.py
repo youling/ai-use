@@ -36,6 +36,9 @@ PUBLIC_BUNDLE_CODES = frozenset({
     'SIGNATURE_NATIVE_POWERSHELL_MISSING', 'SIGNATURE_PROCESS_TIMEOUT',
     'SIGNATURE_PROCESS_FAILED', 'SIGNATURE_METADATA_INVALID', 'SIGNATURE_PROCESS_OS_ERROR',
     'NATIVE_DLL_SEARCH_RESET_FAILED', 'NATIVE_DLL_SEARCH_RESTORE_FAILED',
+    'SIGNATURE_NATIVE_WINDOWS_REQUIRED', 'SIGNATURE_NATIVE_PROVIDER_UNAVAILABLE',
+    'SIGNATURE_SIGNER_UNVERIFIED', 'SIGNATURE_DIGEST_MISMATCH', 'SIGNATURE_CERT_REVOKED',
+    'SIGNATURE_REVOCATION_UNAVAILABLE', 'SIGNATURE_NATIVE_TRUST_UNVERIFIED', 'SIGNATURE_NATIVE_METADATA_INVALID',
     'BUNDLE_PROVENANCE_UNVERIFIED'})
 
 
@@ -78,7 +81,7 @@ REQUIRED = {'agent_setup/probe_windows.ps1', 'agent-runtime/host/windows/launch.
             'runtime/python314.dll', 'runtime/Python-LICENSE.txt', 'exe_entry.py',
             'agent_setup/engine.py', 'agent_setup/windows.py', 'agent_setup/tui.py',
             'agent_setup/credentials.py', 'agent_setup/packaging.py', 'agent_setup/exe_main.py',
-            'agent_setup/read_only_acceptance.py'}
+            'agent_setup/read_only_acceptance.py', 'agent_setup/signature_wintrust.py'}
 
 
 def sha256(path: Path) -> str:
@@ -155,6 +158,9 @@ def verified_bundle_root() -> Path:
 
 
 def psf_signature(path: Path) -> dict:
+    if getattr(sys, 'frozen', False):
+        from .signature_wintrust import psf_native_signature
+        return psf_native_signature(path)
     from .windows import trusted_windows_powershell
     powershell = trusted_windows_powershell()
     if not powershell:
@@ -234,6 +240,7 @@ def bundle_provenance() -> dict:
         return {'state': 'VERIFIED_CONTENT_UNSIGNED_TEST_ONLY', 'bundle_verified': True,
                 'python_verified': True, 'source_head': manifest['source_head'],
                 'python_version': manifest['python_version'], 'runtime_signature': signature,
+                'runtime_verifier': 'NATIVE_WINVERIFYTRUST_CACHE_ONLY_WHOLECHAIN_NO_UI',
                 'distribution': 'UNSIGNED_TEST_ONLY', 'publisher_trusted': False,
                 'host_apply': 'DENIED', 'reason': 'REVIEWED_SIGNED_DISTRIBUTION_AND_HUMAN_GATE_REQUIRED'}
     except (BundleError, OSError) as error:
