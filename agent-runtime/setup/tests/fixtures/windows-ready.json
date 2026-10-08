@@ -1,0 +1,13 @@
+{
+  "platform": "windows",
+  "python_version": "3.14.8",
+  "python_verified": true,
+  "wsl_app_version": "3.0.1.0",
+  "wslc_capability": {"state": "PASS"},
+  "documents": "{sandbox}/Documents",
+  "volumes": [{"mount": "{sandbox}/volume", "fs": "NTFS", "capacity_bytes": 200000000000, "free_bytes": 80000000000, "device_id": "fixture-disk", "bus_type": "NVMe", "media_type": "SSD"}],
+  "existing_roots": {},
+  "active_workloads": [],
+  "github": {"state": "NOT_AUTHORIZED"},
+  "model": {"state": "NOT_AUTHORIZED"}
+}

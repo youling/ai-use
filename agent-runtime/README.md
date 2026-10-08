@@ -14,6 +14,7 @@ GitHub durable Work directly. Fleet, a broker or a scheduler is not required.
 - [Conformance](conformance/README.md)
 - [Release/update/rollback](release/README.md)
 - [Migration provenance](migration-ledger.json)
+- [Windows first-run Textual setup](setup/README.md) (review candidate; dry-run first)
 
 Private deployment owners retain resolved physical paths, identity bindings,
 custody and real consumer receipts. Public tests use inert fixtures only. Existing

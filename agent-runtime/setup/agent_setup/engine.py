@@ -1,0 +1,446 @@
+"""Probe/plan/apply/verify/repair transactions. No Textual or credential values."""
+from __future__ import annotations
+import copy
+import datetime as dt
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import uuid
+import yaml
+
+IMAGE='ghcr.io/youling/opencode-foreman@sha256:fa92f37752ff6132b161ed4c2563897c94b014ab70d650846dcb09f354f55261'
+SCHEMA='1.0.0'
+DOMAINS=('Execution','Workspace','Config','State','Cache','Temp','Secrets')
+SECRET_PATTERN=re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY|gh[pousr]_[A-Za-z0-9]{30,}|sk-proj-[A-Za-z0-9_-]{30,}|(?im:^\s*(?:token|password|api_key|private_key|secret_value)\s*:)')
+
+class SetupError(Exception):
+    """Only stable codes reach UI/logs; never interpolate external exceptions."""
+
+def digest(value):
+    return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+
+def file_hash(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest() if Path(path).is_file() else None
+
+def safe_path(value):
+    text=str(value)
+    if SECRET_PATTERN.search(text):raise SetupError('REFERENCE_ONLY_NO_SECRET_VALUE')
+    if not text or any(c in text for c in '\r\n\x00,') or text.startswith(('\\\\','//')):
+        raise SetupError('UNSAFE_PATH')
+    if ':' in text and not re.fullmatch(r'[A-Za-z]:[/\\][^:]*',text):
+        raise SetupError('PATH_STREAM_DENIED')
+    p=Path(text).absolute()
+    if '..' in Path(text).parts or p==p.anchor or p==Path.home() or p.parent==p:
+        raise SetupError('UNSAFE_ROOT')
+    for item in (p,*p.parents):
+        if item.is_symlink() or (item.exists() and getattr(item.lstat(),'st_file_attributes',0)&0x400):
+            raise SetupError('REPARSE_PATH_DENIED')
+    return p.resolve()
+
+def reference(value):
+    value=str(value or '')
+    if not value:return ''
+    if re.search(r'(?i)(?:gh[pousr]_|sk-|-----BEGIN|password=|token=)',value) or not re.fullmatch(r'[A-Za-z0-9_.:/#-]{1,256}',value):
+        raise SetupError('REFERENCE_ONLY_NO_SECRET_VALUE')
+    return value
+
+def atomic_json(path,value):
+    path=safe_path(path)
+    temporary=path.with_name(path.name+'.new-'+uuid.uuid4().hex)
+    with temporary.open('x',encoding='utf-8',newline='\n') as out:
+        json.dump(value,out,indent=2);out.write('\n');out.flush();os.fsync(out.fileno())
+    os.replace(temporary,path)
+
+def version_ok(value,minimum):
+    match=re.fullmatch(r'(\d+)\.(\d+)\.(\d+)(?:\.\d+)?',str(value or ''))
+    return bool(match and tuple(map(int,match.groups()))>=minimum)
+
+def bound_root_owner(path):
+    """A marker needs the same exact root/attempt/current owned journal."""
+    path=safe_path(path);marker=safe_path(path/'.agent-runtime-setup-owner.json')
+    if not marker.is_file():return False
+    try:
+        value=json.loads(marker.read_text(encoding='utf-8'))
+        if (value.get('schema')!=SCHEMA or value.get('owner')!='AGENT_RUNTIME_SETUP'
+            or value.get('root')!=str(path) or not re.fullmatch(r'[a-f0-9]{32}',value.get('attempt',''))
+            or not re.fullmatch(r'[a-f0-9]{64}',value.get('install_binding',''))):return False
+        control=safe_path(Path(value['config_root'])/'.agent-runtime-setup')
+        owner=json.loads(safe_path(control/'owner.json').read_text(encoding='utf-8'))
+        receipt=json.loads(safe_path(control/'receipt.json').read_text(encoding='utf-8'))
+        return (owner.get('schema')==SCHEMA and owner.get('install_binding')==value['install_binding']
+            and receipt.get('schema')==SCHEMA and receipt.get('install_binding')==value['install_binding']
+            and receipt.get('attempt')==value['attempt'] and str(path) in receipt.get('created_roots',[])
+            and receipt.get('status') in {'APPLYING','INTERRUPTED','APPLIED'})
+    except (KeyError,ValueError,TypeError,OSError):return False
+
+class FixtureAdapter:
+    """Explicit fixture transport; filesystem writes stay in fixture sandbox."""
+    can_apply=True
+    fixture=True
+    def __init__(self,data,sandbox):
+        self.data=copy.deepcopy(data);self.sandbox=safe_path(sandbox)
+    def probe(self):return copy.deepcopy(self.data)
+    def validate_owned_path(self,path):
+        if not safe_path(path).is_relative_to(self.sandbox):raise SetupError('FIXTURE_ESCAPE')
+    def pull_image(self,image):
+        if self.data.get('network_interruption'):raise SetupError('NETWORK_INTERRUPTED')
+        return {'state':'PASS','manifest_digest':image.split('@')[1],'config_id':'sha256:'+'a'*64}
+    def start_runtime(self,plan,host_path):
+        return {'state':'NOT_AUTHORIZED','reason':'Fixture does not start real runtime'}
+    def verify_runtime(self,plan):
+        return {'state':'NOT_AUTHORIZED','reason':'Fixture is not authenticated runtime proof'}
+
+class SetupEngine:
+    def __init__(self,adapter):self.adapter=adapter
+    def probe(self):
+        observation=self.adapter.probe()
+        # Adapters return allowlisted metadata only; refuse token-like input data.
+        raw=json.dumps(observation)
+        if re.search(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY|gh[pousr]_[A-Za-z0-9]{30,}|sk-proj-[A-Za-z0-9_-]{30,}',raw):
+            raise SetupError('UNSAFE_PROBE_DATA')
+        observation['schema']=SCHEMA
+        observation.setdefault('observed_at',dt.datetime.now(dt.timezone.utc).isoformat())
+        if observation.get('documents'):
+            target=safe_path(observation['documents'])/'HOST_AGENT.md'
+            if target.is_file():
+                try:
+                    content=target.read_text(encoding='utf-8')
+                    if SECRET_PATTERN.search(content):raise ValueError('secret-bearing context')
+                    match=re.search(r'```yaml\s*\n(.*?)\n```',content,re.S)
+                    existing=yaml.safe_load(match[1]) if match else {}
+                    if existing.get('host_agent_version')!=SCHEMA:raise ValueError('version')
+                    observation['existing_roots']={k:v for k,v in existing.get('paths',{}).items() if k in {'workspace','config','state','cache','temp','exchange'}}
+                    for name,value in observation['existing_roots'].items():
+                        if name!='exchange':value['exists']=Path(value['path']).exists()
+                except (ValueError,TypeError,AttributeError,KeyError,OSError):observation['existing_context_state']='STALE_REQUIRES_OWNER_REPAIR'
+        return observation
+
+    def plan(self,observation,overrides=None,github=None,model=None,durable=None):
+        overrides=overrides or {};github=github or {};model=model or {};durable=durable or {}
+        gates=[]
+        def gate(code,ready,reason):gates.append({'code':code,'state':'PASS' if ready else 'BLOCKED','reason':reason})
+        gate('WINDOWS_V1',observation.get('platform')=='windows','Windows V1 only; other platform apply is unsupported')
+        gate('PYTHON_314',str(observation.get('python_version','')).startswith('3.14.') and observation.get('python_verified') is True,'Verified stable Python 3.14.x; bootstrap never upgrades an unrelated Python')
+        gate('WSL_APP_3',version_ok(observation.get('wsl_app_version'),(3,0,0)),'WSL application >=3.0.0, not WSL2/kernel version')
+        gate('WSLC',observation.get('wslc_capability',{}).get('state')=='PASS','Actual native WSLC capability must pass; no upgrade/reboot/distro termination')
+        gate('CONTEXT_CURRENT',not observation.get('existing_context_state'),'Stale or malformed existing discovery requires owner repair; never silently replace')
+        volumes=observation.get('volumes',[])
+        viable=[v for v in volumes if (v.get('free_bytes') or 0)>=8*1024**3 and v.get('fs') in {'NTFS','ReFS'} and v.get('mount')]
+        viable.sort(key=lambda v:(v.get('bus_type')=='NVMe',v.get('media_type')=='SSD',v.get('free_bytes',0)),reverse=True)
+        gate('STORAGE_CAPACITY',bool(viable),'At least8GiB headroom on local NTFS/ReFS; respect filesystem and device locality')
+        chosen=viable[0] if viable else (volumes[0] if volumes else {'mount':observation.get('documents') or str(Path.cwd())})
+        base=Path(chosen['mount'])/'AgentRuntime'
+        existing=observation.get('existing_roots',{})
+        roots={}
+        for name,leaf in [('workspace','workspaces'),('config','config'),('cache','cache'),('temp','attempts')]:
+            old=existing.get(name,{})
+            selected=overrides.get(name) or old.get('path') or str(base/leaf)
+            if old.get('path') and old.get('exists') and safe_path(selected)!=safe_path(old['path']):
+                raise SetupError('FIRST_INSTALL_NEVER_RELOCATES_EXISTING_DATA')
+            path=safe_path(selected)
+            if hasattr(self.adapter,'validate_owned_path'):self.adapter.validate_owned_path(path)
+            # Parent containment alone does not make an arbitrary existing root owned.
+            canonical=observation.get('canonical_classification',{})
+            classified=(canonical.get('verified') is True and bool(re.fullmatch(r'[a-f0-9]{64}',str(canonical.get('sha256',''))))
+                and canonical.get('sha256')==file_hash(Path(observation['documents'])/'HOST_AGENT.md') and bool(canonical.get('owner_pointer')))
+            owner=old.get('owner','UNKNOWN') if classified else 'HOST_MANAGED' if not path.exists() else 'UNKNOWN'
+            marker=path/'.agent-runtime-setup-owner.json'
+            if marker.exists():
+                try:
+                    owner='HOST_MANAGED' if bound_root_owner(path) else 'UNKNOWN'
+                except (ValueError,OSError):raise SetupError('OWNERSHIP_MARKER_INVALID')
+            gate('ROOT_'+name.upper(),owner=='HOST_MANAGED','Preserve classified existing roots or create explicitly owned new roots; unknown ownership blocks')
+            roots[name]={'path':str(path),'owner':owner,'relocatable':old.get('relocatable',not path.exists()),
+                'reason':'NO_MOVE: preserve current classified root' if old.get('path') else 'New scoped root on selected local volume; no data migration',
+                'existed':path.exists()}
+        state=existing.get('state',{'path':observation.get('vendor_state','NATIVE_VENDOR_STATE'),'owner':'VENDOR_OWNED','relocatable':False})
+        roots['state']={**state,'reason':'Preserve vendor/native state; never relocate on first install'}
+        managed=[safe_path(roots[n]['path']) for n in ('workspace','config','cache','temp')]
+        if any(a==b or a.is_relative_to(b) or b.is_relative_to(a) for i,a in enumerate(managed) for b in managed[i+1:]):raise SetupError('ROOT_OVERLAP')
+        for writer in observation.get('active_workloads',[]):
+            if isinstance(writer,dict) and writer.get('path'):
+                active=safe_path(writer['path'])
+                if any(active==p or active.is_relative_to(p) or p.is_relative_to(active) for p in managed):raise SetupError('ACTIVE_WRITER')
+            elif writer:gate('ACTIVE_WORKLOAD_UNKNOWN',False,'Unknown active writer requires explicit ownership/quiescence; installer does not stop workloads')
+        documents=safe_path(observation.get('documents') or str(Path.cwd()/'unsupported-documents'))
+        target=documents/'HOST_AGENT.md'
+        old_hash=file_hash(target)
+        if target.exists():
+            try:
+                content=target.read_text(encoding='utf-8')
+                if SECRET_PATTERN.search(content):raise SetupError('EXISTING_CONTEXT_SECRET_DATA_REFUSED')
+                match=re.search(r'```yaml\s*\n(.*?)\n```',content,re.S)
+                value=yaml.safe_load(match[1]) if match else {}
+                if value.get('host_agent_version')!=SCHEMA:raise SetupError('EXISTING_HOST_AGENT_REPAIR_REQUIRES_OWNER')
+            except (ValueError,TypeError,AttributeError,OSError):raise SetupError('EXISTING_HOST_AGENT_REPAIR_REQUIRES_OWNER')
+        gh={key:github.get(key) for key in ('authorized','recovery_requested','helper','helper_approved','repo','work','projection_directory','server_env') if key in github}
+        gh['ref']=reference(github.get('ref'))
+        gh.setdefault('authorized',False);gh.setdefault('recovery_requested',False)
+        gh.setdefault('helper','')
+        if gh.get('work'):
+            if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#[1-9][0-9]*',gh['work']):raise SetupError('WORK_COORDINATE_INVALID')
+            gh['repo']=gh['work'].split('#')[0]
+        for name in ('helper','projection_directory','server_env'):
+            if gh.get(name):gh[name]=str(safe_path(gh[name]))
+        mod={'ref':reference(model.get('ref')),'free_route':bool(model.get('free_route',False)),
+            'helper':str(safe_path(model['helper'])) if model.get('helper') else '',
+            'state':'NOT_AUTHORIZED','reason':'Provider metadata/helper activation has not been verified; free selection is not a price/auth proof'}
+        durable_meta={'destination':str(durable.get('destination') or ''),'authorized':bool(durable.get('authorized',False))}
+        if durable_meta['destination'] and not re.fullmatch(r'https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[^\s]*)?',durable_meta['destination']):raise SetupError('DURABLE_DESTINATION_INVALID')
+        if gh['recovery_requested']:
+            gate('PRIVATE_DURABLE_AUTHORITY',gh['authorized'] and durable_meta['authorized'] and bool(durable_meta['destination']),'Recovery requires concrete authorized private durable owner destination and real helper writeback proof')
+        exchange={'in':str(base/'exchange/in'),'out':str(base/'exchange/out')}
+        if existing.get('exchange'):exchange=existing['exchange']
+        for key in exchange:
+            exchange[key]=str(safe_path(exchange[key]))
+            if hasattr(self.adapter,'validate_owned_path'):self.adapter.validate_owned_path(exchange[key])
+        docs_parent=bool(observation.get('documents')) and documents.exists() and documents.is_dir()
+        gate('DOCUMENTS_KNOWN_FOLDER',docs_parent,'Use resolved OS-native Documents; do not invent fallback placement')
+        ready=all(g['state']=='PASS' for g in gates)
+        result={'schema':SCHEMA,'status':'READY' if ready else 'BLOCKED','host_authorized':bool(overrides.get('host_authorized',False)),
+            'gates':gates,'roots':roots,'exchange':exchange,'documents':str(documents),'host_agent':str(target),
+            'expected_host_agent_sha256':old_hash,'github':gh,'model':mod,'durable':durable_meta,'image':IMAGE,
+            'storage':chosen,'platform':observation.get('platform'),'observed_at':observation['observed_at'],
+            'operations':[{'kind':'ENSURE_OWNED_ROOT','path':str(p),'reason':'New/preserved scoped ownership'} for p in managed]+[{'kind':'MATERIALIZE_CONTEXT','path':str(target),'reason':'Known Folder discovery projection'}],
+            'domains':{name:({'owner':'VENDOR_OWNED','relocatable':False} if name in {'Execution','State'} else {'owner':'HOST_CUSTODY','reference_only':True} if name=='Secrets' else roots[name.lower()]) for name in DOMAINS},
+            'placement':'NO_MOVE','runtime_requested':bool(overrides.get('runtime',False))}
+        # Stable semantic binding excludes observation time; new authority must still be explicit.
+        result['install_binding']=digest({'roots':{k:{key:v[key] for key in ('path','owner','relocatable') if key in v} for k,v in roots.items()},'exchange':exchange,'github':gh,'model':mod,'durable':durable_meta,'image':IMAGE})
+        run_id=result['install_binding'][:12]
+        result['runtime']={'name':'setup-'+run_id,'attempt':str(Path(roots['temp']['path'])/('setup-'+run_id)),
+            'incoming':str(Path(exchange['in'])/('setup-'+run_id)),'outgoing':str(Path(exchange['out'])/('setup-'+run_id)),'port':4096}
+        gh['durable_destination']=durable_meta['destination']
+        result['fingerprint']=digest(result)
+        # Interrupted transaction resumes only the full prior reviewed semantics.
+        prior=self._control(result)/'plan.json'
+        checkpoint=self._control(result)/'receipt.json'
+        if prior.is_file() and checkpoint.is_file():
+            saved=json.loads(prior.read_text(encoding='utf-8'));state=json.loads(checkpoint.read_text(encoding='utf-8'))
+            if state.get('status')=='INTERRUPTED' and saved.get('install_binding')==result['install_binding'] and result['host_authorized']:
+                self._validate(saved)
+                return saved
+        return result
+
+    def _validate(self,plan):
+        original=dict(plan);fingerprint=original.pop('fingerprint',None)
+        if fingerprint!=digest(original) or plan.get('schema')!=SCHEMA or plan.get('image')!=IMAGE:raise SetupError('PLAN_DRIFT')
+        if plan.get('platform')!='windows' or not self.adapter.can_apply:raise SetupError('UNSUPPORTED_PLATFORM')
+        for name in ('workspace','config','cache','temp'):safe_path(plan['roots'][name]['path'])
+        for value in plan['exchange'].values():safe_path(value)
+        safe_path(plan['host_agent'])
+        if hasattr(self.adapter,'validate_owned_path'):
+            for value in [plan['host_agent'],*[r['path'] for k,r in plan['roots'].items() if k!='state'],*plan['exchange'].values()]:self.adapter.validate_owned_path(value)
+
+    def _control(self,plan):return safe_path(Path(plan['roots']['config']['path'])/'.agent-runtime-setup')
+
+    def context(self,plan,config_id=None,readiness=None):
+        readiness=readiness or {}
+        enabled=bool(config_id and readiness.get('credentials')=='PASS' and readiness.get('model')=='PASS')
+        paths={k:{key:v[key] for key in ('path','owner','relocatable','reason') if key in v} for k,v in plan['roots'].items()}
+        paths['exchange']=plan['exchange']
+        paths['secrets']={'catalog_ref':'host.native-secret-custody','runtime_root':'/run/secrets','refs':{
+            'github_machine':{'ref':plan['github']['ref'] or 'host.github.not-authorized','class':'GITHUB_MACHINE_IDENTITY','custody':'HOST_OWNER','materialize':'EXISTING_APPROVED_HELPER'},
+            'model_provider':{'ref':plan['model']['ref'] or 'host.model.not-authorized','class':'MODEL_PROVIDER_AUTH','custody':'HOST_OWNER','materialize':'PUBLIC_PROVIDER_ACTIVATION' if plan['model']['free_route'] else 'EXISTING_APPROVED_HELPER'}}}
+        value={'host_agent_version':SCHEMA,'observed_at':plan['observed_at'],
+            'durable':{'host_agent_canonical':plan['durable']['destination'] or 'NOT_CONFIGURED_OWNER_SELECTION_REQUIRED','governance':'https://github.com/youling/ai-use'},
+            'paths':paths,'domains':plan['domains'],'placement':'NO_MOVE','agents':{'opencode':{
+                'enabled':enabled,'readiness':'MODEL_READY' if enabled else 'CONFIGURED_PENDING_AUTH','runtime':'container','image':config_id or IMAGE,
+                'oci_manifest':IMAGE,'command':'serve','workspace':'LINUX_NATIVE /workspace','state':'DISPOSABLE_GITHUB_RECOVERY',
+                'exchange':plan['exchange'],'github':{'credential_ref':paths['secrets']['refs']['github_machine']['ref'],'recovery_required':True},
+                'model_auth':{'credential_ref':paths['secrets']['refs']['model_provider']['ref'],'materialize':'HOST_APPROVED_RUNTIME_PROJECTION'}}}}
+        return '# HOST_AGENT resolved projection\n\n```yaml\n'+yaml.safe_dump(value,allow_unicode=True,sort_keys=False)+'```\n'
+
+    def apply(self,plan,approved=False):
+        self._validate(plan)
+        if not approved or not plan['host_authorized']:raise SetupError('EXPLICIT_HOST_APPROVAL_REQUIRED')
+        if plan['status']!='READY':raise SetupError('PREFLIGHT_BLOCKED')
+        # Reprobe critical runtime gates immediately before any effect.
+        now=self.probe()
+        if now.get('platform')!='windows' or not version_ok(now.get('wsl_app_version'),(3,0,0)) or now.get('wslc_capability',{}).get('state')!='PASS':raise SetupError('PREFLIGHT_DRIFT')
+        if not now.get('python_verified') or not str(now.get('python_version','')).startswith('3.14.'):raise SetupError('PYTHON_PROVENANCE_DRIFT')
+        if any(now.get('active_workloads',[])):raise SetupError('ACTIVE_WORKLOAD_REVIEW_REQUIRED')
+        if not any((v.get('free_bytes') or 0)>=8*1024**3 and v.get('device_id')==plan['storage'].get('device_id') and v.get('mount')==plan['storage'].get('mount') for v in now.get('volumes',[])):raise SetupError('STORAGE_PRESSURE_OR_TOPOLOGY_DRIFT')
+        root=safe_path(plan['roots']['config']['path'])
+        control=self._control(plan)
+        if not (control/'receipt.json').exists() and file_hash(plan['host_agent'])!=plan['expected_host_agent_sha256']:raise SetupError('HOST_AGENT_STALE')
+        if (control/'apply.lock').exists():raise SetupError('CONCURRENT_ATTEMPT_OR_INTERRUPTED_LOCK')
+        if root.exists() and not plan['roots']['config']['existed'] and not bound_root_owner(root):raise SetupError('NEW_ROOT_RACE_OR_UNKNOWN_OWNER')
+        control_owner=control/'owner.json'
+        if control.exists():
+            if not control_owner.is_file() or json.loads(control_owner.read_text(encoding='utf-8')).get('install_binding')!=plan['install_binding']:raise SetupError('CONTROL_OWNERSHIP_UNVERIFIED')
+        root_created=False
+        if not root.exists():root.mkdir(parents=True);root_created=True
+        control.mkdir(exist_ok=True)
+        if not control_owner.exists():atomic_json(control_owner,{'schema':SCHEMA,'install_binding':plan['install_binding']})
+        lock=control/'apply.lock'
+        try:handle=lock.open('x',encoding='utf-8')
+        except FileExistsError:raise SetupError('CONCURRENT_ATTEMPT_OR_INTERRUPTED_LOCK')
+        try:
+            handle.write(json.dumps({'pid':os.getpid(),'fingerprint':plan['fingerprint']}));handle.close()
+            receipt_path=control/'receipt.json'
+            if receipt_path.exists():
+                receipt=json.loads(receipt_path.read_text(encoding='utf-8'))
+                if receipt.get('install_binding')==plan['install_binding'] and receipt.get('status')=='APPLIED':return self.verify(plan)
+                if receipt.get('status')=='APPLIED':raise SetupError('EXISTING_INSTALL_REVIEW_REQUIRED')
+                if receipt.get('fingerprint')!=plan['fingerprint']:raise SetupError('CHECKPOINT_PLAN_MISMATCH')
+            else:
+                if file_hash(plan['host_agent'])!=plan['expected_host_agent_sha256']:raise SetupError('HOST_AGENT_STALE')
+                receipt={'schema':SCHEMA,'fingerprint':plan['fingerprint'],'install_binding':plan['install_binding'],'attempt':uuid.uuid4().hex,'status':'APPLYING',
+                    'created_roots':[],'context_before_sha256':plan['expected_host_agent_sha256'],'context_after_sha256':None,
+                    'runtime':{'state':'NOT_AUTHORIZED'},'durable':{'state':'NOT_CONFIGURED'},'image':{'state':'NOT_REQUESTED'}}
+                if root_created:receipt['created_roots'].append(str(root))
+                atomic_json(receipt_path,receipt)
+            atomic_json(control/'plan.json',plan)
+            for directory in [*[plan['roots'][n]['path'] for n in ('workspace','config','cache','temp')],*plan['exchange'].values()]:
+                p=safe_path(directory)
+                if p.exists() and str(p) not in receipt['created_roots'] and directory not in [r['path'] for r in plan['roots'].values() if r.get('existed')]:
+                    raise SetupError('NEW_ROOT_RACE_OR_UNKNOWN_OWNER')
+                if not p.exists():
+                    p.mkdir(parents=True);receipt['created_roots'].append(str(p));atomic_json(receipt_path,receipt)
+                if str(p) in receipt['created_roots']:
+                    atomic_json(p/'.agent-runtime-setup-owner.json',{'schema':SCHEMA,'owner':'AGENT_RUNTIME_SETUP',
+                        'root':str(p),'config_root':str(root),'attempt':receipt['attempt'],'install_binding':plan['install_binding']})
+            config_id=None
+            config_id=receipt['image'].get('config_id')
+            if plan['runtime_requested'] and receipt['image'].get('state')!='PASS':
+                pulled=self.adapter.pull_image(IMAGE)
+                if pulled.get('state')!='PASS' or pulled.get('manifest_digest')!=IMAGE.split('@')[1]:raise SetupError('IMAGE_DIGEST_NOT_VERIFIED')
+                config_id=pulled['config_id'];receipt['image']=pulled;atomic_json(receipt_path,receipt)
+            target=safe_path(plan['host_agent'])
+            if receipt['context_after_sha256'] is None and receipt.get('context_intended_sha256') and file_hash(target)==receipt['context_intended_sha256']:
+                # Reconcile an atomic replacement that finished before checkpoint writeback.
+                receipt['context_after_sha256']=receipt['context_intended_sha256'];atomic_json(receipt_path,receipt)
+            if receipt['context_after_sha256'] is None:
+                if file_hash(target)!=receipt['context_before_sha256']:raise SetupError('HOST_AGENT_STALE')
+                readiness=self.adapter.runtime_readiness(plan) if hasattr(self.adapter,'runtime_readiness') and plan['runtime_requested'] else {}
+                receipt['readiness']=readiness
+                content=self.context(plan,config_id,readiness).encode('utf-8')
+                if target.exists():
+                    # Nonsecret old context is retained only in owned journal, never secret stores.
+                    (control/'HOST_AGENT.previous').write_bytes(target.read_bytes())
+                temporary=target.with_name('HOST_AGENT.setup-new')
+                receipt['context_intended_sha256']=hashlib.sha256(content).hexdigest();atomic_json(receipt_path,receipt)
+                with temporary.open('xb') as output:output.write(content);output.flush();os.fsync(output.fileno())
+                os.replace(temporary,target)
+                receipt['context_after_sha256']=hashlib.sha256(content).hexdigest();atomic_json(receipt_path,receipt)
+            elif file_hash(target)!=receipt['context_after_sha256']:raise SetupError('HOST_AGENT_STALE')
+            if plan['durable']['destination']:
+                if not plan['durable']['authorized'] or not hasattr(self.adapter,'writeback_context'):raise SetupError('DURABLE_AUTHORITY_OR_HELPER_REQUIRED')
+                proof=self.adapter.writeback_context(plan,target,receipt['context_after_sha256'])
+                if proof.get('state')!='PASS' or proof.get('context_sha256')!=receipt['context_after_sha256']:raise SetupError('DURABLE_WRITEBACK_NOT_VERIFIED')
+                receipt['durable']=proof;atomic_json(receipt_path,receipt)
+            if plan['runtime_requested']:
+                if not plan['github']['authorized']:receipt['runtime']={'state':'NOT_AUTHORIZED','reason':'Runtime GitHub identity projection authority missing'}
+                elif receipt.get('readiness',{}).get('credentials')!='PASS' or receipt.get('readiness',{}).get('model')!='PASS':
+                    receipt['runtime']={'state':'NOT_AUTHORIZED','reason':'CONFIGURED_PENDING_AUTH: verified runtime credential and model provider readiness required'}
+                elif receipt['runtime'].get('state') not in {'READY','PASS'}:
+                    incoming=safe_path(plan['runtime']['incoming']);outgoing=safe_path(plan['runtime']['outgoing'])
+                    if incoming.exists() or outgoing.exists():raise SetupError('RUNTIME_ATTEMPT_ALREADY_EXISTS_RECONCILE_FIRST')
+                    incoming.mkdir(exist_ok=True);outgoing.mkdir(exist_ok=True)
+                    import shutil
+                    helper_source=Path(__file__).resolve().parents[2]/'conformance/github_credential.py'
+                    with (incoming/'github_credential.py').open('xb') as destination:destination.write(helper_source.read_bytes())
+                    receipt['runtime']=self.adapter.start_runtime(plan,target)
+                    atomic_json(receipt_path,receipt)
+                if receipt['runtime'].get('state') not in {'READY','PASS'} and receipt.get('readiness',{}).get('model')=='PASS':
+                    # Startup can invalidate earlier readiness. Never leave an
+                    # enabled discovery projection after a denied/failed start.
+                    if file_hash(target)!=receipt['context_after_sha256']:raise SetupError('HOST_AGENT_STALE')
+                    disabled=self.context(plan,config_id,{}).encode('utf-8')
+                    temporary=target.with_name('HOST_AGENT.setup-new')
+                    with temporary.open('xb') as output:output.write(disabled);output.flush();os.fsync(output.fileno())
+                    os.replace(temporary,target)
+                    receipt['context_after_sha256']=hashlib.sha256(disabled).hexdigest();receipt['readiness']={}
+                    atomic_json(receipt_path,receipt)
+                    if plan['durable']['destination']:
+                        proof=self.adapter.writeback_context(plan,target,receipt['context_after_sha256'])
+                        if proof.get('state')!='PASS' or proof.get('context_sha256')!=receipt['context_after_sha256']:raise SetupError('DURABLE_WRITEBACK_NOT_VERIFIED')
+                        receipt['durable']=proof;atomic_json(receipt_path,receipt)
+            receipt['status']='APPLIED';atomic_json(receipt_path,receipt)
+            return self.verify(plan)
+        except Exception as error:
+            if (control/'receipt.json').exists():
+                state=json.loads((control/'receipt.json').read_text(encoding='utf-8'));state['status']='INTERRUPTED';state['failure']=str(error) if isinstance(error,SetupError) else type(error).__name__;atomic_json(control/'receipt.json',state)
+            raise SetupError(str(error) if isinstance(error,SetupError) else 'APPLY_FAILED_SANITIZED') from None
+        finally:
+            handle.close()
+            if lock.exists():lock.unlink()
+
+    def verify(self,plan):
+        self._validate(plan)
+        checkpoint=self._control(plan)/'receipt.json'
+        if not checkpoint.exists():return {'status':'NOT_APPLIED','checks':[],'reason':'Plan only; no Host install evidence'}
+        receipt=json.loads(checkpoint.read_text(encoding='utf-8'))
+        if receipt.get('install_binding')!=plan['install_binding']:raise SetupError('CHECKPOINT_PLAN_MISMATCH')
+        if receipt.get('status')!='ROLLED_BACK' and any(not bound_root_owner(raw) for raw in receipt.get('created_roots',[])):
+            raise SetupError('ROOT_OWNERSHIP_DRIFT')
+        context=file_hash(plan['host_agent'])==receipt['context_after_sha256'] and receipt['context_after_sha256'] is not None
+        runtime=receipt['runtime']
+        current_readiness=self.adapter.runtime_readiness(plan) if hasattr(self.adapter,'runtime_readiness') else {}
+        if runtime.get('state') in {'PASS','READY'} and not getattr(self.adapter,'fixture',False):
+            runtime=self.adapter.verify_runtime(plan['runtime']['name'],Path(plan['host_agent']),expected_config_id=receipt['image']['config_id'])
+            if runtime.get('state')=='PASS' and plan['github'].get('helper_approved'):
+                proof=self.adapter.helper_status(plan['github']['helper'],approved=True,operation='verify')
+                if proof.get('state')=='PASS' and proof.get('repo')==plan['github'].get('repo') and proof.get('work')==plan['github'].get('work') and proof.get('context_sha256')==receipt['context_after_sha256']:
+                    for key,source in {'github_read':'github_read','github_write':'github_write','github_fresh_recovery':'fresh_recovery','server_authenticated':'authenticated_api'}.items():
+                        runtime[key]='PASS' if proof.get(source) is True else 'BLOCKED' if proof.get(source) is False else 'NOT_AUTHORIZED'
+        checks={'local_context':'PASS' if context else 'BLOCKED','durable_context':receipt['durable']['state'],
+            'credentials':'PASS' if current_readiness.get('credentials')=='PASS' else 'NOT_AUTHORIZED',
+            'image':receipt['image']['state'],'runtime':runtime.get('state','UNKNOWN'),
+            'github_fresh_recovery':runtime.get('github_fresh_recovery','NOT_AUTHORIZED'),
+            'github_read':runtime.get('github_read','NOT_AUTHORIZED'),'github_write':runtime.get('github_write','NOT_AUTHORIZED'),
+            'server_authenticated':runtime.get('server_authenticated','NOT_AUTHORIZED'),
+            'model':'PASS' if current_readiness.get('model')=='PASS' else 'NOT_AUTHORIZED','workspace':'LINUX_NATIVE' if runtime.get('state')=='PASS' else 'NOT_STARTED'}
+        github_ready=context and runtime.get('state')=='PASS' and receipt['durable']['state']=='PASS' and all(checks[k]=='PASS' for k in ('credentials','github_fresh_recovery','github_read','github_write','server_authenticated'))
+        status='READY' if github_ready and checks['model']=='PASS' else 'RUNTIME_GITHUB_READY' if github_ready else 'CONFIGURED_PENDING_AUTH' if context else 'BLOCKED'
+        return {'status':status,
+            'checks':checks,'reason':'No complete recovery claim without authenticated durable writeback/fresh-runtime proof',
+            'host_agent_sha256':receipt['context_after_sha256'],'receipt':str(checkpoint)}
+
+    def repair(self,plan):
+        self._validate(plan)
+        checkpoint=self._control(plan)/'receipt.json'
+        state=json.loads(checkpoint.read_text(encoding='utf-8')) if checkpoint.exists() else {}
+        return {'status':'REVIEW_REQUIRED','reason':'Reprobe, preserve native/vendor/secret state; approve retry of this exact plan or owned rollback',
+            'checkpoint_status':state.get('status','NONE'),'operations':[],
+            'reviewed_plan':str(self._control(plan)/'plan.json') if (self._control(plan)/'plan.json').is_file() else None,
+            'lock_present':(self._control(plan)/'apply.lock').exists(),'reboot_or_upgrade':'NOT_AUTOMATIC'}
+
+    def rollback(self,plan,approved=False):
+        self._validate(plan)
+        if not approved or not plan['host_authorized']:raise SetupError('EXPLICIT_HOST_APPROVAL_REQUIRED')
+        control=self._control(plan)
+        try:lease=(control/'apply.lock').open('x',encoding='utf-8')
+        except FileExistsError:raise SetupError('CONCURRENT_ATTEMPT_OR_INTERRUPTED_LOCK')
+        try:
+            lease.write(json.dumps({'pid':os.getpid(),'action':'rollback'}));lease.close()
+            return self._rollback_owned(plan)
+        finally:
+            lease.close();(control/'apply.lock').unlink()
+
+    def _rollback_owned(self,plan):
+        control=self._control(plan);checkpoint=control/'receipt.json'
+        state=json.loads(checkpoint.read_text(encoding='utf-8'))
+        if state.get('install_binding')!=plan['install_binding']:raise SetupError('CHECKPOINT_PLAN_MISMATCH')
+        if state.get('status')=='ROLLED_BACK':return {'status':'ROLLED_BACK','retained_roots':state.get('retained_roots',[])}
+        if state.get('runtime',{}).get('state') in {'PASS','READY'}:raise SetupError('OWNED_RUNTIME_STOP_REQUIRED_BEFORE_ROLLBACK')
+        target=safe_path(plan['host_agent'])
+        if state.get('context_after_sha256'):
+            if file_hash(target)!=state['context_after_sha256']:raise SetupError('HOST_AGENT_STALE')
+            previous=control/'HOST_AGENT.previous'
+            if state['context_before_sha256']:
+                if file_hash(previous)!=state['context_before_sha256']:raise SetupError('ROLLBACK_BACKUP_DRIFT')
+                os.replace(previous,target)
+            else:target.unlink()
+        # Delete only marker-proven newly owned roots and empty directories. Never recursive GC.
+        retained=[]
+        for raw in reversed(state.get('created_roots',[])):
+            p=safe_path(raw);marker=p/'.agent-runtime-setup-owner.json'
+            if not marker.exists() or json.loads(marker.read_text(encoding='utf-8')).get('attempt')!=state['attempt']:raise SetupError('ROLLBACK_OWNERSHIP_DRIFT')
+            if any(child.name not in {'.agent-runtime-setup-owner.json','.agent-runtime-setup'} for child in p.iterdir()):retained.append(str(p));continue
+            if p==control.parent:retained.append(str(p));continue
+            marker.unlink();p.rmdir()
+        state['status']='ROLLED_BACK';state['retained_roots']=retained;atomic_json(checkpoint,state)
+        return {'status':'ROLLED_BACK','retained_roots':retained,'reason':'Journal/root with evidence retained; unknown or unique bytes never deleted'}
