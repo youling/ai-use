@@ -17,6 +17,24 @@ SECRET_PATTERN=re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY|gh[pous
 
 class SetupError(Exception):
     """Only stable codes reach UI/logs; never interpolate external exceptions."""
+    def __init__(self,code,*,conflicts=None):
+        super().__init__(code)
+        self.conflicts=conflicts or []
+
+ROOT_ROLES=('workspace','config','cache','temp')
+
+def root_conflicts(paths,sources):
+    """Native resolved paths stay local; diagnostics contain only finite role metadata."""
+    conflicts=[]
+    for i,left in enumerate(ROOT_ROLES):
+        a=safe_path(paths[left])
+        for right in ROOT_ROLES[i+1:]:
+            b=safe_path(paths[right])
+            relation='SAME_DIRECTORY' if a==b else 'CONTAINS' if a.is_relative_to(b) or b.is_relative_to(a) else None
+            if relation:
+                conflicts.append({'roles':[left,right],'sources':[sources[left],sources[right]],'relation':relation,
+                    'action':'OWNER_REVIEW_EXISTING_ROOTS' if 'EXISTING_CONTEXT' in (sources[left],sources[right]) else 'REVIEW_SEPARATE_SCOPED_ROOTS'})
+    return conflicts
 
 def digest(value):
     return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':')).encode()).hexdigest()
@@ -160,6 +178,38 @@ class SetupEngine:
                 except (ValueError,TypeError,AttributeError,KeyError,OSError):observation['existing_context_state']='STALE_REQUIRES_OWNER_REPAIR'
         return observation
 
+    def diagnose_root_plan(self,observation=None,overrides=None):
+        """Read-only planning diagnostics: no paths, identities, file contents or writes."""
+        try:
+            plan=self.plan(observation if observation is not None else self.probe(),overrides=overrides)
+            return {'status':plan['status'],'code':'NO_ROOT_OVERLAP','roles':list(ROOT_ROLES),'conflicts':[],
+                'host_apply':'NOT_AUTHORIZED','boss_cause':'NOT_DETERMINED'}
+        except SetupError as error:
+            code=str(error)
+            if not re.fullmatch(r'[A-Z][A-Z0-9_]{1,63}',code):code='OPERATION'
+            return {'status':'BLOCKED','code':code,'conflicts':error.conflicts,
+                'host_apply':'NOT_AUTHORIZED','boss_cause':'NOT_DETERMINED'}
+        except Exception:
+            return {'status':'BLOCKED','code':'OPERATION','conflicts':[],
+                'host_apply':'NOT_AUTHORIZED','boss_cause':'NOT_DETERMINED'}
+
+    def propose_isolated_roots(self,observation):
+        """Return an unselected new namespace; never mutate or move existing roots."""
+        volumes=[v for v in observation.get('volumes',[]) if (v.get('free_bytes') or 0)>=8*1024**3
+            and v.get('fs') in {'NTFS','ReFS'} and v.get('mount') and v.get('local',True) is not False
+            and str(v.get('bus_type','')).lower() not in {'usb','iscsi','network'}]
+        volumes.sort(key=lambda v:(str(v.get('bus_type','')).upper()=='NVME',str(v.get('media_type','')).upper()=='SSD',
+            v.get('device_id')==observation.get('wslc_storage_device_id'),(v.get('free_bytes') or 0)/max(v.get('capacity_bytes') or 1,1),v.get('free_bytes',0)),reverse=True)
+        if not volumes:raise SetupError('STORAGE_CAPACITY')
+        for volume in volumes:
+            scope=safe_path(Path(volume['mount'])/('AgentRuntime-Setup-'+uuid.uuid4().hex[:12]))
+            try:self.plan(observation,overrides={'isolated_scope':str(scope)})
+            except SetupError as error:
+                if str(error)=='ISOLATED_SCOPE_OVERLAP':continue
+                raise
+            return {'isolated_scope':str(scope),'action':'REVIEW_ONLY_NO_HOST_CHANGES'}
+        raise SetupError('ISOLATED_SCOPE_OVERLAP')
+
     def plan(self,observation,overrides=None,github=None,model=None,durable=None):
         overrides=overrides or {};github=github or {};model=model or {};durable=durable or {}
         gates=[]
@@ -176,19 +226,42 @@ class SetupEngine:
         chosen=viable[0] if viable else (volumes[0] if volumes else {'mount':observation.get('documents') or str(Path.cwd())})
         base=Path(chosen['mount'])/'AgentRuntime'
         existing=observation.get('existing_roots',{})
-        roots={}
-        for name,leaf in [('workspace','workspaces'),('config','config'),('cache','cache'),('temp','attempts')]:
+        if not isinstance(existing,dict):raise SetupError('EXISTING_ROOT_METADATA_INVALID')
+        for name in ROOT_ROLES:
             old=existing.get(name,{})
+            if not isinstance(old,dict) or (old.get('path') is not None and not isinstance(old.get('path'),str)):
+                raise SetupError('EXISTING_ROOT_METADATA_INVALID')
+        state_meta=existing.get('state',{})
+        exchange_meta=existing.get('exchange',{})
+        if (not isinstance(state_meta,dict) or (state_meta.get('path') is not None and not isinstance(state_meta.get('path'),str))
+            or not isinstance(exchange_meta,dict) or (exchange_meta and (set(exchange_meta)!={'in','out'}
+            or any(not isinstance(value,str) or not value for value in exchange_meta.values())))):
+            raise SetupError('EXISTING_ROOT_METADATA_INVALID')
+        isolated=overrides.get('isolated_scope')
+        if isolated:
+            base=safe_path(isolated)
+            if base.exists():raise SetupError('ISOLATED_SCOPE_ALREADY_EXISTS')
+            protected=[old['path'] for name,old in existing.items() if name in (*ROOT_ROLES,'state') and isinstance(old,dict) and old.get('path')]
+            if isinstance(existing.get('exchange'),dict):protected.extend(existing['exchange'].values())
+            for raw in protected:
+                old_path=safe_path(raw)
+                if base==old_path or base.is_relative_to(old_path) or old_path.is_relative_to(base):raise SetupError('ISOLATED_SCOPE_OVERLAP')
+        roots={}
+        root_sources={}
+        for name,leaf in [('workspace','workspaces'),('config','config'),('cache','cache'),('temp','attempts')]:
+            old={} if isolated else existing.get(name,{})
             selected=overrides.get(name) or old.get('path') or str(base/leaf)
-            if old.get('path') and old.get('exists') and safe_path(selected)!=safe_path(old['path']):
+            root_sources[name]='USER_SELECTION' if overrides.get(name) else 'EXISTING_CONTEXT' if old.get('path') else 'NEW_DEFAULT'
+            if old.get('path') and (old.get('exists') or Path(old['path']).exists()) and safe_path(selected)!=safe_path(old['path']):
                 raise SetupError('FIRST_INSTALL_NEVER_RELOCATES_EXISTING_DATA')
             path=safe_path(selected)
+            if isolated and (not path.is_relative_to(base) or path==base):raise SetupError('ISOLATED_SCOPE_TARGET_ESCAPE')
             if hasattr(self.adapter,'validate_owned_path'):self.adapter.validate_owned_path(path)
             # Parent containment alone does not make an arbitrary existing root owned.
             canonical=observation.get('canonical_classification',{})
             classified=(canonical.get('verified') is True and bool(re.fullmatch(r'[a-f0-9]{64}',str(canonical.get('sha256',''))))
                 and canonical.get('sha256')==file_hash(Path(observation['documents'])/'HOST_AGENT.md') and bool(canonical.get('owner_pointer')))
-            owner=old.get('owner','UNKNOWN') if classified else 'HOST_MANAGED' if not path.exists() else 'UNKNOWN'
+            owner=old.get('owner','UNKNOWN') if classified and not isolated else 'HOST_MANAGED' if not path.exists() else 'UNKNOWN'
             marker=path/'.agent-runtime-setup-owner.json'
             if marker.exists():
                 try:
@@ -201,7 +274,8 @@ class SetupEngine:
         state=existing.get('state',{'path':observation.get('vendor_state','NATIVE_VENDOR_STATE'),'owner':'VENDOR_OWNED','relocatable':False})
         roots['state']={**state,'reason':'Preserve vendor/native state; never relocate on first install'}
         managed=[safe_path(roots[n]['path']) for n in ('workspace','config','cache','temp')]
-        if any(a==b or a.is_relative_to(b) or b.is_relative_to(a) for i,a in enumerate(managed) for b in managed[i+1:]):raise SetupError('ROOT_OVERLAP')
+        conflicts=root_conflicts({n:roots[n]['path'] for n in ROOT_ROLES},root_sources)
+        if conflicts:raise SetupError('ROOT_OVERLAP',conflicts=conflicts)
         for writer in observation.get('active_workloads',[]):
             if isinstance(writer,dict) and writer.get('path'):
                 active=safe_path(writer['path'])
@@ -234,7 +308,7 @@ class SetupEngine:
         if durable_meta['destination'] and not re.fullmatch(r'https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[^\s]*)?',durable_meta['destination']):raise SetupError('DURABLE_DESTINATION_INVALID')
         recovery_authorized=gh['authorized'] and durable_meta['authorized'] and bool(durable_meta['destination'])
         exchange={'in':str(base/'exchange/in'),'out':str(base/'exchange/out')}
-        if existing.get('exchange'):exchange=existing['exchange']
+        if existing.get('exchange') and not isolated:exchange=copy.deepcopy(existing['exchange'])
         for key in exchange:
             exchange[key]=str(safe_path(exchange[key]))
             if hasattr(self.adapter,'validate_owned_path'):self.adapter.validate_owned_path(exchange[key])
@@ -277,6 +351,9 @@ class SetupEngine:
             'operations':[{'kind':'ENSURE_OWNED_ROOT','path':str(p),'reason':'New/preserved scoped ownership'} for p in managed]+[{'kind':'MATERIALIZE_CONTEXT','path':str(target),'reason':'Known Folder discovery projection'}],
             'domains':{name:({'owner':'VENDOR_OWNED','relocatable':False} if name in {'Execution','State'} else {'owner':'HOST_CUSTODY','reference_only':True} if name=='Secrets' else roots[name.lower()]) for name in DOMAINS},
             'placement':'NO_MOVE','runtime_requested':bool(overrides.get('runtime',False))}
+        if isolated:
+            result['preserved_existing_roles']=[name for name in (*ROOT_ROLES,'state','exchange') if existing.get(name)]
+            result['isolated_scope_reviewed']=str(base)
         # Stable semantic binding excludes observation time; new authority must still be explicit.
         result['install_binding']=digest({'roots':{k:{key:v[key] for key in ('path','owner','relocatable') if key in v} for k,v in roots.items()},'exchange':exchange,'github':gh,'model':mod,'durable':durable_meta,'image':IMAGE})
         run_id=result['install_binding'][:12]

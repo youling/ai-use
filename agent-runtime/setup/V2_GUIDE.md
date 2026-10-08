@@ -1,5 +1,7 @@
 # 安装向导 V2：先查看，再安装
 
+**普通 Windows 用户入口是 [AgentRuntimeSetup.exe](EXE_GUIDE.md)**，对应 #137 的实际 CI 构建、下载与 hash 证据。下文的 PowerShell/Python 入口是开发者源码路径；不要求 EXE 用户重复这些准备。
+
 这是 [#132](https://github.com/youling/ai-use/issues/132) 的公共源码候选。独立审查与真实电脑验收分别进行；测试通过不代表已经替你安装或连接账号。
 
 ## 第一次打开

@@ -1,0 +1,148 @@
+"""Content provenance is distinct from distributor trust and Host authority.
+
+The embedded manifest detects corruption of resources/runtime. An unsigned
+manifest/EXE cannot establish publisher identity: installation remains denied.
+The reviewed CI provenance and externally checked EXE SHA256 are the evidence
+for this preview artifact; no synthetic manifest can create release authority.
+"""
+from __future__ import annotations
+import hashlib
+import json
+from pathlib import Path, PurePosixPath
+import re
+import platform
+import subprocess
+import sys
+import ctypes
+
+
+class BundleError(RuntimeError):
+    pass
+
+
+REQUIRED = {'agent_setup/probe_windows.ps1', 'agent-runtime/host/windows/launch.py',
+            'requirements.lock', 'requirements-build.lock', 'python-runtime.json',
+            'runtime/python314.dll', 'runtime/Python-LICENSE.txt', 'exe_entry.py',
+            'agent_setup/engine.py', 'agent_setup/windows.py', 'agent_setup/tui.py',
+            'agent_setup/credentials.py', 'agent_setup/packaging.py', 'agent_setup/exe_main.py'}
+
+
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def validate_bundle(root: Path) -> dict:
+    """Validate a complete inventory without trusting path traversal/symlinks."""
+    root = root.resolve(strict=True)
+    manifest_path = root / 'bundle-manifest.json'
+    if not manifest_path.is_file() or manifest_path.is_symlink():
+        raise BundleError('BUNDLE_MANIFEST_MISSING')
+    try:
+        if manifest_path.stat().st_size > 2**20:
+            raise BundleError('BUNDLE_MANIFEST_INVALID')
+        manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+        if (manifest.get('schema') != 1 or manifest.get('distribution') != 'UNSIGNED_TEST_ONLY'
+            or not re.fullmatch(r'[a-f0-9]{40}', manifest.get('source_head', ''))
+            or not re.fullmatch(r'3\.14\.\d+', manifest.get('python_version', ''))
+            or manifest.get('architecture') != 'AMD64'
+            or manifest.get('python_signature') != {'status': 'Valid', 'signer': 'Python Software Foundation'}):
+            raise BundleError('BUNDLE_MANIFEST_INVALID')
+        inventory = manifest['resources']
+        if not isinstance(inventory, dict) or not REQUIRED.issubset(inventory):
+            raise BundleError('BUNDLE_INVENTORY_INCOMPLETE')
+        for name, expected in inventory.items():
+            relative = PurePosixPath(name)
+            if (relative.is_absolute() or '..' in relative.parts or '\\' in name or ':' in name
+                or not re.fullmatch(r'[a-f0-9]{64}', expected)):
+                raise BundleError('BUNDLE_RESOURCE_INVALID')
+            path = root.joinpath(*relative.parts)
+            if any(p.is_symlink() or (p.exists() and getattr(p.lstat(), 'st_file_attributes', 0) & 0x400)
+                   for p in (path, *path.parents) if p == root or root in p.parents):
+                raise BundleError('BUNDLE_RESOURCE_REPARSE')
+            if not path.is_file() or not path.resolve().is_relative_to(root) or sha256(path) != expected:
+                raise BundleError('BUNDLE_RESOURCE_HASH_MISMATCH')
+        return manifest
+    except (KeyError, TypeError, ValueError, OSError) as error:
+        raise BundleError('BUNDLE_MANIFEST_INVALID') from error
+
+
+def loaded_python_dll() -> Path:
+    """Ask the native loader, not sys.executable or an on-disk lookalike."""
+    if sys.platform != 'win32':
+        raise BundleError('WINDOWS_LOADED_RUNTIME_REQUIRED')
+    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+    kernel.GetModuleHandleW.argtypes = [ctypes.c_wchar_p]
+    kernel.GetModuleHandleW.restype = ctypes.c_void_p
+    kernel.GetModuleFileNameW.argtypes = [ctypes.c_void_p, ctypes.c_wchar_p, ctypes.c_uint32]
+    kernel.GetModuleFileNameW.restype = ctypes.c_uint32
+    module = kernel.GetModuleHandleW('python314.dll')
+    if not module:
+        raise BundleError('LOADED_RUNTIME_MODULE_UNKNOWN')
+    buffer = ctypes.create_unicode_buffer(32768)
+    length = kernel.GetModuleFileNameW(module, buffer, len(buffer))
+    if not length or length >= len(buffer):
+        raise BundleError('LOADED_RUNTIME_MODULE_UNKNOWN')
+    return Path(buffer.value).resolve(strict=True)
+
+
+def verified_bundle_root() -> Path:
+    if not getattr(sys, 'frozen', False) or not hasattr(sys, '_MEIPASS'):
+        raise BundleError('FROZEN_BUNDLE_REQUIRED')
+    root = Path(sys._MEIPASS) / 'contract'
+    validate_bundle(root)
+    # PyInstaller actually loads this DLL from extraction root, not contract.
+    # Both must match the authenticated original runtime bytes.
+    actual = loaded_python_dll()
+    if actual != (root.parent / 'python314.dll').resolve(strict=True):
+        raise BundleError('LOADED_RUNTIME_MODULE_OUTSIDE_BUNDLE')
+    if sha256(actual) != sha256(root / 'runtime/python314.dll'):
+        raise BundleError('LOADED_RUNTIME_HASH_MISMATCH')
+    return root
+
+
+def psf_signature(path: Path) -> dict:
+    from .windows import trusted_windows_powershell
+    powershell = trusted_windows_powershell()
+    if not powershell:
+        return {'status': 'UnknownError', 'signer': 'UNVERIFIED'}
+    script = r"""$ErrorActionPreference='Stop'; [Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false);
+try { $env:PSModulePath=Join-Path $PSHOME 'Modules';
+Import-Module (Join-Path $PSHOME 'Modules\Microsoft.PowerShell.Security\Microsoft.PowerShell.Security.psd1') -ErrorAction Stop;
+$r=[Console]::In.ReadToEnd()|ConvertFrom-Json; $s=Get-AuthenticodeSignature -LiteralPath $r.path;
+$psf=$s.SignerCertificate -and $s.SignerCertificate.Subject -match '(?:^|,\s*)(?:CN|O)\s*=\s*"?Python Software Foundation"?(?:,|$)';
+@{status=[string]$s.Status;psf=[bool]$psf}|ConvertTo-Json -Compress
+} catch { @{status='UnknownError';psf=$false}|ConvertTo-Json -Compress }"""
+    try:
+        run = subprocess.run([powershell, '-NoLogo', '-NoProfile', '-NonInteractive', '-Command', script],
+                             input=json.dumps({'path': str(path)}), capture_output=True,
+                             encoding='utf-8', errors='replace', timeout=30)
+        result = json.loads(run.stdout) if run.returncode == 0 and len(run.stdout) <= 4096 else {}
+        if not isinstance(result, dict):
+            raise ValueError('SIGNATURE_METADATA_INVALID')
+        status = result.get('status')
+        if status not in {'Valid', 'NotSigned', 'HashMismatch', 'NotTrusted', 'UnknownError',
+                          'NotSupportedFileFormat', 'Incompatible'}:
+            status = 'UnknownError'
+        return {'status': status,
+                'signer': 'Python Software Foundation' if result.get('psf') is True else 'UNVERIFIED'}
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        return {'status': 'UnknownError', 'signer': 'UNVERIFIED'}
+
+
+def bundle_provenance() -> dict:
+    try:
+        root = verified_bundle_root()
+        manifest = validate_bundle(root)
+        if manifest['python_version'] != platform.python_version() or sys.version_info.releaselevel != 'final':
+            raise BundleError('BUNDLED_RUNTIME_VERSION_MISMATCH')
+        signature = psf_signature(root / 'runtime/python314.dll')
+        if signature != {'status': 'Valid', 'signer': 'Python Software Foundation'}:
+            raise BundleError('BUNDLED_RUNTIME_PSF_SIGNATURE_UNVERIFIED')
+        return {'state': 'VERIFIED_CONTENT_UNSIGNED_TEST_ONLY', 'bundle_verified': True,
+                'python_verified': True, 'source_head': manifest['source_head'],
+                'python_version': manifest['python_version'], 'runtime_signature': signature,
+                'distribution': 'UNSIGNED_TEST_ONLY', 'publisher_trusted': False,
+                'host_apply': 'DENIED', 'reason': 'REVIEWED_SIGNED_DISTRIBUTION_AND_HUMAN_GATE_REQUIRED'}
+    except (BundleError, OSError):
+        return {'state': 'BLOCKED', 'bundle_verified': False, 'python_verified': False,
+                'publisher_trusted': False, 'host_apply': 'DENIED', 'reason': 'BUNDLE_PROVENANCE_UNVERIFIED'}

@@ -23,6 +23,37 @@ from datetime import datetime, timezone
 PINNED_IMAGE = "ghcr.io/youling/opencode-foreman@sha256:fa92f37752ff6132b161ed4c2563897c94b014ab70d650846dcb09f354f55261"
 
 
+def trusted_windows_powershell() -> str | None:
+    """Use the OS directory API, never PATH or caller-controlled SystemRoot."""
+    if sys.platform != 'win32':
+        return None
+    try:
+        buffer = ctypes.create_unicode_buffer(32768)
+        kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+        kernel.GetSystemDirectoryW.argtypes = [ctypes.c_wchar_p, ctypes.c_uint]
+        kernel.GetSystemDirectoryW.restype = ctypes.c_uint
+        count = kernel.GetSystemDirectoryW(buffer, len(buffer))
+        if not 0 < count < len(buffer):
+            return None
+        path = Path(buffer.value) / 'WindowsPowerShell' / 'v1.0' / 'powershell.exe'
+        if not path.is_file() or any(p.is_symlink() or (p.exists() and getattr(p.lstat(), 'st_file_attributes', 0) & 0x400) for p in (path, *path.parents)):
+            return None
+        return str(path)
+    except (OSError, AttributeError):
+        return None
+
+
+def frozen_provenance() -> dict:
+    if not getattr(sys, 'frozen', False):
+        return {'state': 'SCRIPT_MODE', 'python_verified': False}
+    try:
+        from .packaging import bundle_provenance
+        proof = bundle_provenance()
+        return proof if isinstance(proof, dict) else {'state': 'BUNDLE_UNVERIFIED', 'python_verified': False}
+    except Exception:
+        return {'state': 'BUNDLE_UNVERIFIED', 'python_verified': False}
+
+
 def wsl_app_version(text: str) -> str | None:
     """Only accept an explicitly labelled WSL application version, not a kernel."""
     text = text.replace("\x00", "")
@@ -90,8 +121,10 @@ def normalize_inventory(raw: dict) -> dict:
 class WindowsAdapter:
     def __init__(self, *, apply_authorized: bool = False, runner=None, credential_custodian=None):
         self.platform = "windows" if sys.platform == "win32" else sys.platform
-        self.can_apply = sys.platform == "win32"
-        self.apply_authorized = apply_authorized
+        self.can_apply = sys.platform == "win32" and not getattr(sys, 'frozen', False)
+        # This candidate is an unsigned CI artifact, not a distribution authority.
+        # A flag cannot promote its content hashes into trusted Host permission.
+        self.apply_authorized = apply_authorized and not getattr(sys, 'frozen', False)
         self._runner = runner or subprocess.run
         self._credential_custodian = credential_custodian
 
@@ -168,10 +201,11 @@ try {
                        "github": {"state": "NOT_AUTHORIZED", "reason": "APPROVED_HELPER_PROJECTION_REQUIRED"},
                        "model": {"state": "NOT_AUTHORIZED", "reason": "PROVIDER_SELECTION_AND_AUTHORITY_REQUIRED"},
                        "observed_at": datetime.now(timezone.utc).isoformat()}
-        if not self.can_apply:
+        if self.platform != 'windows':
             return observation
         observation["documents"] = documents_known_folder()
-        powershell = shutil.which("pwsh.exe") or shutil.which("powershell.exe")
+        frozen = bool(getattr(sys, 'frozen', False))
+        powershell = trusted_windows_powershell() if frozen else (shutil.which("pwsh.exe") or trusted_windows_powershell() or shutil.which("powershell.exe"))
         observation['github'].update(self.discover_credentials()['github'])
         observation['model'].update(self.discover_credentials()['model'])
         observation['wslc_storage'] = {'state': 'UNKNOWN', 'reason': 'ACTUAL_WSLC_STORAGE_NOT_OBSERVED'}
@@ -182,20 +216,37 @@ try {
                                             'action': 'PRESERVE_EXISTING_SERVICE_LOCAL_PROFILE_HAS_NO_HOST_PUBLISH'}
         except OSError:
             observation['local_port'] = {'port': 4096, 'state': 'UNKNOWN'}
-        if powershell:
+        if frozen:
+            proof = frozen_provenance()
+            observation['runtime_provenance'] = proof
+            verified = (proof.get('state') == 'VERIFIED_CONTENT_UNSIGNED_TEST_ONLY'
+                        and proof.get('bundle_verified') is True
+                        and proof.get('python_verified') is True
+                        and sys.version_info[:2] == (3, 14)
+                        and sys.version_info.releaselevel == 'final')
+            observation['python_signature'] = {'state': 'PASS' if verified else 'BLOCKED',
+                'status': 'EMBEDDED_RUNTIME_VERIFIED' if verified else 'UnknownError',
+                'signer': 'PSF_EMBEDDED_DLL_WITH_UNSIGNED_DISTRIBUTION' if verified else 'UNVERIFIED'}
+            observation['python_verified'] = verified
+        elif powershell:
             observation["python_signature"] = self._python_signature(powershell)
             observation["python_verified"] = (sys.version_info[:2] == (3, 14)
                                               and sys.version_info.releaselevel == "final"
                                               and observation["python_signature"]["state"] == "PASS")
+        if powershell:
             try:
+                probe_script = Path(__file__).with_name('probe_windows.ps1')
+                if frozen:
+                    from .packaging import verified_bundle_root
+                    probe_script = verified_bundle_root() / 'agent_setup' / 'probe_windows.ps1'
                 result = self._runner([powershell, "-NoLogo", "-NoProfile", "-NonInteractive",
-                                       "-File", str(Path(__file__).with_name("probe_windows.ps1"))],
+                                       "-File", str(probe_script)],
                                       capture_output=True, encoding="utf-8", errors="replace", timeout=25)
                 if result.returncode == 0:
                     raw = json.loads(result.stdout)
                     if isinstance(raw, dict):
                         observation.update(normalize_inventory(raw))
-            except (OSError, ValueError, subprocess.TimeoutExpired):
+            except (OSError, ValueError, RuntimeError, subprocess.TimeoutExpired):
                 pass
         # Existence metadata only, no traversal or reads of HOST_AGENT/credentials.
         documents = observation["documents"]
@@ -310,6 +361,17 @@ try {
             return {"state": "PASS", "context_sha256": sha, "durable_destination": destination}
         return {"state": "NOT_AUTHORIZED", "reason": "DURABLE_CONTEXT_WRITEBACK_UNVERIFIED"}
 
+    @staticmethod
+    def _launcher_command() -> list[str]:
+        if getattr(sys, 'frozen', False):
+            # Fixed internal mode executes only the manifest-verified launcher;
+            # never treat sys.executable as a general Python script interpreter.
+            from .packaging import verified_bundle_root
+            verified_bundle_root()
+            return [sys.executable, '--launcher-dispatch']
+        launcher = Path(__file__).resolve().parents[2] / 'host' / 'windows' / 'launch.py'
+        return [sys.executable, str(launcher)]
+
     def start_local_runtime(self, plan: dict, host_path: Path) -> dict:
         if not self.can_apply or not self.apply_authorized:
             return {'state': 'NOT_AUTHORIZED', 'reason': 'WINDOWS_APPLY_AUTHORITY_REQUIRED'}
@@ -320,8 +382,7 @@ try {
         wslc = shutil.which('wslc.exe')
         if not wslc:
             return {'state': 'BLOCKED', 'reason': 'WSLC_EXECUTABLE_ABSENT'}
-        launcher = Path(__file__).resolve().parents[2] / 'host' / 'windows' / 'launch.py'
-        argv = [sys.executable, str(launcher), '--host-agent', str(host_path), '--wslc', wslc,
+        argv = self._launcher_command() + ['--host-agent', str(host_path), '--wslc', wslc,
                 '--attempt', str(runtime['attempt']), '--name', name, '--local-only',
                 '--input', str(runtime['incoming']), '--output', str(runtime['outgoing'])]
         try:
@@ -360,8 +421,7 @@ try {
         wslc = shutil.which("wslc.exe")
         if not wslc:
             return {"state": "BLOCKED", "reason": "WSLC_EXECUTABLE_ABSENT"}
-        launcher = Path(__file__).resolve().parents[2] / "host" / "windows" / "launch.py"
-        argv = [sys.executable, str(launcher), "--host-agent", str(host_path), "--wslc", wslc,
+        argv = self._launcher_command() + ["--host-agent", str(host_path), "--wslc", wslc,
                 "--attempt", str(runtime["attempt"]), "--name", name,
                 "--github-projection", status["projection_directory"],
                 "--input", str(runtime["incoming"]), "--output", str(runtime["outgoing"]),
