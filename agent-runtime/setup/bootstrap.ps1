@@ -47,6 +47,13 @@ function Test-Python314([string]$Path) {
     if ($LASTEXITCODE -ne 0) { throw 'Python version probe failed.' }
     return ($version -match '^3\.14\.[0-9]+ final$')
 }
+# Auto-discovered PATH candidates are not trusted by mere presence.
+# A failed signature/version/path check is a rejected candidate, not fatal.
+# Explicit -PythonPath and registered 3.14 installations stay strict.
+function Test-DiscoveredPython314([string]$Path) {
+    try { return (Test-Python314 $Path) }
+    catch { return $false }
+}
 function Invoke-Checked([string]$Exe, [string[]]$Arguments) {
     & $Exe @Arguments
     if ($LASTEXITCODE -ne 0) { throw 'Installer subprocess failed; no Host success claimed.' }
@@ -68,13 +75,14 @@ $candidates = @()
 if ($PythonPath) { $candidates += [IO.Path]::GetFullPath($PythonPath) }
 if (Test-Path -LiteralPath $ownedPython) { $candidates += $ownedPython }
 foreach ($name in @('python.exe', 'python3.exe')) {
-    $command = Get-Command $name -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
-    if ($command -and $command.Source -notmatch '\\WindowsApps\\') { $candidates += $command.Source }
+    foreach ($command in @(Get-Command $name -All -CommandType Application -ErrorAction SilentlyContinue)) {
+        if ($command.Source -and $command.Source -notmatch '\\WindowsApps\\') { $candidates += $command.Source }
+    }
 }
 $python = $null
 foreach ($candidate in ($candidates | Select-Object -Unique)) {
-    if (Test-Python314 $candidate) { $python = $candidate; break }
-    if ($PythonPath) { throw 'Explicit PythonPath must be stable CPython 3.14.x.' }
+    if (Test-DiscoveredPython314 $candidate) { $python = $candidate; break }
+    if ($PythonPath) { throw 'Explicit PythonPath signature must verify as PSF-signed stable CPython 3.14.x.' }
 }
 if (-not $python) {
     # Metadata-only discovery prevents acquisition from upgrading a registered
