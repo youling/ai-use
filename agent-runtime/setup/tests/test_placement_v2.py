@@ -186,3 +186,32 @@ def test_writeback_local_projection_mutation_remains_currentness_gate(machine,mo
          durable={'destination':'https://github.com/synthetic/private','authorized':True})
     with pytest.raises(SetupError,match='HOST_AGENT_STALE'):engine.apply(plan,approved=True)
     assert starts==[] and Path(plan['host_agent']).read_text()=='owner concurrent mutation'
+
+
+def test_native_windows_drive_root_is_readonly_inventory_anchor(tmp_path):
+    """Actual Windows runner: the disk root is valid inventory, never install target."""
+    import os
+    if os.name!='nt':
+        pytest.skip('Real drive-root semantics require Windows')
+    from agent_setup.engine import safe_path
+    volume=Path(tmp_path.anchor)
+    with pytest.raises(SetupError,match='UNSAFE_ROOT'):
+        safe_path(volume)
+    documents=tmp_path/'Documents';documents.mkdir()
+    observation={'platform':'windows','python_version':'3.14.8','python_verified':True,
+        'wsl_app_version':'3.0.1','wslc_capability':{'state':'PASS'},'documents':str(documents),
+        'volumes':[{'mount':str(volume),'fs':'NTFS','device_id':'synthetic-disk-0',
+                    'bus_type':'NVMe','media_type':'SSD','capacity_bytes':256*GIB,'free_bytes':80*GIB}],
+        'active_workloads':[],'existing_roots':[]}
+    class ReadonlyWindowsInventory:
+        can_apply=False
+        def probe(self):return copy.deepcopy(observation)
+    engine=SetupEngine(ReadonlyWindowsInventory())
+    # All managed destinations are under a unique temporary subdirectory.
+    overrides={name:str(tmp_path/('owned-'+name)) for name in ('workspace','config','cache','temp')}
+    plan=engine.plan(engine.probe(),overrides=overrides)
+    assert plan['status']=='READY'
+    assert plan['storage']['mount']==str(volume)
+    assert len(plan['placement_rows'])==6
+    assert all(row['device_id']=='synthetic-disk-0' for row in plan['placement_rows'])
+    assert not any((tmp_path/('owned-'+name)).exists() for name in overrides)
