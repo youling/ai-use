@@ -7,6 +7,7 @@ from pathlib import Path
 import sys
 import tempfile
 import shutil
+import copy
 
 from .engine import SetupEngine, SetupError
 from .packaging import BundleError, bundle_provenance, verified_bundle_root, validate_bundle, PUBLIC_BUNDLE_CODES
@@ -35,9 +36,16 @@ def readonly_native_bundle_scan() -> dict:
 
 
 async def frozen_self_test(output: Path) -> dict:
-    """Read-only native resource scan, then synthetic Textual/engine flow."""
+    """Actual production probe/parser/planner on disposable public contexts.
+
+    Native OS inventory, resource loading and Python provenance stay real.
+    Wizard runtime capability is an explicitly labelled WSLC fixture; actual
+    native WSLC gates are separately reported without a runtime READY claim.
+    """
     from .tui import SetupApp
     from textual.widgets import Button
+    from .read_only_acceptance import (SCENARIOS, owned_fixture_pipeline,
+                                       assert_fixture_unchanged, native_read_only_planning)
     proof = bundle_provenance()
     if proof.get('bundle_verified') is not True or proof.get('python_verified') is not True:
         raise BundleError('BUNDLE_PROVENANCE_UNVERIFIED')
@@ -45,35 +53,51 @@ async def frozen_self_test(output: Path) -> dict:
     output.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='setup-exe-fixture-') as scratch:
         root = Path(scratch)
-        document = root / 'Documents'
-        document.mkdir()
-        native = root / 'native-opencode-sentinel.txt'
-        native.write_text('PUBLIC_SYNTHETIC_PRESERVE', encoding='utf-8')
-        class SyntheticWindowsAdapter(WindowsAdapter):
-            def probe(self):
-                return {'platform': 'windows', 'python_version': proof['python_version'],
-                        'python_verified': proof['python_verified'], 'runtime_provenance': proof,
-                        'wsl_app_version': '3.0.1', 'wslc_capability': {'state': 'PASS'},
-                        'documents': str(document), 'existing_roots': {}, 'active_workloads': [],
-                        'volumes': [{'mount': Path(scratch).anchor, 'fs': 'NTFS',
-                                     'free_bytes': 80 * 2**30, 'capacity_bytes': 200 * 2**30,
-                                     'device_id': 'PUBLIC_SYNTHETIC_VOLUME', 'media_type': 'SSD', 'bus_type': 'NVMe'}]}
-            def pull_image(self, *args):
-                raise SetupError('SELF_TEST_HOST_EFFECT_DENIED')
-            def start_runtime(self, *args):
-                raise SetupError('SELF_TEST_HOST_EFFECT_DENIED')
-        adapter = SyntheticWindowsAdapter(apply_authorized=False)
-        engine = SetupEngine(adapter)
+        native_root = root / 'native-read-only'
+        native_root.mkdir()
+        native_plan = native_read_only_planning(native_root)
+        if native_plan['status'] != 'PASS' or native_plan['volume_metadata'] != 'PASS':
+            raise SetupError('SELF_TEST_NATIVE_PLANNING_FAILED')
+        pipelines, cases, records = {}, [], []
+        for scenario in SCENARIOS:
+            scenario_root = root / scenario
+            scenario_root.mkdir()
+            pipeline = owned_fixture_pipeline(scenario_root, scenario)
+            pipelines[scenario] = pipeline
+            if not isinstance(pipeline['adapter'], WindowsAdapter) or pipeline['adapter'].can_apply:
+                raise SetupError('SELF_TEST_PRODUCTION_ADAPTER_OR_AUTHORITY_FAILED')
+            if pipeline['native_calls'].count('OS_INVENTORY') < 1:
+                raise SetupError('SELF_TEST_NATIVE_PIPELINE_NOT_EXERCISED')
+            code, plan_status = None, 'BLOCKED'
+            try:
+                plan = pipeline['engine'].plan(pipeline['observation'], overrides=pipeline['overrides'])
+                plan_status = plan['status']
+            except SetupError as error:
+                code = str(error)
+            if code != pipeline['expected_code'] or plan_status != pipeline['expected_status']:
+                raise SetupError('SELF_TEST_EXISTING_CONTEXT_CASE_FAILED')
+            assert_fixture_unchanged(pipeline)
+            diagnostic = pipeline['engine'].diagnose_root_plan(pipeline['observation'], overrides=pipeline['overrides'])
+            cases.append({'scenario': scenario, 'plan_status': plan_status, 'code': code,
+                          'metadata_errors': diagnostic.get('metadata_errors', []),
+                          'production_pipeline': 'WINDOWS_ADAPTER_PROBE_ENGINE_PROBE_PLAN',
+                          'existing_files': 'UNCHANGED', 'context_source': 'OWNED_PUBLIC_FIXTURE',
+                          'runtime_capability': 'SYNTHETIC_WSLC_ONLY', 'host_apply': 'DENIED'})
+        engine = pipelines['fresh']['engine']
         negatives = []
         for name in ['WSLC_ABSENT', 'LOW_DISK']:
-            metadata = engine.probe()
+            metadata = copy.deepcopy(engine.probe())
             if name == 'WSLC_ABSENT':
                 metadata['wslc_capability'] = {'state': 'BLOCKED'}
             else:
-                metadata['volumes'][0]['free_bytes'] = 1
-            plan = engine.plan(metadata)
+                for volume in metadata['volumes']:
+                    volume['free_bytes'] = 1
+            plan = engine.plan(metadata, overrides=pipelines['fresh']['overrides'])
             if plan['status'] != 'BLOCKED':
                 raise SetupError('SELF_TEST_PREFLIGHT_NOT_FAIL_CLOSED')
+            expected_gate = 'WSLC' if name == 'WSLC_ABSENT' else 'STORAGE_CAPACITY'
+            if not any(gate['code'] == expected_gate and gate['state'] == 'BLOCKED' for gate in plan['gates']):
+                raise SetupError('SELF_TEST_EXPECTED_PREFLIGHT_GATE_NOT_BLOCKED')
             negatives.append({'case': name, 'result': 'BLOCKED'})
         copied = root / 'corrupt-extraction'
         shutil.copytree(verified_bundle_root(), copied)
@@ -84,32 +108,47 @@ async def frozen_self_test(output: Path) -> dict:
             negatives.append({'case': 'CORRUPT_EXTRACTION', 'result': 'BLOCKED'})
         else:
             raise SetupError('SELF_TEST_CORRUPTION_NOT_FAIL_CLOSED')
-        records = []
-        for size in [(80, 24), (120, 40)]:
-            app = SetupApp(engine, host_authorized=False)
-            async with app.run_test(size=size) as pilot:
-                await pilot.pause(0.3)
-                if app.probe_data.get('python_verified') is not True:
-                    raise SetupError('SELF_TEST_FIRST_SCREEN_NOT_VERIFIED')
-                (output / f'actual-exe-check-{size[0]}x{size[1]}.svg').write_text(
-                    app.export_screenshot(title='ACTUAL FROZEN EXE / SYNTHETIC HOST / COMPUTER CHECK'), encoding='utf-8')
-                app.query_one('#next', Button).focus()
-                await pilot.press('enter')
-                await pilot.pause(0.5)
-                if app.step != 1 or not app.plan_data.get('roots'):
-                    raise SetupError('SELF_TEST_FIRST_NEXT_FAILED')
-                if app.host_authorized or app.approved_fingerprint is not None:
-                    raise SetupError('SELF_TEST_AUTHORITY_LEAK')
-                (output / f'actual-exe-placement-{size[0]}x{size[1]}.svg').write_text(
-                    app.export_screenshot(title='ACTUAL FROZEN EXE / SYNTHETIC HOST / FIRST NEXT PASS'), encoding='utf-8')
-                records.append({'size': list(size), 'first_next': 'PASS', 'host_authorized': False})
-        if native.read_text(encoding='utf-8') != 'PUBLIC_SYNTHETIC_PRESERVE' or (document / 'HOST_AGENT.md').exists():
-            raise SetupError('SELF_TEST_PRESERVATION_FAILED')
-    return {'status': 'PASS', 'execution': 'ACTUAL_FROZEN_EXE', 'metadata': 'SYNTHETIC_WINDOWS_ADAPTER',
-            'screens': records, 'host_apply': 'DENIED', 'native_opencode': 'UNCHANGED_SYNTHETIC_SENTINEL',
+        for scenario in ['fresh', 'legacy_v1', 'malformed_exchange']:
+            pipeline = pipelines[scenario]
+            sizes = [(80, 24), (120, 40)] if scenario != 'malformed_exchange' else [(80, 24)]
+            for size in sizes:
+                app = SetupApp(pipeline['engine'], host_authorized=False)
+                app.overrides.update(pipeline['overrides'])
+                async with app.run_test(size=size) as pilot:
+                    await pilot.pause(0.3)
+                    if app.probe_data.get('python_verified') is not True:
+                        raise SetupError('SELF_TEST_FIRST_SCREEN_NOT_VERIFIED')
+                    title = f'NATIVE PIPELINE / OWNED CONTEXT {scenario} / WSLC FIXTURE'
+                    (output / f'actual-exe-{scenario}-check-{size[0]}x{size[1]}.svg').write_text(
+                        app.export_screenshot(title=title), encoding='utf-8')
+                    app.query_one('#next', Button).focus()
+                    await pilot.press('enter')
+                    await pilot.pause(0.5)
+                    blocked = scenario == 'malformed_exchange'
+                    if app.step != (0 if blocked else 1) or (not blocked and not app.plan_data.get('roots')):
+                        raise SetupError('SELF_TEST_EXISTING_CONTEXT_FIRST_NEXT_FAILED')
+                    if blocked and not all(text in app.status_text for text in
+                                           ['EXISTING_ROOT_METADATA_INVALID', 'Exchange', 'PATH_TYPE', '只读目录诊断']):
+                        raise SetupError('SELF_TEST_METADATA_OWNER_ACTION_NOT_VISIBLE')
+                    if app.host_authorized or app.approved_fingerprint is not None:
+                        raise SetupError('SELF_TEST_AUTHORITY_LEAK')
+                    (output / f'actual-exe-{scenario}-next-{size[0]}x{size[1]}.svg').write_text(
+                        app.export_screenshot(title=title + (' / BLOCKED OWNER REVIEW' if blocked else ' / FIRST NEXT PASS')),
+                        encoding='utf-8')
+                    records.append({'scenario': scenario, 'size': list(size),
+                                    'first_next': 'BLOCKED_OWNER_REVIEW' if blocked else 'PASS',
+                                    'context_source': 'OWNED_PUBLIC_FIXTURE', 'host_authorized': False})
+                assert_fixture_unchanged(pipeline)
+        for pipeline in pipelines.values():
+            assert_fixture_unchanged(pipeline)
+    return {'status': 'PASS', 'execution': 'ACTUAL_FROZEN_EXE', 'metadata': 'NATIVE_WINDOWS_WITH_OWNED_CONTEXT_FIXTURES',
+            'acceptance': {'BUNDLE_EXECUTION_PASS': True, 'SYNTHETIC_HOST_WIZARD_PASS': True,
+                           'NATIVE_READ_ONLY_PLANNING_PASS': True, 'BOSS_CANARY': 'NOT_RETESTED',
+                           'LAST_REPORTED_BOSS_CANARY': 'FAIL_EXISTING_ROOT_METADATA_INVALID'},
+            'screens': records, 'context_cases': cases, 'host_apply': 'DENIED', 'native_opencode': 'UNCHANGED_OWNED_FIXTURE_STATE',
             'credentials_read': False, 'network': 'NO_CREDENTIAL_OR_MODEL_CALLS',
             'provenance': proof, 'negative_cases': negatives,
-            'native_metadata_scan': native_scan}
+            'native_metadata_scan': native_scan, 'native_read_only_planning': native_plan}
 
 
 def main(argv=None) -> int:

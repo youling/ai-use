@@ -73,7 +73,8 @@ REQUIRED = {'agent_setup/probe_windows.ps1', 'agent-runtime/host/windows/launch.
             'requirements.lock', 'requirements-build.lock', 'python-runtime.json',
             'runtime/python314.dll', 'runtime/Python-LICENSE.txt', 'exe_entry.py',
             'agent_setup/engine.py', 'agent_setup/windows.py', 'agent_setup/tui.py',
-            'agent_setup/credentials.py', 'agent_setup/packaging.py', 'agent_setup/exe_main.py'}
+            'agent_setup/credentials.py', 'agent_setup/packaging.py', 'agent_setup/exe_main.py',
+            'agent_setup/read_only_acceptance.py'}
 
 
 def sha256(path: Path) -> str:

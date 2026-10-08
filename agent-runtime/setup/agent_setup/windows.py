@@ -119,7 +119,7 @@ def normalize_inventory(raw: dict) -> dict:
 
 
 class WindowsAdapter:
-    def __init__(self, *, apply_authorized: bool = False, runner=None, credential_custodian=None):
+    def __init__(self, *, apply_authorized: bool = False, runner=None, credential_custodian=None, known_folder_resolver=None):
         self.platform = "windows" if sys.platform == "win32" else sys.platform
         self.can_apply = sys.platform == "win32" and not getattr(sys, 'frozen', False)
         # This candidate is an unsigned CI artifact, not a distribution authority.
@@ -130,6 +130,9 @@ class WindowsAdapter:
             runner = native_system_run
         self._runner = runner or subprocess.run
         self._credential_custodian = credential_custodian
+        # Dependency seam for disposable tests; no CLI/env Host-path override.
+        # Production always calls the native Windows Known Folder API.
+        self._known_folder_resolver = known_folder_resolver or documents_known_folder
 
     def discover_credentials(self) -> dict:
         # Executable existence is only an installation hint. Never execute an
@@ -169,6 +172,8 @@ class WindowsAdapter:
         script = r"""$ErrorActionPreference='Stop';
 [Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false);
 try {
+  $env:PSModulePath=Join-Path $PSHOME 'Modules';
+  Import-Module (Join-Path $PSHOME 'Modules\Microsoft.PowerShell.Security\Microsoft.PowerShell.Security.psd1') -ErrorAction Stop;
   $request=[Console]::In.ReadToEnd() | ConvertFrom-Json;
   $signature=Get-AuthenticodeSignature -LiteralPath $request.path;
   $psf=$false;
@@ -206,7 +211,7 @@ try {
                        "observed_at": datetime.now(timezone.utc).isoformat()}
         if self.platform != 'windows':
             return observation
-        observation["documents"] = documents_known_folder()
+        observation["documents"] = self._known_folder_resolver()
         frozen = bool(getattr(sys, 'frozen', False))
         powershell = trusted_windows_powershell() if frozen else (shutil.which("pwsh.exe") or trusted_windows_powershell() or shutil.which("powershell.exe"))
         observation['github'].update(self.discover_credentials()['github'])
@@ -253,7 +258,8 @@ try {
                 pass
         # Existence metadata only, no traversal or reads of HOST_AGENT/credentials.
         documents = observation["documents"]
-        observation["existing_roots"] = {"host_agent": bool(documents and (Path(documents) / "HOST_AGENT.md").is_file())}
+        observation['host_agent_present'] = bool(documents and (Path(documents) / 'HOST_AGENT.md').is_file())
+        observation['existing_roots'] = {}
         return observation
 
     def pull_image(self, pinnedref: str) -> dict:

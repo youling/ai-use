@@ -285,6 +285,15 @@ class SetupApp(App):
             code=str(exc) if isinstance(exc,SetupError) else ''
             safe_code=code if re.fullmatch(r'[A-Z][A-Z0-9_]{1,63}',code) else ('INPUT' if isinstance(exc,(ValueError,TypeError)) else 'OPERATION')
             explanation=''
+            prefix=self.words['error']
+            if safe_code=='EXISTING_ROOT_METADATA_INVALID' and isinstance(exc,SetupError):
+                prefix='目录契约需审查' if self.words is TEXT['zh'] else 'Root contract needs review'
+                from .engine import metadata_diagnostics
+                names=dict(zip(('workspace','config','cache','temp'),self.words['paths']))
+                names.update({'state':'原生状态' if self.words is TEXT['zh'] else 'Native state','exchange':'Exchange','context':'既有契约' if self.words is TEXT['zh'] else 'Existing contract'})
+                for error in metadata_diagnostics(exc.metadata_errors):
+                    explanation+=f" {names[error['role']]} · {error['reason']}"
+                explanation+=('；旧目录保留。请电脑所有者运行只读目录诊断并交维护者审查；不要编辑、删除配置或目录。' if self.words is TEXT['zh'] else '; old roots preserved. Owner: run read-only root diagnostics for maintainer review. Do not edit or delete configuration or directories.')
             if safe_code=='ROOT_OVERLAP' and isinstance(exc,SetupError):
                 self.root_overlap=True
                 names=dict(zip(('workspace','config','cache','temp'),self.words['paths']))
@@ -296,7 +305,7 @@ class SetupApp(App):
                     pair=' / '.join(names[role] for role in roles)
                     explanation+=f" {pair}: "+(('指向同一目录' if relation=='SAME_DIRECTORY' else '目录包含关系冲突') if self.words is TEXT['zh'] else ('same directory' if relation=='SAME_DIRECTORY' else 'directory containment conflict'))
                 explanation+=('；保留已有数据，请审阅独立的新作用域目录。可运行只读目录诊断。' if self.words is TEXT['zh'] else '; preserve existing data, review separate scoped roots. Read-only root diagnostics are available.')
-            self.set_status(f"{self.words['error']} [{safe_code}]{explanation}")
+            self.set_status(f"{prefix} [{safe_code}]{explanation}")
             return None
         finally:
             self.busy = False

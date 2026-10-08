@@ -18,6 +18,38 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from agent_setup.packaging import PUBLIC_BUNDLE_CODES
 
 
+def validate_acceptance_receipt(receipt: dict) -> None:
+    """Artifact publication cannot promote partial or empty evidence."""
+    acceptance = receipt.get('acceptance', {})
+    required = {'fresh', 'legacy_v1', 'malformed_state', 'malformed_exchange',
+                'extra_state', 'extra_exchange', 'stale', 'collision', 'junction'}
+    cases = receipt.get('context_cases', [])
+    if (not isinstance(acceptance, dict)
+        or any(acceptance.get(stage) is not True for stage in
+               ['BUNDLE_EXECUTION_PASS', 'SYNTHETIC_HOST_WIZARD_PASS', 'NATIVE_READ_ONLY_PLANNING_PASS'])
+        or acceptance.get('BOSS_CANARY') != 'NOT_RETESTED'
+        or acceptance.get('LAST_REPORTED_BOSS_CANARY') != 'FAIL_EXISTING_ROOT_METADATA_INVALID'
+        or not isinstance(cases, list) or len(cases) != len(required)
+        or {case.get('scenario') for case in cases if isinstance(case, dict)} != required):
+        raise RuntimeError('FROZEN_ACCEPTANCE_EVIDENCE_INCOMPLETE')
+    for case in cases:
+        if (case.get('production_pipeline') != 'WINDOWS_ADAPTER_PROBE_ENGINE_PROBE_PLAN'
+            or case.get('existing_files') != 'UNCHANGED'
+            or case.get('context_source') != 'OWNED_PUBLIC_FIXTURE'
+            or case.get('runtime_capability') != 'SYNTHETIC_WSLC_ONLY'
+            or case.get('host_apply') != 'DENIED'):
+            raise RuntimeError('FROZEN_ACCEPTANCE_CONTEXT_BOUNDARY_INVALID')
+    native = receipt.get('native_read_only_planning', {})
+    if (native.get('status') != 'PASS' or native.get('meaning') != 'READ_ONLY_PLAN_COMPUTED_NOT_RUNTIME_READY'
+        or native.get('volume_metadata') != 'PASS'):
+        raise RuntimeError('FROZEN_NATIVE_PLANNING_EVIDENCE_INCOMPLETE')
+    screens = receipt.get('screens', [])
+    for scenario, result in [('fresh', 'PASS'), ('legacy_v1', 'PASS'), ('malformed_exchange', 'BLOCKED_OWNER_REVIEW')]:
+        if not any(screen.get('scenario') == scenario and screen.get('size') == [80, 24]
+                   and screen.get('first_next') == result for screen in screens):
+            raise RuntimeError('FROZEN_EXISTING_CONTEXT_UI_EVIDENCE_INCOMPLETE')
+
+
 def safe_failure(output: Path, exe: Path, mode: str, run) -> None:
     reason = 'FROZEN_CHILD_OUTPUT_UNVERIFIED'
     try:
@@ -63,8 +95,13 @@ def smoke(exe: Path, output: Path):
                                     (['--launcher-dispatch', '--local-only'], 2),
                                     (['--self-test', '--output-dir', str(output / 'screens')], 0)]:
             try:
+                # The complete production metadata/context matrix performs
+                # bounded real PS5 scans and signature checks for every case.
+                # Individual native-process limits stay unchanged; only the
+                # whole multi-case acceptance process gets a larger envelope.
+                timeout = 600 if arguments[0] == '--self-test' else 180
                 run = subprocess.run([str(exe), *arguments], cwd=cwd, env=env, stdin=subprocess.DEVNULL,
-                                     capture_output=True, encoding='utf-8', errors='replace', timeout=180)
+                                     capture_output=True, encoding='utf-8', errors='replace', timeout=timeout)
             except subprocess.TimeoutExpired:
                 safe_failure(output, exe, arguments[0], SimpleNamespace(returncode=124, stdout=''))
                 raise RuntimeError('ACTUAL_FROZEN_EXE_PROCESS_TIMEOUT') from None
@@ -81,6 +118,12 @@ def smoke(exe: Path, output: Path):
                 raise RuntimeError('ACTUAL_FROZEN_EXE_OUTPUT_INVALID') from None
             if len(run.stdout) > 100000 or any(value in run.stdout for value in ['github_pat_', 'ghp_', '-----BEGIN PRIVATE KEY']):
                 raise RuntimeError('UNSAFE_FROZEN_OUTPUT')
+            if arguments[0] == '--self-test':
+                try:
+                    validate_acceptance_receipt(parsed)
+                except RuntimeError:
+                    safe_failure(output, exe, arguments[0], run)
+                    raise
             receipts.append({'mode': arguments[0], 'exit_code': run.returncode, 'result': parsed})
             if sorted(p.name for p in temporary.iterdir()) != before:
                 raise RuntimeError('ONEFILE_EXTRACTION_NOT_CLEANED')
