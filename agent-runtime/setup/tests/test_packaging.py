@@ -15,6 +15,58 @@ from agent_setup.engine import SetupError
 from agent_setup import exe_main
 
 
+def test_acceptance_progress_is_atomic_and_category_only(tmp_path, monkeypatch):
+    output = tmp_path / 'explicit-owned-output'
+    monkeypatch.setattr(exe_main, '_ACCEPTANCE_OUTPUT', None)
+    calls = []
+    actual = os.replace
+    def replace(source, destination):
+        assert Path(source).parent == output and Path(destination).parent == output
+        calls.append((source, destination))
+        actual(source, destination)
+    monkeypatch.setattr(os, 'replace', replace)
+    exe_main.register_acceptance_output(output)
+    exe_main.acceptance_stage('FOLDER_PICKER_SEAM', 'legacy_v1')
+    assert exe_main.read_acceptance_progress(output) == {
+        'acceptance_stage': 'FOLDER_PICKER_SEAM', 'acceptance_scenario': 'legacy_v1'}
+    exe_main.acceptance_stage('PUBLIC_SYNTHETIC_UNKNOWN_STAGE', 'PUBLIC_SYNTHETIC_UNKNOWN_CASE')
+    assert len(calls) == 1 and list(output.iterdir()) == [output / 'acceptance-progress.json']
+    (output / 'acceptance-progress.json').write_text(json.dumps({
+        'acceptance_stage': 'CONTEXT_PLAN', 'acceptance_scenario': 'fresh',
+        'raw_error': 'PUBLIC_SYNTHETIC_SECRET', 'path': 'PUBLIC_SYNTHETIC_PATH', 'authority': 'PASS'}))
+    assert exe_main.read_acceptance_progress(output) == {'acceptance_stage': 'CONTEXT_PLAN', 'acceptance_scenario': 'fresh'}
+    (output / 'acceptance-progress.json').write_text('{invalid')
+    assert exe_main.read_acceptance_progress(output) == {}
+
+
+def test_self_test_registers_progress_before_bundle_verification(tmp_path, monkeypatch):
+    monkeypatch.setattr(exe_main, '_ACCEPTANCE_OUTPUT', None)
+    output = tmp_path / 'explicit-test-output'
+    def fail_proof():
+        assert exe_main.read_acceptance_progress(output) == {'acceptance_stage': 'BUNDLE_PROVENANCE'}
+        raise packaging.BundleError('BUNDLE_PROVENANCE_UNVERIFIED')
+    monkeypatch.setattr(exe_main, 'bundle_provenance', fail_proof)
+    with pytest.raises(packaging.BundleError):
+        exe_main.main(['--self-test', '--output-dir', str(output)])
+    assert not (tmp_path / 'AgentRuntime').exists()
+
+
+def test_progress_output_reparse_rejected(tmp_path, monkeypatch):
+    monkeypatch.setattr(exe_main, '_ACCEPTANCE_OUTPUT', None)
+    output = tmp_path / 'owned-output'
+    output.mkdir()
+    actual = Path.lstat
+    def metadata(path, *args, **kwargs):
+        result = actual(path, *args, **kwargs)
+        if path == output:
+            return SimpleNamespace(st_mode=result.st_mode, st_file_attributes=0x400)
+        return result
+    monkeypatch.setattr(Path, 'lstat', metadata)
+    with pytest.raises(SetupError, match='SELF_TEST_OUTPUT_UNSAFE'):
+        exe_main.register_acceptance_output(output)
+    assert not list(output.iterdir()) and exe_main._ACCEPTANCE_OUTPUT is None
+
+
 def contract(tmp_path):
     root = tmp_path / 'contract'
     root.mkdir()

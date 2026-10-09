@@ -8,6 +8,8 @@ import sys
 import tempfile
 import shutil
 import copy
+import os
+import stat
 
 from .engine import SetupEngine, SetupError
 from .packaging import BundleError, bundle_provenance, verified_bundle_root, validate_bundle, PUBLIC_BUNDLE_CODES
@@ -16,12 +18,61 @@ from .packaging import PUBLIC_EXE_CODES, ACCEPTANCE_STAGES, ACCEPTANCE_SCENARIOS
 
 _CURRENT_STAGE = None
 _CURRENT_SCENARIO = None
+_ACCEPTANCE_OUTPUT = None
+
+
+def register_acceptance_output(output):
+    """Explicit self-test output only; never infer an installation location."""
+    global _ACCEPTANCE_OUTPUT
+    _ACCEPTANCE_OUTPUT = None
+    path = Path(output).absolute()
+    for component in [path, *path.parents]:
+        if component.exists() or component.is_symlink():
+            metadata = component.lstat()
+            if stat.S_ISLNK(metadata.st_mode) or getattr(metadata, 'st_file_attributes', 0) & 0x400:
+                raise SetupError('SELF_TEST_OUTPUT_UNSAFE')
+    path.mkdir(parents=True, exist_ok=True)
+    _ACCEPTANCE_OUTPUT = path
+
+
+def read_acceptance_progress(output):
+    """Only allowlisted categories can enter retained failure evidence."""
+    try:
+        path = Path(output) / 'acceptance-progress.json'
+        for component in [path, *path.parents]:
+            if component.is_symlink() or (component.exists() and getattr(component.lstat(), 'st_file_attributes', 0) & 0x400):
+                return {}
+        if path.stat().st_size > 2048:
+            return {}
+        payload = json.loads(path.read_text(encoding='utf-8'))
+        if not isinstance(payload, dict):
+            return {}
+        return {key: payload[key] for key, allowed in
+                [('acceptance_stage', ACCEPTANCE_STAGES), ('acceptance_scenario', ACCEPTANCE_SCENARIOS)]
+                if type(payload.get(key)) is str and payload[key] in allowed}
+    except (OSError, ValueError):
+        return {}
 
 
 def acceptance_stage(stage, scenario=None):
     global _CURRENT_STAGE, _CURRENT_SCENARIO
     _CURRENT_STAGE = stage if stage in ACCEPTANCE_STAGES else None
     _CURRENT_SCENARIO = scenario if scenario in ACCEPTANCE_SCENARIOS else None
+    if _ACCEPTANCE_OUTPUT is not None and _CURRENT_STAGE is not None:
+        payload = {'acceptance_stage': _CURRENT_STAGE}
+        if _CURRENT_SCENARIO is not None:
+            payload['acceptance_scenario'] = _CURRENT_SCENARIO
+        destination = _ACCEPTANCE_OUTPUT / 'acceptance-progress.json'
+        if destination.is_symlink() or (destination.exists() and getattr(destination.lstat(), 'st_file_attributes', 0) & 0x400):
+            raise SetupError('SELF_TEST_OUTPUT_UNSAFE')
+        descriptor, temporary = tempfile.mkstemp(prefix='.progress-', dir=_ACCEPTANCE_OUTPUT)
+        try:
+            with os.fdopen(descriptor, 'w', encoding='utf-8') as stream:
+                json.dump(payload, stream)
+                stream.write('\n')
+            os.replace(temporary, destination)
+        finally:
+            Path(temporary).unlink(missing_ok=True)
 
 
 class ExeAcceptanceError(SetupError):
@@ -405,6 +456,11 @@ def main(argv=None) -> int:
         raise SetupError('UNSIGNED_DISTRIBUTION_HOST_APPLY_DENIED')
     if remaining:
         raise SetupError('UNKNOWN_ARGUMENT')
+    if args.self_test:
+        if args.output_dir is None:
+            raise SetupError('SELF_TEST_OUTPUT_REQUIRED')
+        register_acceptance_output(args.output_dir)
+        acceptance_stage('BUNDLE_PROVENANCE')
     proof = bundle_provenance()
     if not proof.get('bundle_verified') or not proof.get('python_verified'):
         reason = proof.get('reason', 'BUNDLE_PROVENANCE_UNVERIFIED')
