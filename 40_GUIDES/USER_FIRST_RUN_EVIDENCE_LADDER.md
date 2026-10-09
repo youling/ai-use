@@ -77,7 +77,7 @@ safe next action
 scope: READ_ONLY | HOST_APPLY_NOT_AUTHORIZED
 ```
 
-默认**不要输出**真实磁盘完整路径、旧 `HOST_AGENT.md` 原文、token、账号、旧软件私有状态、stack 和任意 upstream exception。只有 owner 在受信任本地界面显式展开、且敏感值经二次脱敏，才允许额外显示必要细节。不能通过自动删除、重设权限、移动原生 state、关闭安全校验来绕过异常。
+默认**不要输出**真实磁盘完整路径、旧 [HOST_AGENT.md](../50_TEMPLATES/HOST_AGENT_CONTRACT.md) 原文、token、账号、旧软件私有状态、stack 和任意 upstream exception。只有 owner 在受信任本地界面显式展开、且敏感值经二次脱敏，才允许额外显示必要细节。不能通过自动删除、重设权限、移动原生 state、关闭安全校验来绕过异常。
 
 典型正常结论：`PREFLIGHT_BLOCKED/EXISTING_ROOT_METADATA_INVALID` + `role=exchange` + `reason=UNRECOGNIZED_SHAPE` + “保留已有配置，进入只读隔离目录审阅 / 请求所有者修复”，而不是 “OPERATION” 或整屏 Python dict。
 
