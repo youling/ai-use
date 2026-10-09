@@ -1,9 +1,9 @@
 # User First-Run Evidence Ladder — 从“CI 绿灯”到“用户真正可用”
 
-**Classification:** L2 Diagnostic / Recovery Guide  
-**Source issue:** [#139](https://github.com/youling/ai-use/issues/139)  
-**Evidence donor:** [INCIDENT-0002](INCIDENTS/INCIDENT-0002_SETUP_FIRST_RUN_REAL_WORLD_GAP.md)  
-**Applicability:** installer、OCI/Agent runtime bootstrap、Windows/Linux setup、GUI/CLI onboarding、旧数据迁移、首次部署、跨设备冷启动。  
+**Classification:** L2 Diagnostic / Recovery Guide
+**Source issue:** [#139](https://github.com/youling/ai-use/issues/139)
+**Evidence donor:** [INCIDENT-0002](INCIDENTS/INCIDENT-0002_SETUP_FIRST_RUN_REAL_WORLD_GAP.md)
+**Applicability:** installer、OCI/Agent runtime bootstrap、Windows/Linux setup、GUI/CLI onboarding、旧数据迁移、首次部署、跨设备冷启动。
 **Authority:** 本文是适用场景的验证实践指南；不新增发布/合并/Host 授权。canonical verification/Incident owner 是 [CONSTITUTION §5–8](../CONSTITUTION.md)，继续执行 [Agent Interface 的完成边界](../docs/AGENT_INTERFACE.md)。项目具体 acceptance/authority 以 current Work 与 owner contract 为准。
 
 ## 1. 验证的对象是交付承诺，不是“运行了多少测试”
