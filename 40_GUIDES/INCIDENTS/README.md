@@ -42,6 +42,7 @@ Incident case 不是：
 | ID | Case | Fault class | Status | Reusable response |
 | --- | --- | --- | --- | --- |
 | INCIDENT-0001 | [Provider rate-limit degraded execution](INCIDENT-0001_PROVIDER_RATE_LIMIT_DEGRADED_EXECUTION.md) | provider/session availability / rate limit | mitigation validated; root-cause resolution unknown | durable Work pointer + micro-step graph + checkpoint/resume |
+| INCIDENT-0002 | [Installer CI PASS but first-user still blocked](INCIDENT-0002_SETUP_FIRST_RUN_REAL_WORLD_GAP.md) | first-run native integration / synthetic evidence gap | remediation in progress; real BOSS canary not passed | evidence ladder + native-path existing-state fixtures + actionable fail-closed diagnosis |
 
 ## 何时新增 case
 
