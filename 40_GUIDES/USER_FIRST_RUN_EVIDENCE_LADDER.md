@@ -48,6 +48,18 @@
 
 对于打包产品，应测试 **真正交付二进制**，而非开发机 Python 脚本替代。验证资源定位、发行内容完整性、Windows 路径语义、PowerShell/系统 API、退出码、双击可见错误与清理，不能只看 EXE 文件存在或哈希正确。无签名包的内容完整性≠发布者可信，不能假造签名/Host authority。
 
+### 2.1 Builder Host Self-Canary — 施工者先亲自试用交付物
+
+当任务依赖真实宿主机（安装器、容器/Agent 首次安装、Host 环境纳管、GUI/CLI 包装、已有本地状态迁移）时，Builder/Foreman 应在**自身实际获准使用的执行设备**上先进行一次**真实用户路径的授权前自金丝雀**，再提交 Human 做目标设备 canary。这是现有 E2/E3 对施工者的适用约束，不自动晋升 E4/E5，也不要求普通纯仓库编码任务扫描整台电脑。
+
+- **先探当前宿主机，再选布局。** 使用真实 OS/volume/WSL/WSLC/文件系统、Known Folder、已存在目录的非敏感分类、vendor/native 软件与端口、空间/权限状态。当前工作站观测只能证明**当前工作站**；由每台新设备上的 Codex 重新 probe 并检查历史 Host projection 的漂移。复用七域语义与选址算法，不硬编码上一台机器的盘符、硬件、缓存路径、账户或凭据引用。没有合法访问能力则标 `SELF_CANARY_NOT_AVAILABLE`，不能凭假想事实宣布 PASS。
+- **用最终交付原字节执行。** 基于 exact HEAD 构建 EXE/容器，验证 hash/provenance，在施工者的真实本机启动**同一可交付字节**，顺序操作电脑检查、位置规划、账户发现/可跳过的安全连接界面、最终变更审阅。包括旧配置/目录、真实操作系统路径/重定向；不能把 shipping `WindowsAdapter → SetupEngine.probe → existing-context → plan → Textual` 链路替换为 `existing_roots={}`，再声称施工者真实自金丝雀。可额外使用受控 synthetic fixtures 扩大设备和旧版本状态覆盖，但必须分别标注。
+- **停在授权边界而非凭直觉认为“没按 Apply 就只读”。** 逐步核对 probe、缓存、日志、释放临时文件、浏览器登录和准备阶段是否已发生副作用；只有当前 authority 明确允许的只读操作和限域临时状态可以自动执行。保留原生程序、真实账号、用户唯一数据、旧配置和未知 owner；禁用自动凭据读取/付费调用/实际 Host apply。若前置步骤本身会修改持久状态，应先隔离成受控 fixture 或停在该动作前，并将 `SELF_CANARY_BLOCKED_BY_AUTHORITY` 如实交付。临时环境须说明所有权、边界、清理结果。
+- **在交付中报告证据与缺口。** `source_head`、`shipping_artifact_sha256`、`builder_host_class`、`host_probe_observed_at`、`builder_native_first_run_steps`、`blocked_reason_code`、`host_effects`、`owner_machine_canary` 应各有明确状态，避免暴露真实目录、主机身份、登录账号、原始 HOST_AGENT 内容或密钥。施工者工作站 PASS ≠ BOSS PASS；没有 TUI/GUI 交互工具时，描述可验证的 CLI/非交互证据及未验证的界面步骤，不能假称点击过。
+- **限制向 Human 发出“再下载试试”。** 真实首次使用已连续失败时，必须先使新故障变成合成旧状态/原生生产链的回归反例，经过 exact-head 完整 CI、真正冻结产物自金丝雀与独立审查后，才请求用户执行下一次精确版本的最小现场验证。
+
+这不创建新的 Host Profile、SSOT、发布权限或审核角色。宿主机语义仍归 [Human Host Environment](../30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md)；authority / verification 继续归 [CONSTITUTION](../CONSTITUTION.md) 与当前项目 owner。实际案例见 [#137](https://github.com/youling/ai-use/issues/137) 和 [#141](https://github.com/youling/ai-use/issues/141)。
+
 ## 3. 首次使用输入矩阵：测试用户历史，而非只测试开发者空机器
 
 下面是 Installer/Agent/Container 产品的推荐最小环境基线，按项目 applicability 调整，不要求所有项目机械覆盖每项：
