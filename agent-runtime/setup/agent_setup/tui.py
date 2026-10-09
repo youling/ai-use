@@ -72,12 +72,13 @@ class SetupApp(App):
     .section { text-style: bold; margin-top: 1; color: $accent; }
     .summary { margin-bottom: 1; }
     .account-actions { height: 3; }
+    .account-actions Input { width: 1fr; margin-bottom: 0; }
     Collapsible { padding: 0; }
     Checkbox { height: auto; }
     """
     BINDINGS = [("escape", "back", "Back"), ("ctrl+q", "quit", "Quit"), ("up", "focus_previous", "Previous"), ("down", "focus_next", "Next")]
 
-    def __init__(self, engine: Any, *, locale: str = "zh", host_authorized: bool = False):
+    def __init__(self, engine: Any, *, locale: str = "zh", host_authorized: bool = False, folder_picker=None):
         super().__init__()
         self.engine, self.host_authorized = engine, host_authorized
         self.words = TEXT.get(locale, TEXT["zh"])
@@ -92,6 +93,9 @@ class SetupApp(App):
         self.approved_fingerprint: str | None = None
         self.root_overlap=False
         self.status_text=''
+        self.folder_picker = folder_picker
+        self.placement_mode = "auto"
+        self.advanced_open = False
 
     def compose(self) -> ComposeResult:
         yield Static(self.words["title"], id="heading", markup=False)
@@ -223,10 +227,17 @@ class SetupApp(App):
             if self.plan_data.get('isolated_scope_reviewed'):
                 widgets.append(Static('仅审阅新目录方案；已有目录和原生 OpenCode 保留。实际安装仍需单独授权。' if self.words is TEXT['zh'] else 'Review only: existing directories and native OpenCode preserved. Installation requires separate approval.',markup=False))
             advanced: list = []
+            zh = self.words is TEXT['zh']
+            advanced.append(Static('空白输入框使用自动推荐；灰色路径仅为预览。输入或浏览后会改为自定义，重新核验后才成为方案。' if zh else 'Empty fields use recommendations; grey paths are previews. Type or browse to customize, then revalidate.', id='placement-help', markup=False))
+            advanced.append(Horizontal(Button('自动推荐' if zh else 'Automatic', id='placement-auto', variant='primary' if self.placement_mode=='auto' else 'default'), Button('自定义' if zh else 'Custom', id='placement-custom', variant='primary' if self.placement_mode=='custom' else 'default'), classes='account-actions'))
+            if self.overrides.get('isolated_scope'):
+                advanced.append(Static('自定义子目录必须位于当前隔离根内。更换磁盘或父目录，请用下方“重新选择隔离根目录”：将生成全新的子作用域，重新规划四个目录和 Exchange；已有数据不移动。' if zh else 'Custom subfolders must stay inside this isolation root. To change disk or parent, reselect below: a fresh child scope regenerates four roots and Exchange; old data stays.', markup=False))
+                advanced.append(Button('重新选择隔离根目录/磁盘（审阅新方案）' if zh else 'Reselect isolation parent/disk (review new plan)', id='browse-isolated-parent'))
             for key, label in zip(("workspace", "config", "cache", "temp"), self.words["paths"]):
-                advanced += [Label(label), Input(value=self.overrides.get(key, ""), placeholder=display(self.plan_data.get("roots", {}).get(key, {}).get("path")), id=f"root-{key}")]
+                mode = ('自定义值' if zh else 'Custom value') if self.overrides.get(key) else ('自动推荐 · 仅预览' if zh else 'Recommended preview')
+                advanced += [Label(f'{label} · {mode}', id=f'root-label-{key}'), Horizontal(Input(value=self.overrides.get(key, ""), placeholder=display(self.plan_data.get("roots", {}).get(key, {}).get("path")), id=f"root-{key}"), Button('浏览…' if zh else 'Browse…', id=f'browse-{key}'), classes='account-actions')]
             advanced.append(Button(self.words["recompute"], id="recompute"))
-            widgets.append(Collapsible(*advanced, title=self.words["advanced"], collapsed=True, id="advanced"))
+            widgets.append(Collapsible(*advanced, title=self.words["advanced"], collapsed=not self.advanced_open, id="advanced"))
         elif self.step == 2:
             widgets = [Static(self.words["accounts"], markup=False), Horizontal(Button(self.words["auto"], id="mode-auto", variant="primary" if self.mode == "auto" else "default"), Button(self.words["manual"], id="mode-manual", variant="primary" if self.mode == "manual" else "default"), classes="account-actions")]
             for kind in ("github", "model"):
@@ -273,6 +284,74 @@ class SetupApp(App):
                 else:
                     self.overrides.pop(key, None)
 
+    async def pick_directory(self, initial_path: str | None, title: str) -> str | None:
+        """The only dialog seam; the original engine validates every returned path."""
+        old_status = self.status_text
+        self.busy = True
+        self.set_status(self.words['busy'])
+        try:
+            from .folder_picker import choose_folder
+            selected = await asyncio.to_thread(self.folder_picker or choose_folder, initial_path=initial_path, title=title)
+            if selected is not None and (not isinstance(selected, str) or not selected):
+                raise ValueError('INVALID_FOLDER_RESULT')
+            self.set_status(old_status)
+            return selected
+        except Exception as error:
+            from .folder_picker import FolderPickerError
+            code = str(error) if isinstance(error, FolderPickerError) else 'FOLDER_PICKER_FAILED'
+            if not re.fullmatch(r'FOLDER_PICKER_[A-Z_]{1,48}', code):
+                code = 'FOLDER_PICKER_FAILED'
+            self.set_status(f"{self.words['error']} [{code}]")
+            return None
+        finally:
+            self.busy = False
+
+    async def refresh_probe(self) -> bool:
+        result = await self.invoke('probe')
+        if result is None:
+            return False
+        self.probe_data = result
+        return True
+
+    async def browse_root(self, role: str) -> None:
+        initial = self.query_one(f'#root-{role}', Input).value or self.plan_data.get('roots', {}).get(role, {}).get('path')
+        selected = await self.pick_directory(initial, ('选择' if self.words is TEXT['zh'] else 'Choose ') + dict(zip(('workspace','config','cache','temp'), self.words['paths']))[role])
+        if selected is None:
+            self.query_one(f'#browse-{role}', Button).focus()
+            return
+        self.save_fields()
+        self.invalidate_approval()
+        self.placement_mode = 'custom'
+        self.advanced_open = True
+        self.overrides[role] = selected
+        self.query_one(f'#root-{role}', Input).value = selected
+        if await self.refresh_probe() and await self.replan():
+            await self.render_step()
+        self.query_one(f'#root-{role}', Input).focus()
+
+    async def browse_isolated_parent(self) -> None:
+        selected = await self.pick_directory(self.overrides.get('isolated_scope'), '选择隔离根的父目录（不搬迁已有数据）' if self.words is TEXT['zh'] else 'Choose a parent for a fresh isolation root (preserve data)')
+        if selected is None:
+            self.query_one('#browse-isolated-parent', Button).focus()
+            return
+        self.invalidate_approval()
+        if not await self.refresh_probe():
+            return
+        proposal = await self.invoke('propose_isolated_roots', self.probe_data, parent=selected)
+        if proposal is None:
+            return
+        candidate = {key:value for key,value in self.overrides.items() if key not in ('workspace','config','cache','temp')}
+        candidate['isolated_scope'] = proposal['isolated_scope']
+        plan = await self.invoke('plan', self.probe_data, overrides=candidate, github=self.github, model=self.model, durable=self.durable)
+        if plan is None:
+            return
+        self.overrides, self.plan_data = candidate, plan
+        self.placement_mode, self.advanced_open = 'auto', True
+        self.root_overlap = False
+        self.set_status('')
+        await self.render_step()
+        self.query_one('#browse-isolated-parent', Button).focus()
+
     async def invoke(self, phase: str, *args: Any, **kwargs: Any) -> dict | None:
         self.busy = True
         self.set_status(self.words["busy"])
@@ -305,6 +384,8 @@ class SetupApp(App):
                     pair=' / '.join(names[role] for role in roles)
                     explanation+=f" {pair}: "+(('指向同一目录' if relation=='SAME_DIRECTORY' else '目录包含关系冲突') if self.words is TEXT['zh'] else ('same directory' if relation=='SAME_DIRECTORY' else 'directory containment conflict'))
                 explanation+=('；保留已有数据，请审阅独立的新作用域目录。可运行只读目录诊断。' if self.words is TEXT['zh'] else '; preserve existing data, review separate scoped roots. Read-only root diagnostics are available.')
+            if safe_code=='ISOLATED_SCOPE_TARGET_ESCAPE':
+                explanation+=(' 自定义子目录必须位于当前隔离根内。要换磁盘，请明确选择“重新选择隔离根目录/磁盘”，审阅新方案；已有数据保留。' if self.words is TEXT['zh'] else ' Custom folders must stay inside the current isolation root. To change disk, explicitly reselect the isolation parent and review a new plan; preserve existing data.')
             self.set_status(f"{prefix} [{safe_code}]{explanation}")
             return None
         finally:
@@ -352,6 +433,17 @@ class SetupApp(App):
 
     async def on_input_changed(self, event: Input.Changed) -> None:
         self.invalidate_approval()
+        if self.step == 1 and (event.input.id or '').startswith('root-'):
+            role = event.input.id.removeprefix('root-')
+            if role not in ('workspace','config','cache','temp'):
+                return
+            if event.value:
+                self.placement_mode = 'custom'
+            if event.value.strip() != self.overrides.get(role, ''):
+                zh = self.words is TEXT['zh']
+                label = dict(zip(('workspace','config','cache','temp'), self.words['paths']))[role]
+                self.query_one(f'#root-label-{role}', Label).update(label + (' · 待重新核验' if zh else ' · Pending revalidation'))
+                self.set_status('目录输入已改变；当前预览尚未更新。请选择“重新规划”重新核验。' if zh else 'Directory input changed; preview is stale. Recalculate to revalidate.')
 
     async def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
         if event.checkbox.id in {"approve-github", "approve-model"}:
@@ -383,8 +475,29 @@ class SetupApp(App):
             await self.action_back()
         elif action == "recompute":
             self.save_fields()
-            if await self.replan():
+            self.advanced_open = True
+            if await self.refresh_probe() and await self.replan():
                 await self.render_step()
+        elif action.startswith('browse-') and self.step == 1:
+            role = action.removeprefix('browse-')
+            if role == 'isolated-parent' and self.overrides.get('isolated_scope'):
+                await self.browse_isolated_parent()
+            elif role in ('workspace','config','cache','temp'):
+                await self.browse_root(role)
+        elif action == 'placement-auto' and self.step == 1:
+            self.invalidate_approval()
+            for role in ('workspace','config','cache','temp'):
+                self.overrides.pop(role, None)
+            self.placement_mode, self.advanced_open = 'auto', True
+            for field in self.query('Input'):
+                field.value = ''
+            if await self.refresh_probe() and await self.replan():
+                await self.render_step()
+        elif action == 'placement-custom' and self.step == 1:
+            self.placement_mode, self.advanced_open = 'custom', True
+            self.save_fields()
+            await self.render_step()
+            self.query_one('#root-workspace', Input).focus()
         elif action.startswith("mode-"):
             self.mode = action.removeprefix("mode-")
             self.invalidate_approval()

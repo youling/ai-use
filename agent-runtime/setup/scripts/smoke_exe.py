@@ -75,6 +75,23 @@ def validate_acceptance_receipt(receipt: dict) -> None:
         if not any(screen.get('scenario') == scenario and screen.get('size') == [80, 24]
                    and screen.get('first_next') == result for screen in screens):
             raise RuntimeError('FROZEN_EXISTING_CONTEXT_UI_EVIDENCE_INCOMPLETE')
+    picker = receipt.get('native_folder_picker', {})
+    if (picker.get('status') != 'PASS' or picker.get('evidence') != 'NATIVE_COM_CONFIGURE_ONLY'
+        or picker.get('ui_show') != 'NOT_EXERCISED'
+        or picker.get('history_cleanup') not in {'VERIFIED', 'UNVERIFIED'}):
+        raise RuntimeError('FROZEN_NATIVE_FOLDER_PICKER_CONFIGURE_UNVERIFIED')
+    picker_cases = receipt.get('folder_picker_cases', [])
+    if (not isinstance(picker_cases, list)
+        or {case.get('scenario') for case in picker_cases if isinstance(case, dict)} != {'fresh', 'legacy_v1'}):
+        raise RuntimeError('FROZEN_FOLDER_PICKER_SEAM_EVIDENCE_INCOMPLETE')
+    for case in picker_cases:
+        if (case.get('chooser_boundary') != 'INJECTED_OWNED_DIRECTORY_OR_CANCEL'
+            or case.get('native_dialog') != 'NOT_EXERCISED_BY_SEAM'
+            or case.get('keyboard_browse') != 'PASS' or case.get('cancel') != 'UNCHANGED'
+            or case.get('scope_escape') != 'BLOCKED' or case.get('parent_scope') != 'FRESH_DESCENDANT_NOT_CREATED'
+            or case.get('auto_custom') != 'PASS' or case.get('prior_consent') != 'INVALIDATED_ON_SELECTION'
+            or case.get('existing_files') != 'UNCHANGED' or case.get('host_apply') != 'DENIED'):
+            raise RuntimeError('FROZEN_FOLDER_PICKER_BOUNDARY_INVALID')
 
 
 def safe_failure(output: Path, exe: Path, mode: str, run) -> None:

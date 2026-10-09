@@ -6,6 +6,8 @@ import platform
 from types import SimpleNamespace
 import subprocess
 import runpy
+import asyncio
+import os
 import pytest
 
 from agent_setup import packaging
@@ -337,3 +339,20 @@ def test_smoke_keeps_registered_setup_reason_and_rejects_arbitrary_stage_scenari
     payload.update(acceptance_stage='PRIVATE_VALUE', acceptance_scenario='PRIVATE_VALUE')
     safe_failure(tmp_path, exe, '--self-test', SimpleNamespace(returncode=2, stdout=json.dumps(payload)))
     assert 'PRIVATE_VALUE' not in (tmp_path / 'failure-diagnostic.json').read_text()
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='Actual native Windows public fixture pipeline')
+def test_frozen_picker_seam_uses_production_pipeline_with_owned_directories(tmp_path):
+    from agent_setup.read_only_acceptance import owned_fixture_pipeline
+    pipelines = {}
+    for name in ['fresh', 'legacy_v1']:
+        root = tmp_path / name
+        root.mkdir()
+        pipelines[name] = owned_fixture_pipeline(root, name)
+    output = tmp_path / 'public-ui-evidence'
+    output.mkdir()
+    records = asyncio.run(exe_main.frozen_folder_picker_seams(tmp_path, output, pipelines))
+    assert {record['scenario'] for record in records} == {'fresh', 'legacy_v1'}
+    assert all(record['cancel'] == 'UNCHANGED' and record['scope_escape'] == 'BLOCKED' for record in records)
+    assert all(record['native_dialog'] == 'NOT_EXERCISED_BY_SEAM' and record['host_apply'] == 'DENIED' for record in records)
+    assert len(list(output.glob('*.svg'))) == 4
