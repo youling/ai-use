@@ -2,9 +2,9 @@
 
 ## Summary
 
-**Observed window:** 2026-10-08 → 2026-10-09  
-**Work:** [ai-use #127](https://github.com/youling/ai-use/issues/127) (Windows WSLC Textual installer); [#132](https://github.com/youling/ai-use/issues/132), [#135](https://github.com/youling/ai-use/issues/135), [#137](https://github.com/youling/ai-use/issues/137)  
-**Fault class:** real-user first-run integration gap; evidence overclaim risk; historical user-state not exercised  
+**Observed window:** 2026-10-08 → 2026-10-09
+**Work:** [ai-use #127](https://github.com/youling/ai-use/issues/127) (Windows WSLC Textual installer); [#132](https://github.com/youling/ai-use/issues/132), [#135](https://github.com/youling/ai-use/issues/135), [#137](https://github.com/youling/ai-use/issues/137)
+**Fault class:** real-user first-run integration gap; evidence overclaim risk; historical user-state not exercised
 **Incident case status:** RECOVERY_IN_PROGRESS / LIVE_USER_CANARY_NOT_PASSED. Any later acceptance must be reported from current Work/evidence, not inferred from this case.
 
 真实用户尝试安装公开 OCI OpenCode Foreman Runtime。基础系统检查通过、公共源码测试通过，甚至交付了可双击的真实 Windows EXE，但用户在**第一步点击下一步**时连续遇到阻断。问题不等于“EXE 没编译出来”：主要失效发生在 native probe、历史状态读入、目录规划之间，测试误将较弱证据写成较强用户就绪结论。
@@ -48,7 +48,7 @@
 
 ## Validation / known limits
 
-**Validated:** 真实用户截图明确证明多个版本无法完成首次 Next；源测试/新 EXE 的 synthetic/native-path 替身界限在代码中可直接核查；PR #136 精确 Windows CI 曾通过，但现场仍发现下一类阻断。  
+**Validated:** 真实用户截图明确证明多个版本无法完成首次 Next；源测试/新 EXE 的 synthetic/native-path 替身界限在代码中可直接核查；PR #136 精确 Windows CI 曾通过，但现场仍发现下一类阻断。
 **Not validated:** BOSS 最终通过的 exe SHA、真实 Host apply、原有 OpenCode 与新容器共存运行、任何实际 OAuth/keyring/model/fresh GitHub recovery。
 
 ## Reusable playbook and canonical pointers
