@@ -111,11 +111,40 @@ async def frozen_self_test(output: Path) -> dict:
             assert_fixture_unchanged(pipeline)
             diagnostic = pipeline['engine'].diagnose_root_plan(pipeline['observation'], overrides=pipeline['overrides'])
             cases.append({'scenario': scenario, 'plan_status': plan_status, 'code': code,
+                          'exchange_schema': pipeline['exchange_schema'],
                           'metadata_errors': diagnostic.get('metadata_errors', []),
                           'production_pipeline': 'WINDOWS_ADAPTER_PROBE_ENGINE_PROBE_PLAN',
                           'existing_files': 'UNCHANGED', 'context_source': 'OWNED_PUBLIC_FIXTURE',
                           'inventory_source': pipeline['evidence']['native_metadata'],
                           'runtime_capability': 'SYNTHETIC_WSLC_ONLY', 'host_apply': 'DENIED'})
+        bare_root = root / 'legacy-v1-directions-only'
+        bare_root.mkdir()
+        acceptance_stage('CONTEXT_FIXTURE_BUILD', 'legacy_v1')
+        bare = owned_fixture_pipeline(bare_root, 'legacy_v1', annotated_exchange=False)
+        bare_plan = bare['engine'].plan(bare['observation'], overrides=bare['overrides'])
+        if set(bare_plan['exchange']) != {'in', 'out'} or bare_plan.get('exchange_classification'):
+            raise SetupError('SELF_TEST_LEGACY_EXCHANGE_SCHEMA_FAILED')
+        annotated_plan = pipelines['legacy_v1']['engine'].plan(pipelines['legacy_v1']['observation'])
+        classification = {'owner': 'HOST_MANAGED', 'relocatable': False,
+                          'reason': 'PUBLIC_SYNTHETIC_EXCHANGE_CLASSIFICATION'}
+        if (set(annotated_plan['exchange']) != {'in', 'out'}
+            or annotated_plan.get('exchange_classification') != classification):
+            raise SetupError('SELF_TEST_LEGACY_EXCHANGE_SCHEMA_FAILED')
+        bare_app = SetupApp(bare['engine'], host_authorized=False)
+        acceptance_stage('TUI_PROBE', 'legacy_v1')
+        async with bare_app.run_test(size=(80, 24)) as pilot:
+            acceptance_stage('TUI_NEXT', 'legacy_v1')
+            bare_app.query_one('#next', Button).focus()
+            await pilot.press('enter')
+            await pilot.pause(0.5)
+            if bare_app.step != 1 or bare_app.host_authorized:
+                raise SetupError('SELF_TEST_LEGACY_EXCHANGE_FIRST_NEXT_FAILED')
+            (output / 'actual-exe-legacy-v1-directions-only-80x24.svg').write_text(
+                bare_app.export_screenshot(title='NATIVE PIPELINE / OWNED BARE V1 EXCHANGE / WSLC FIXTURE / FIRST NEXT PASS'),
+                encoding='utf-8')
+        assert_fixture_unchanged(bare)
+        exchange_schemas = [{'schema': 'DIRECTIONS_ONLY', 'first_next': 'PASS', 'metadata_authority': 'NONE'},
+                            {'schema': 'ANNOTATED_V1', 'first_next': 'PASS', 'metadata_authority': 'NONE'}]
         fallback_cases = []
         for scenario in ['fresh', 'legacy_v1']:
             forced_root = root / ('forced-timeout-' + scenario)
@@ -229,6 +258,7 @@ async def frozen_self_test(output: Path) -> dict:
                            'LAST_REPORTED_BOSS_CANARY': 'FAIL_EXISTING_ROOT_METADATA_INVALID'},
             'screens': records, 'context_cases': cases, 'host_apply': 'DENIED', 'native_opencode': 'UNCHANGED_OWNED_FIXTURE_STATE',
             'forced_fallback_cases': fallback_cases, 'fallback_without_runtime_fixture': fallback_runtime,
+            'exchange_schema_variants': exchange_schemas,
             'credentials_read': False, 'network': 'NO_CREDENTIAL_OR_MODEL_CALLS',
             'provenance': proof, 'negative_cases': negatives,
             'native_metadata_scan': native_scan, 'native_read_only_planning': native_plan}

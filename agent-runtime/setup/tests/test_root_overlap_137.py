@@ -232,6 +232,40 @@ def test_vendor_policy_sentinel_cannot_grant_relocation(tmp_path):
     diagnostic=engine.diagnose_root_plan()
     assert diagnostic['metadata_errors']==[{'role':'state','reason':'POLICY_SENTINEL_CLASSIFICATION'}]
 
+def test_annotated_v1_exchange_classification_roundtrip_no_authority(tmp_path):
+    engine,data=machine(tmp_path)
+    incoming=tmp_path/'old-exchange/in';incoming.mkdir(parents=True)
+    outgoing=tmp_path/'old-exchange/out';outgoing.mkdir()
+    unique=outgoing/'preserved.txt';unique.write_text('public-unique-exchange')
+    directions={'in':str(incoming),'out':str(outgoing)}
+    classification={'owner':'HOST_MANAGED','relocatable':True,'reason':'Public legacy semantic-root classification'}
+    target=public_context(engine,{'exchange':{**directions,**classification}});before=target.read_bytes()
+    observation=engine.probe();plan=engine.plan(observation)
+    assert plan['exchange']==directions and set(plan['exchange'])=={'in','out'}
+    assert plan['exchange_classification']==classification
+    assert not plan['host_authorized'] and not plan['recovery_authorized']
+    assert unique.read_text()=='public-unique-exchange' and target.read_bytes()==before
+    emitted=yaml.safe_load(engine.context(plan).split('```yaml\n')[1].split('```')[0])
+    assert emitted['paths']['exchange']=={**directions,**classification}
+    target.write_text(engine.context(plan),encoding='utf-8')
+    roundtrip=engine.plan(engine.probe())
+    assert roundtrip['exchange']==directions and roundtrip['exchange_classification']==classification
+    with pytest.raises(SetupError,match='APPROVAL'):engine.apply(roundtrip,approved=True)
+    proposal=engine.propose_isolated_roots(engine.probe())
+    isolated=engine.plan(engine.probe(),overrides={'isolated_scope':proposal['isolated_scope']})
+    assert isolated['existing_exchange_classification']==classification and isolated['exchange_classification']=={}
+    assert 'exchange' in isolated['preserved_existing_roles'] and not Path(proposal['isolated_scope']).exists()
+    assert unique.read_text()=='public-unique-exchange'
+
+@pytest.mark.parametrize('field,value,reason',[
+    ('owner',False,'OWNER_TYPE'),('relocatable','true','RELOCATABLE_TYPE'),('reason',{'unknown':'value'},'REASON_TYPE'),
+    ('reason','github_pat_public-synthetic-not-a-key','SENSITIVE_VALUE'),('other_root','public-unknown-path','DIRECTION_FIELDS_REQUIRED')])
+def test_annotated_exchange_invalid_metadata_never_becomes_path_or_authority(tmp_path,field,value,reason):
+    from agent_setup.engine import normalize_existing_roots
+    entry={'in':str(tmp_path/'exchange/in'),'out':str(tmp_path/'exchange/out'),field:value}
+    with pytest.raises(SetupError,match='EXISTING_ROOT_METADATA_INVALID') as caught:normalize_existing_roots({'exchange':entry})
+    assert caught.value.metadata_errors==[{'role':'exchange','reason':reason}]
+
 @pytest.mark.parametrize('state', ['relative-state', '..', '/', '//private-server/state'])
 def test_unsafe_or_sensitive_state_never_informational_bypass(tmp_path,state):
     engine,data=machine(tmp_path);public_context(engine,{'state':{'path':state,'owner':'VENDOR_OWNED','relocatable':False}})

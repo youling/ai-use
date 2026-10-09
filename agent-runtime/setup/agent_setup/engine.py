@@ -49,8 +49,11 @@ def normalize_existing_roots(value):
         if role not in (*ROOT_ROLES,'state','exchange'):invalid('context','UNKNOWN_ROLE')
         if not isinstance(entry,dict):invalid(role,'EXPECTED_MAPPING')
         if role=='exchange':
-            if set(entry)!={'in','out'}:invalid(role,'DIRECTION_FIELDS_REQUIRED')
-            if any(not isinstance(path,str) or not path for path in entry.values()):invalid(role,'PATH_TYPE')
+            if not {'in','out'}.issubset(entry) or set(entry)-{'in','out','owner','relocatable','reason'}:invalid(role,'DIRECTION_FIELDS_REQUIRED')
+            if any(not isinstance(entry[name],str) or not entry[name] for name in ('in','out')):invalid(role,'PATH_TYPE')
+            if 'owner' in entry and (not isinstance(entry['owner'],str) or not entry['owner']):invalid(role,'OWNER_TYPE')
+            if 'relocatable' in entry and type(entry['relocatable']) is not bool:invalid(role,'RELOCATABLE_TYPE')
+            if 'reason' in entry and not isinstance(entry['reason'],str):invalid(role,'REASON_TYPE')
         else:
             if set(entry)-{'path','owner','relocatable','reason','exists'}:invalid(role,'UNKNOWN_FIELD')
             if not isinstance(entry.get('path'),str) or not entry['path']:invalid(role,'PATH_REQUIRED')
@@ -59,7 +62,7 @@ def normalize_existing_roots(value):
             if 'exists' in entry and type(entry['exists']) is not bool:invalid(role,'EXISTS_TYPE')
             if 'reason' in entry and not isinstance(entry['reason'],str):invalid(role,'REASON_TYPE')
         if SECRET_PATTERN.search(json.dumps(entry)):invalid(role,'SENSITIVE_VALUE')
-        for path in entry.values() if role=='exchange' else [entry['path']]:
+        for path in [entry[name] for name in ('in','out')] if role=='exchange' else [entry['path']]:
             if role=='state' and path=='NATIVE_VENDOR_STATE':
                 if entry.get('owner')!='VENDOR_OWNED' or entry.get('relocatable') is not False:invalid(role,'POLICY_SENTINEL_CLASSIFICATION')
                 continue # Emitted V1 policy sentinel, not a cwd path.
@@ -290,7 +293,7 @@ class SetupEngine:
             base=safe_path(isolated)
             if base.exists():raise SetupError('ISOLATED_SCOPE_ALREADY_EXISTS')
             protected=[old['path'] for name,old in existing.items() if name in (*ROOT_ROLES,'state') and isinstance(old,dict) and old.get('path')]
-            if isinstance(existing.get('exchange'),dict):protected.extend(existing['exchange'].values())
+            if isinstance(existing.get('exchange'),dict):protected.extend(existing['exchange'][name] for name in ('in','out'))
             for raw in protected:
                 if raw=='NATIVE_VENDOR_STATE':continue
                 old_path=safe_path(raw)
@@ -357,7 +360,10 @@ class SetupEngine:
         if durable_meta['destination'] and not re.fullmatch(r'https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[^\s]*)?',durable_meta['destination']):raise SetupError('DURABLE_DESTINATION_INVALID')
         recovery_authorized=gh['authorized'] and durable_meta['authorized'] and bool(durable_meta['destination'])
         exchange={'in':str(base/'exchange/in'),'out':str(base/'exchange/out')}
-        if existing.get('exchange') and not isolated:exchange=copy.deepcopy(existing['exchange'])
+        existing_exchange_classification={name:existing['exchange'][name] for name in ('owner','relocatable','reason')
+            if name in existing.get('exchange',{})}
+        exchange_classification=copy.deepcopy(existing_exchange_classification) if not isolated else {}
+        if existing.get('exchange') and not isolated:exchange={name:existing['exchange'][name] for name in ('in','out')}
         for key in exchange:
             exchange[key]=str(safe_path(exchange[key]))
             if hasattr(self.adapter,'validate_owned_path'):self.adapter.validate_owned_path(exchange[key])
@@ -394,7 +400,8 @@ class SetupEngine:
         documents_state='ONEDRIVE_REDIRECTED' if observation.get('documents_onedrive') is True or any(part.lower().startswith('onedrive') for part in documents.parts) else 'NATIVE_KNOWN_FOLDER'
         ready=all(g['state']=='PASS' for g in gates)
         result={'schema':SCHEMA,'status':'READY' if ready else 'BLOCKED','host_authorized':bool(overrides.get('host_authorized',False)),
-            'gates':gates,'roots':roots,'exchange':exchange,'documents':str(documents),'host_agent':str(target),
+            'gates':gates,'roots':roots,'exchange':exchange,'exchange_classification':exchange_classification,
+            'existing_exchange_classification':existing_exchange_classification,'documents':str(documents),'host_agent':str(target),
             'expected_host_agent_sha256':old_hash,'github':gh,'model':mod,'durable':durable_meta,'image':IMAGE,
             'storage':chosen,'storage_bindings':storage_bindings,'placement_rows':rows,'documents_state':documents_state,'recovery_authorized':bool(recovery_authorized),'platform':observation.get('platform'),'observed_at':observation['observed_at'],
             'operations':[{'kind':'ENSURE_OWNED_ROOT','path':str(p),'reason':'New/preserved scoped ownership'} for p in managed]+[{'kind':'MATERIALIZE_CONTEXT','path':str(target),'reason':'Known Folder discovery projection'}],
@@ -404,7 +411,9 @@ class SetupEngine:
             result['preserved_existing_roles']=[name for name in (*ROOT_ROLES,'state','exchange') if existing.get(name)]
             result['isolated_scope_reviewed']=str(base)
         # Stable semantic binding excludes observation time; new authority must still be explicit.
-        result['install_binding']=digest({'roots':{k:{key:v[key] for key in ('path','owner','relocatable') if key in v} for k,v in roots.items()},'exchange':exchange,'github':gh,'model':mod,'durable':durable_meta,'image':IMAGE})
+        binding={'roots':{k:{key:v[key] for key in ('path','owner','relocatable') if key in v} for k,v in roots.items()},'exchange':exchange,'github':gh,'model':mod,'durable':durable_meta,'image':IMAGE}
+        if exchange_classification:binding['exchange_classification']=exchange_classification
+        result['install_binding']=digest(binding)
         run_id=result['install_binding'][:12]
         result['runtime']={'name':'setup-'+run_id,'attempt':str(Path(roots['temp']['path'])/('setup-'+run_id)),
             'incoming':str(Path(exchange['in'])/('setup-'+run_id)),'outgoing':str(Path(exchange['out'])/('setup-'+run_id)),'port':4096}
@@ -456,7 +465,7 @@ class SetupEngine:
         readiness=readiness or {}
         enabled=bool(config_id and readiness.get('credentials')=='PASS' and readiness.get('model')=='PASS')
         paths={k:{key:v[key] for key in ('path','owner','relocatable','reason') if key in v} for k,v in plan['roots'].items()}
-        paths['exchange']=plan['exchange']
+        paths['exchange']={**plan.get('exchange_classification',{}),**plan['exchange']}
         paths['secrets']={'catalog_ref':'host.native-secret-custody','runtime_root':'/run/secrets','refs':{
             'github_machine':{'ref':plan['github']['ref'] or 'host.github.not-authorized','class':'GITHUB_MACHINE_IDENTITY','custody':'HOST_OWNER','materialize':'EXISTING_APPROVED_HELPER'},
             'model_provider':{'ref':plan['model']['ref'] or 'host.model.not-authorized','class':'MODEL_PROVIDER_AUTH','custody':'HOST_OWNER','materialize':'PUBLIC_PROVIDER_ACTIVATION' if plan['model']['free_route'] else 'EXISTING_APPROVED_HELPER'}}}

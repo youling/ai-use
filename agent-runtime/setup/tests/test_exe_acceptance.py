@@ -16,6 +16,7 @@ def receipt():
                           'NATIVE_READ_ONLY_PLANNING_PASS': True, 'BOSS_CANARY': 'NOT_RETESTED',
                           'LAST_REPORTED_BOSS_CANARY': 'FAIL_EXISTING_ROOT_METADATA_INVALID'},
             'context_cases': [{'scenario': scenario, 'production_pipeline': 'WINDOWS_ADAPTER_PROBE_ENGINE_PROBE_PLAN',
+                               'exchange_schema': 'ANNOTATED_V1' if scenario == 'legacy_v1' else 'DIRECTIONS_ONLY',
                                'existing_files': 'UNCHANGED', 'context_source': 'OWNED_PUBLIC_FIXTURE',
                                'inventory_source': 'WINDOWS_POWERSHELL',
                                'runtime_capability': 'SYNTHETIC_WSLC_ONLY', 'host_apply': 'DENIED'}
@@ -23,6 +24,8 @@ def receipt():
             'native_read_only_planning': {'status': 'PASS', 'meaning': 'READ_ONLY_PLAN_COMPUTED_NOT_RUNTIME_READY',
                                          'volume_metadata': 'PASS', 'runtime_gates': {'WSLC': 'BLOCKED'}},
             'native_metadata_scan': {'inventory_source': 'WINDOWS_POWERSHELL'},
+            'exchange_schema_variants': [{'schema': 'DIRECTIONS_ONLY', 'first_next': 'PASS', 'metadata_authority': 'NONE'},
+                                         {'schema': 'ANNOTATED_V1', 'first_next': 'PASS', 'metadata_authority': 'NONE'}],
             'forced_fallback_cases': [{'scenario': name, 'provider_fault': 'FORCED_PS_TIMEOUT',
                                      'inventory_source': 'WINDOWS_WIN32_FALLBACK', 'first_next': 'PASS',
                                      'existing_files': 'UNCHANGED', 'host_apply': 'DENIED',
@@ -99,6 +102,20 @@ def test_real_volume_fallback_cannot_promote_unknown_runtime_capability_to_pass(
     value = receipt()
     value['fallback_without_runtime_fixture']['wslc_state'] = 'PASS'
     with pytest.raises(RuntimeError, match='RUNTIME_GATE_UNVERIFIED'):
+        validate(value)
+
+
+def test_directions_only_legacy_case_cannot_claim_annotated_context_coverage():
+    value = receipt()
+    value['context_cases'][1]['exchange_schema'] = 'DIRECTIONS_ONLY'
+    with pytest.raises(RuntimeError, match='ANNOTATED_LEGACY_EXCHANGE'):
+        validate(value)
+
+
+def test_classification_annotation_never_grants_metadata_authority():
+    value = receipt()
+    value['exchange_schema_variants'][1]['metadata_authority'] = 'HOST_APPLY_AUTHORIZED'
+    with pytest.raises(RuntimeError, match='SCHEMA_EVIDENCE_INCOMPLETE'):
         validate(value)
     value = receipt()
     value['native_metadata_scan']['inventory_source'] = 'UNVERIFIED'

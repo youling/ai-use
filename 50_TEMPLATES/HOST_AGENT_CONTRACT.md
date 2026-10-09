@@ -42,6 +42,10 @@ paths:
   exchange:
     in: <Host -> container bounded input>
     out: <container -> Host bounded output>
+    # Optional common root classification; metadata alone grants no operation.
+    owner: <HOST_MANAGED | VENDOR_OWNED | OWNER_DEFINED>
+    relocatable: false
+    reason: <optional non-secret placement rationale>
   secrets:
     catalog_ref: <logical pointer to the Human-owned key/secret catalog>
     runtime_root: </run/secrets or platform-equivalent>
@@ -89,6 +93,7 @@ agents:
 - `agents.opencode.*` is the current canary/example launch/runtime projection. Include it only where OpenCode is actually enabled; do not pre-create DSH/Claude Code/other runtime fields.
 - GitHub recovery is mandatory for the OpenCode runtime: a fresh runtime must be able to recover durable Work/source from GitHub using a Host-projected credential reference.
 - `state/cache/temp` are distinct even if a concrete Host maps some of them near each other physically.
+- `paths.exchange` may carry the optional common `owner / relocatable / reason` classification alongside `in / out`. Consumers distinguish the two direction paths from classification, preserve existing metadata, and validate field types. Unknown additional paths/fields still require owner review; these annotations alone do not authorize relocation, mounting, or Host apply.
 - New Agent class = add a sibling runtime block under `agents:` and only extend common fields when that new runtime proves a genuinely shared need.
 
 ---

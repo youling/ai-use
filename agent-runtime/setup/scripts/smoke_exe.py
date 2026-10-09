@@ -43,6 +43,12 @@ def validate_acceptance_receipt(receipt: dict) -> None:
             or case.get('inventory_source') not in (INVENTORY_SOURCES - {'UNVERIFIED'})
             or case.get('host_apply') != 'DENIED'):
             raise RuntimeError('FROZEN_ACCEPTANCE_CONTEXT_BOUNDARY_INVALID')
+        if case['scenario'] == 'legacy_v1' and case.get('exchange_schema') != 'ANNOTATED_V1':
+            raise RuntimeError('FROZEN_ANNOTATED_LEGACY_EXCHANGE_EVIDENCE_INCOMPLETE')
+    schemas = receipt.get('exchange_schema_variants', [])
+    if (not isinstance(schemas, list) or {item.get('schema') for item in schemas if isinstance(item, dict)} != {'DIRECTIONS_ONLY', 'ANNOTATED_V1'}
+        or any(item.get('first_next') != 'PASS' or item.get('metadata_authority') != 'NONE' for item in schemas)):
+        raise RuntimeError('FROZEN_LEGACY_EXCHANGE_SCHEMA_EVIDENCE_INCOMPLETE')
     native = receipt.get('native_read_only_planning', {})
     if (native.get('status') != 'PASS' or native.get('meaning') != 'READ_ONLY_PLAN_COMPUTED_NOT_RUNTIME_READY'
         or native.get('volume_metadata') != 'PASS'):

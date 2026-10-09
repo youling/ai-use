@@ -19,7 +19,8 @@ SCENARIOS = ('fresh','legacy_v1','malformed_state','malformed_exchange',
              'extra_state','extra_exchange','stale','collision','junction')
 
 
-def owned_fixture_pipeline(root: Path, scenario: str = 'fresh', *, synthetic_wslc: bool = True, force_ps_timeout: bool = False) -> dict:
+def owned_fixture_pipeline(root: Path, scenario: str = 'fresh', *, synthetic_wslc: bool = True, force_ps_timeout: bool = False,
+                           annotated_exchange: bool = True) -> dict:
     if scenario not in SCENARIOS:
         raise ValueError('ACCEPTANCE_SCENARIO_INVALID')
     root = Path(root).resolve(strict=True)
@@ -36,6 +37,11 @@ def owned_fixture_pipeline(root: Path, scenario: str = 'fresh', *, synthetic_wsl
     paths = {name:{'path':str(folders[name]),'owner':'HOST_OWNER','relocatable':False}
              for name in ('workspace','config','cache','temp','state')}
     paths['exchange'] = {'in':str(folders['exchange-in']),'out':str(folders['exchange-out'])}
+    if scenario == 'legacy_v1' and annotated_exchange:
+        # Public shape replay only, never copied Host paths/identity/reason.
+        # A classification declaration is not an owner receipt or permission.
+        paths['exchange'].update(owner='HOST_MANAGED', relocatable=False,
+                                 reason='PUBLIC_SYNTHETIC_EXCHANGE_CLASSIFICATION')
     context = {'host_agent_version':'1.0.0','paths':paths}
     target = documents / 'HOST_AGENT.md'
     if scenario == 'malformed_state':
@@ -95,6 +101,7 @@ def owned_fixture_pipeline(root: Path, scenario: str = 'fresh', *, synthetic_wsl
     return {'engine':engine,'adapter':adapter,'observation':observation,'overrides':overrides,
             'snapshot':snapshot,'documents':documents,'root':root,'native_calls':native_calls,
             'scenario':scenario,'expected_status':'READY' if scenario=='fresh' else 'BLOCKED',
+            'exchange_schema':'ANNOTATED_V1' if scenario=='legacy_v1' and annotated_exchange else 'DIRECTIONS_ONLY',
             'expected_code':codes.get(scenario),
             'evidence':{'native_metadata':observation.get('inventory_source','UNVERIFIED'),'wslc_capability':'SYNTHETIC_ONLY' if synthetic_wslc else 'NATIVE_OBSERVED',
                         'context_source':'OWNED_PUBLIC_FIXTURE','host_apply':'DENIED'}}
