@@ -90,6 +90,8 @@ class SetupApp(App):
         self.mode = "auto"
         self.busy = False
         self.approved_fingerprint: str | None = None
+        self.root_overlap=False
+        self.status_text=''
 
     def compose(self) -> ComposeResult:
         yield Static(self.words["title"], id="heading", markup=False)
@@ -214,8 +216,12 @@ class SetupApp(App):
             widgets = [Static(self.words["intro"], markup=False), Static(self.checks_summary(), id="checks", classes="summary", markup=False)]
             details = "Python: " + display(self.probe_data.get("python_version")) + "\nWSL: " + display(self.probe_data.get("wsl_app_version"))
             widgets.append(Collapsible(Static(details, markup=False), title=self.words["details"], collapsed=True))
+            if self.root_overlap:
+                widgets.append(Button('审阅新隔离目录方案（保留已有目录）' if self.words is TEXT['zh'] else 'Review separate roots; preserve existing data',id='review-isolated-roots'))
         elif self.step == 1:
             widgets = [Static(self.words["placement"], classes="section", markup=False), Static(self.placement_summary(), id="placement", markup=False)]
+            if self.plan_data.get('isolated_scope_reviewed'):
+                widgets.append(Static('仅审阅新目录方案；已有目录和原生 OpenCode 保留。实际安装仍需单独授权。' if self.words is TEXT['zh'] else 'Review only: existing directories and native OpenCode preserved. Installation requires separate approval.',markup=False))
             advanced: list = []
             for key, label in zip(("workspace", "config", "cache", "temp"), self.words["paths"]):
                 advanced += [Label(label), Input(value=self.overrides.get(key, ""), placeholder=display(self.plan_data.get("roots", {}).get(key, {}).get("path")), id=f"root-{key}")]
@@ -236,6 +242,8 @@ class SetupApp(App):
             widgets = [Static(self.result_summary(), id="results", classes="summary", markup=False), Button(self.words["verify"], id="verify"), Button(self.words["repair"], id="repair")]
             if not self.result:
                 widgets.insert(0, Static(self.words["preview"], markup=False))
+        if self.probe_data.get('runtime_provenance',{}).get('distribution')=='UNSIGNED_TEST_ONLY':
+            widgets.insert(0,Static('未签名测试版本 · 仅预览；内容核验不代表发布者签名。' if self.words is TEXT['zh'] else 'Unsigned test build · preview only; content verification is not publisher signing.',id='unsigned-notice',markup=False))
         await body.mount(*widgets)
         self.query_one("#back", Button).disabled = self.step == 0 or self.busy
         self.query_one("#next", Button).disabled = self.step == 4 or self.busy
@@ -247,6 +255,7 @@ class SetupApp(App):
             self.set_status(self.words["blocked"])
 
     def set_status(self, value: str) -> None:
+        self.status_text=value
         self.query_one("#status", Static).update(value)
 
     def invalidate_approval(self) -> None:
@@ -275,7 +284,28 @@ class SetupApp(App):
             from .engine import SetupError
             code=str(exc) if isinstance(exc,SetupError) else ''
             safe_code=code if re.fullmatch(r'[A-Z][A-Z0-9_]{1,63}',code) else ('INPUT' if isinstance(exc,(ValueError,TypeError)) else 'OPERATION')
-            self.set_status(f"{self.words['error']} [{safe_code}]")
+            explanation=''
+            prefix=self.words['error']
+            if safe_code=='EXISTING_ROOT_METADATA_INVALID' and isinstance(exc,SetupError):
+                prefix='目录契约需审查' if self.words is TEXT['zh'] else 'Root contract needs review'
+                from .engine import metadata_diagnostics
+                names=dict(zip(('workspace','config','cache','temp'),self.words['paths']))
+                names.update({'state':'原生状态' if self.words is TEXT['zh'] else 'Native state','exchange':'Exchange','context':'既有契约' if self.words is TEXT['zh'] else 'Existing contract'})
+                for error in metadata_diagnostics(exc.metadata_errors):
+                    explanation+=f" {names[error['role']]} · {error['reason']}"
+                explanation+=('；旧目录保留。请电脑所有者运行只读目录诊断并交维护者审查；不要编辑、删除配置或目录。' if self.words is TEXT['zh'] else '; old roots preserved. Owner: run read-only root diagnostics for maintainer review. Do not edit or delete configuration or directories.')
+            if safe_code=='ROOT_OVERLAP' and isinstance(exc,SetupError):
+                self.root_overlap=True
+                names=dict(zip(('workspace','config','cache','temp'),self.words['paths']))
+                for conflict in exc.conflicts:
+                    roles=conflict.get('roles',[])
+                    if len(roles)!=2 or any(role not in names for role in roles):continue
+                    relation=conflict.get('relation')
+                    if relation not in {'SAME_DIRECTORY','CONTAINS'}:continue
+                    pair=' / '.join(names[role] for role in roles)
+                    explanation+=f" {pair}: "+(('指向同一目录' if relation=='SAME_DIRECTORY' else '目录包含关系冲突') if self.words is TEXT['zh'] else ('same directory' if relation=='SAME_DIRECTORY' else 'directory containment conflict'))
+                explanation+=('；保留已有数据，请审阅独立的新作用域目录。可运行只读目录诊断。' if self.words is TEXT['zh'] else '; preserve existing data, review separate scoped roots. Read-only root diagnostics are available.')
+            self.set_status(f"{prefix} [{safe_code}]{explanation}")
             return None
         finally:
             self.busy = False
@@ -284,6 +314,10 @@ class SetupApp(App):
         self.invalidate_approval()
         result = await self.invoke("plan", self.probe_data, overrides=self.overrides, github=self.github, model=self.model, durable=self.durable)
         if result is None:
+            if self.root_overlap and self.step==0:
+                status=self.status_text
+                await self.render_step()
+                self.set_status(status)
             return False
         self.plan_data = result
         self.set_status("")
@@ -337,6 +371,14 @@ class SetupApp(App):
         action = event.button.id or ""
         if action == "next":
             await self.advance()
+        elif action=='review-isolated-roots' and self.step==0 and self.root_overlap:
+            proposal=await self.invoke('propose_isolated_roots',self.probe_data)
+            if proposal is not None:
+                self.overrides['isolated_scope']=proposal['isolated_scope']
+                if await self.replan():
+                    self.root_overlap=False
+                    self.step=1
+                    await self.render_step()
         elif action == "back":
             await self.action_back()
         elif action == "recompute":

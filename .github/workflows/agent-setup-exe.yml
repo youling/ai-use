@@ -1,0 +1,54 @@
+name: Agent setup actual Windows EXE
+on:
+  pull_request:
+    paths: ['agent-runtime/setup/**', 'agent-runtime/host/windows/**', '.github/workflows/agent-setup-exe.yml']
+  push:
+    branches: [main]
+    paths: ['agent-runtime/setup/**', 'agent-runtime/host/windows/**', '.github/workflows/agent-setup-exe.yml']
+permissions:
+  contents: read
+concurrency:
+  group: agent-setup-exe-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  frozen-windows:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.14.8'
+      - name: Isolated hash-locked Windows build environment
+        shell: pwsh
+        run: |
+          python -m venv "${{ runner.temp }}/exe-build-venv"
+          & "${{ runner.temp }}/exe-build-venv/Scripts/python.exe" -m pip install --isolated --no-cache-dir --only-binary=:all: --require-hashes -r agent-runtime/setup/requirements-build.lock
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build actual unsigned onefile console EXE with PSF runtime evidence
+        shell: pwsh
+        run: |
+          & "${{ runner.temp }}/exe-build-venv/Scripts/python.exe" agent-runtime/setup/scripts/build_exe.py --output "${{ runner.temp }}/setup-exe" --work "${{ runner.temp }}/setup-exe-build"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Run actual EXE without Python, pwsh7, Git or Agent on PATH
+        shell: pwsh
+        run: |
+          & "${{ runner.temp }}/exe-build-venv/Scripts/python.exe" agent-runtime/setup/scripts/smoke_exe.py --exe "${{ runner.temp }}/setup-exe/AgentRuntimeSetup.exe" --output "${{ runner.temp }}/setup-exe/actual-run-evidence"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Retain only fixed-category diagnostics on smoke failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: SetupEXE-safe-failure-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/setup-exe/actual-run-evidence/failure-diagnostic.json
+          if-no-files-found: warn
+          retention-days: 14
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: AgentRuntimeSetup-UNSIGNED_TEST_ONLY-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/setup-exe
+          if-no-files-found: error
+          retention-days: 30

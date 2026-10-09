@@ -1,4 +1,10 @@
-# Agent Runtime 首次安装向导 — Windows WSLC V1
+# Windows 用户入口：AgentRuntimeSetup.exe
+
+普通用户请先读 [双击 EXE 指南](EXE_GUIDE.md)。本轮提供内含 Python/Textual 的未签名 CI 测试产物，实际下载地址、SHA256 和运行证据以 [#137 最新交付](https://github.com/youling/ai-use/issues/137) 为准；无需源码 checkout、Git、Python 或 PowerShell 7 才能打开向导。未签名候选仅预览，真实 Host 安装仍有独立门禁。
+
+以下保留为开发者源码回归入口，不是 EXE 用户的操作要求。
+
+# Agent Runtime 开发者入口 — Windows WSLC V1
 
 这是待独立 Architect exact-head review 的 Windows V1 实现。默认只检查或生成计划；运行 Host apply 还需要明确 Host authority、审阅后的计划及批准。不会通过本工单发布新镜像、升级 WSL、重启机器或操作其他 Host。
 

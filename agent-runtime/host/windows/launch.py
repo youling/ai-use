@@ -11,6 +11,21 @@ import subprocess
 import os
 import secrets
 import yaml
+import ctypes
+
+def trusted_windows_powershell():
+    """Windows-provided PowerShell 5.1; PATH and SystemRoot are not authority."""
+    try:
+        buffer=ctypes.create_unicode_buffer(32768)
+        kernel=ctypes.WinDLL('kernel32',use_last_error=True)
+        kernel.GetSystemDirectoryW.argtypes=[ctypes.c_wchar_p,ctypes.c_uint]
+        kernel.GetSystemDirectoryW.restype=ctypes.c_uint
+        count=kernel.GetSystemDirectoryW(buffer,len(buffer))
+        if not 0<count<len(buffer):return None
+        path=Path(buffer.value)/'WindowsPowerShell/v1.0/powershell.exe'
+        if not path.is_file() or any(p.is_symlink() or (p.exists() and getattr(p.lstat(),'st_file_attributes',0)&0x400) for p in (path,*path.parents)):return None
+        return str(path)
+    except (OSError,AttributeError):return None
 
 def read_host(path, *, local_only=False):
     text=Path(path).read_text(encoding='utf-8')
@@ -41,10 +56,12 @@ def local_server_auth(root):
     custody=ordinary(root/'auth')
     custody.mkdir(mode=0o700)
     if os.name=='nt':
-        ps=shutil.which('pwsh.exe')
+        ps=trusted_windows_powershell()
         if not ps:
             raise ValueError('PROTECTED_HOST_AUTH_CUSTODY_UNAVAILABLE')
         script=r"""$ErrorActionPreference='Stop';
+[Console]::InputEncoding=[System.Text.UTF8Encoding]::new($false);
+[Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false);
 try {
  $p=([Console]::In.ReadToEnd()|ConvertFrom-Json).path;
  $sid=[System.Security.Principal.WindowsIdentity]::GetCurrent().User;
@@ -59,14 +76,17 @@ try {
  $got=Get-Acl -LiteralPath $p;
  $rules=@($got.GetAccessRules($true,$true,[System.Security.Principal.SecurityIdentifier]));
  $ok=$got.AreAccessRulesProtected -and $got.GetOwner([System.Security.Principal.SecurityIdentifier]).Value -eq $sid.Value -and $rules.Count -eq 2;
- foreach($r in $rules) { if($r.IsInherited -or $r.IdentityReference.Value -notin @($sid.Value,'S-1-5-18') -or $r.AccessControlType -ne 'Allow' -or $r.FileSystemRights -ne [System.Security.AccessControl.FileSystemRights]::FullControl -or $r.InheritanceFlags -ne ([System.Security.AccessControl.InheritanceFlags]::ContainerInherit -bor [System.Security.AccessControl.InheritanceFlags]::ObjectInherit)) {$ok=$false} }
+ foreach($r in $rules) { if($r.IsInherited -or $r.IdentityReference.Value -notin @($sid.Value,'S-1-5-18') -or $r.AccessControlType -ne 'Allow' -or $r.FileSystemRights -ne [System.Security.AccessControl.FileSystemRights]::FullControl -or $r.PropagationFlags -ne [System.Security.AccessControl.PropagationFlags]::None -or $r.InheritanceFlags -ne ([System.Security.AccessControl.InheritanceFlags]::ContainerInherit -bor [System.Security.AccessControl.InheritanceFlags]::ObjectInherit)) {$ok=$false} }
  @{protected=[bool]$ok}|ConvertTo-Json -Compress
 } catch { '{"protected":false}' }
 """
-        check=subprocess.run([ps,'-NoLogo','-NoProfile','-NonInteractive','-Command',script],
-                             input=json.dumps({'path':str(custody)}),capture_output=True,text=True,timeout=20)
-        proof=json.loads(check.stdout) if check.returncode==0 and len(check.stdout)<4096 else {}
-        if proof.get('protected') is not True:
+        try:
+            check=subprocess.run([ps,'-NoLogo','-NoProfile','-NonInteractive','-Command',script],
+                                 input=json.dumps({'path':str(custody)},ensure_ascii=False),capture_output=True,encoding='utf-8',errors='strict',timeout=20)
+            proof=json.loads(check.stdout) if check.returncode==0 and len(check.stdout)<4096 else {}
+        except (OSError,ValueError,UnicodeError,subprocess.TimeoutExpired):
+            proof={}
+        if not isinstance(proof,dict) or proof.get('protected') is not True:
             raise ValueError('PROTECTED_HOST_AUTH_CUSTODY_UNVERIFIED')
     elif custody.stat().st_mode & 0o077:
         raise ValueError('PROTECTED_HOST_AUTH_CUSTODY_UNVERIFIED')

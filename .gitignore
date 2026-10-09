@@ -1,6 +1,8 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.test-temp*/
+.test-windows*/
 image-conformance.json
 package-manifest.current.tsv
 release-manifest.json

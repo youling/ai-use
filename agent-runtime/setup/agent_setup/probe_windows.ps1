@@ -2,6 +2,9 @@
 # process command lines, authentication stores, user names or distro names.
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+# pwsh parents may supply an incompatible PSModulePath. Use only Windows'
+# built-in module directory in this child process; never modify global settings.
+$env:PSModulePath = Join-Path $PSHOME 'Modules'
 $result = @{volumes=@(); wsl_version_text=''; wslc_state='UNKNOWN'; wslc_active_count=$null}
 try {
     foreach ($volume in Get-Volume) {

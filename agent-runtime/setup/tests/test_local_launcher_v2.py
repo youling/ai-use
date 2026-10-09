@@ -66,9 +66,24 @@ def test_local_auth_secret_never_in_receipt_argv_or_context(tmp_path):
 
 def test_local_auth_acl_unverified_fails_before_secret_file(tmp_path):
     proxy=SimpleNamespace(name='nt',open=launch.os.open,fdopen=launch.os.fdopen,O_WRONLY=launch.os.O_WRONLY,O_CREAT=launch.os.O_CREAT,O_EXCL=launch.os.O_EXCL)
-    with patch.object(launch,'os',proxy),patch.object(launch.shutil,'which',return_value='synthetic-pwsh'),patch.object(launch.subprocess,'run',return_value=SimpleNamespace(returncode=0,stdout='{"protected":false}')):
+    with patch.object(launch,'os',proxy),patch.object(launch,'trusted_windows_powershell',return_value='synthetic-os-powershell'),patch.object(launch.subprocess,'run',return_value=SimpleNamespace(returncode=0,stdout='{"protected":false}')):
         with pytest.raises(ValueError,match='CUSTODY_UNVERIFIED'):launch.local_server_auth(tmp_path)
     assert not (tmp_path/'auth/server.env').exists()
+
+
+@pytest.mark.parametrize('output',['[]','null','{"protected":1}','not-json','{"protected":false}'])
+def test_native_ps5_acl_invalid_evidence_never_writes_auth(tmp_path,output):
+    proxy=SimpleNamespace(name='nt',open=launch.os.open,fdopen=launch.os.fdopen,O_WRONLY=launch.os.O_WRONLY,O_CREAT=launch.os.O_CREAT,O_EXCL=launch.os.O_EXCL)
+    calls=[]
+    def run(argv,**kwargs):
+        calls.append((argv,kwargs))
+        return SimpleNamespace(returncode=0,stdout=output)
+    with patch.object(launch,'os',proxy),patch.object(launch,'trusted_windows_powershell',return_value='WindowsPowerShell-v1.0'),patch.object(launch.subprocess,'run',side_effect=run):
+        with pytest.raises(ValueError,match='CUSTODY_UNVERIFIED'):launch.local_server_auth(tmp_path)
+    assert not (tmp_path/'auth/server.env').exists()
+    assert calls[0][0][0]=='WindowsPowerShell-v1.0'
+    assert calls[0][1]['encoding']=='utf-8'
+    assert '[Console]::InputEncoding' in calls[0][0][-1]
 
 def test_verification_requires_local_network_uid_scope_and_api_auth(tmp_path):
     host,args,attempt=fixture(tmp_path)
@@ -96,7 +111,7 @@ def test_synthetic_windows_custody_protects_before_auth_generation(tmp_path):
     def generate(*a):
         events.append('generate')
         return 'SYNTHETIC_TEST_VALUE'
-    with patch.object(launch,'os',proxy),patch.object(launch.shutil,'which',return_value='synthetic-pwsh'),patch.object(launch.subprocess,'run',side_effect=protect),patch.object(launch.secrets,'token_urlsafe',side_effect=generate):
+    with patch.object(launch,'os',proxy),patch.object(launch,'trusted_windows_powershell',return_value='synthetic-os-powershell'),patch.object(launch.subprocess,'run',side_effect=protect),patch.object(launch.secrets,'token_urlsafe',side_effect=generate):
         path=launch.local_server_auth(tmp_path)
     assert events==['acl','generate']
     assert path.is_file()

@@ -17,6 +17,73 @@ SECRET_PATTERN=re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY|gh[pous
 
 class SetupError(Exception):
     """Only stable codes reach UI/logs; never interpolate external exceptions."""
+    def __init__(self,code,*,conflicts=None,metadata_errors=None):
+        super().__init__(code)
+        self.conflicts=conflicts or []
+        self.metadata_errors=metadata_errors or []
+
+ROOT_ROLES=('workspace','config','cache','temp')
+METADATA_REASONS={'EXPECTED_MAPPING','INVENTORY_FLAG_TYPE','UNKNOWN_ROLE','DIRECTION_FIELDS_REQUIRED','PATH_TYPE',
+    'UNKNOWN_FIELD','PATH_REQUIRED','OWNER_TYPE','RELOCATABLE_TYPE','EXISTS_TYPE','REASON_TYPE','VERSION_UNSUPPORTED',
+    'UNSAFE_CONTEXT','UNREADABLE_OR_INVALID_CONTEXT','UNSAFE_PATH','PATH_NOT_ABSOLUTE','SENSITIVE_VALUE','POLICY_SENTINEL_CLASSIFICATION'}
+
+def metadata_diagnostics(value):
+    if not isinstance(value,list):return [{'role':'context','reason':'UNSAFE_CONTEXT'}]
+    result=[]
+    for entry in value[:8]:
+        if (isinstance(entry,dict) and isinstance(entry.get('role'),str) and entry.get('role') in (*ROOT_ROLES,'state','exchange','context')
+            and isinstance(entry.get('reason'),str) and entry.get('reason') in METADATA_REASONS):result.append({'role':entry['role'],'reason':entry['reason']})
+        else:result.append({'role':'context','reason':'UNSAFE_CONTEXT'})
+    return result
+
+def normalize_existing_roots(value):
+    """Canonical V1 plus the old Boolean inventory flag; no guessed legacy aliases."""
+    def invalid(role,reason):
+        raise SetupError('EXISTING_ROOT_METADATA_INVALID',metadata_errors=[{'role':role,'reason':reason}])
+    if not isinstance(value,dict):invalid('context','EXPECTED_MAPPING')
+    result={}
+    for role,entry in value.items():
+        if role=='host_agent':
+            if type(entry) is not bool:invalid('context','INVENTORY_FLAG_TYPE')
+            continue # Presence is metadata, never a semantic root or ownership proof.
+        if role not in (*ROOT_ROLES,'state','exchange'):invalid('context','UNKNOWN_ROLE')
+        if not isinstance(entry,dict):invalid(role,'EXPECTED_MAPPING')
+        if role=='exchange':
+            if not {'in','out'}.issubset(entry) or set(entry)-{'in','out','owner','relocatable','reason'}:invalid(role,'DIRECTION_FIELDS_REQUIRED')
+            if any(not isinstance(entry[name],str) or not entry[name] for name in ('in','out')):invalid(role,'PATH_TYPE')
+            if 'owner' in entry and (not isinstance(entry['owner'],str) or not entry['owner']):invalid(role,'OWNER_TYPE')
+            if 'relocatable' in entry and type(entry['relocatable']) is not bool:invalid(role,'RELOCATABLE_TYPE')
+            if 'reason' in entry and not isinstance(entry['reason'],str):invalid(role,'REASON_TYPE')
+        else:
+            if set(entry)-{'path','owner','relocatable','reason','exists'}:invalid(role,'UNKNOWN_FIELD')
+            if not isinstance(entry.get('path'),str) or not entry['path']:invalid(role,'PATH_REQUIRED')
+            if 'owner' in entry and (not isinstance(entry['owner'],str) or not entry['owner']):invalid(role,'OWNER_TYPE')
+            if 'relocatable' in entry and type(entry['relocatable']) is not bool:invalid(role,'RELOCATABLE_TYPE')
+            if 'exists' in entry and type(entry['exists']) is not bool:invalid(role,'EXISTS_TYPE')
+            if 'reason' in entry and not isinstance(entry['reason'],str):invalid(role,'REASON_TYPE')
+        if SECRET_PATTERN.search(json.dumps(entry)):invalid(role,'SENSITIVE_VALUE')
+        for path in [entry[name] for name in ('in','out')] if role=='exchange' else [entry['path']]:
+            if role=='state' and path=='NATIVE_VENDOR_STATE':
+                if entry.get('owner')!='VENDOR_OWNED' or entry.get('relocatable') is not False:invalid(role,'POLICY_SENTINEL_CLASSIFICATION')
+                continue # Emitted V1 policy sentinel, not a cwd path.
+            if not Path(path).is_absolute():invalid(role,'PATH_NOT_ABSOLUTE')
+            try:safe_path(path)
+            except SetupError:invalid(role,'UNSAFE_PATH')
+        result[role]=copy.deepcopy(entry)
+    return result
+
+def root_conflicts(paths,sources):
+    """Native resolved paths stay local; diagnostics contain only finite role metadata."""
+    conflicts=[]
+    for i,left in enumerate(ROOT_ROLES):
+        a=safe_path(paths[left])
+        for right in ROOT_ROLES[i+1:]:
+            b=safe_path(paths[right])
+            relation='SAME_DIRECTORY' if a==b else 'CONTAINS' if a.is_relative_to(b) or b.is_relative_to(a) else None
+            if relation:
+                conflicts.append({'roles':[left,right],'sources':[sources[left],sources[right]],'relation':relation,
+                    'action':'OWNER_REVIEW_EXISTING_ROOTS' if 'EXISTING_CONTEXT' in (sources[left],sources[right]) else 'REVIEW_SEPARATE_SCOPED_ROOTS'})
+    return conflicts
 
 def digest(value):
     return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':')).encode()).hexdigest()
@@ -150,15 +217,58 @@ class SetupEngine:
             if target.is_file():
                 try:
                     content=target.read_text(encoding='utf-8')
-                    if SECRET_PATTERN.search(content):raise ValueError('secret-bearing context')
+                    if SECRET_PATTERN.search(content):raise SetupError('EXISTING_CONTEXT_SECRET_DATA_REFUSED')
                     match=re.search(r'```yaml\s*\n(.*?)\n```',content,re.S)
                     existing=yaml.safe_load(match[1]) if match else {}
-                    if existing.get('host_agent_version')!=SCHEMA:raise ValueError('version')
-                    observation['existing_roots']={k:v for k,v in existing.get('paths',{}).items() if k in {'workspace','config','state','cache','temp','exchange'}}
-                    for name,value in observation['existing_roots'].items():
-                        if name!='exchange':value['exists']=Path(value['path']).exists()
-                except (ValueError,TypeError,AttributeError,KeyError,OSError):observation['existing_context_state']='STALE_REQUIRES_OWNER_REPAIR'
+                    if not isinstance(existing,dict):raise SetupError('EXISTING_ROOT_METADATA_INVALID',metadata_errors=[{'role':'context','reason':'EXPECTED_MAPPING'}])
+                    if existing.get('host_agent_version')!=SCHEMA:raise SetupError('EXISTING_ROOT_METADATA_INVALID',metadata_errors=[{'role':'context','reason':'VERSION_UNSUPPORTED'}])
+                    paths=existing.get('paths',{})
+                    if not isinstance(paths,dict):raise SetupError('EXISTING_ROOT_METADATA_INVALID',metadata_errors=[{'role':'context','reason':'EXPECTED_MAPPING'}])
+                    # Secrets are reference-only context outside root planning.
+                    normalized=normalize_existing_roots({k:v for k,v in paths.items() if k!='secrets'})
+                    for name,value in normalized.items():
+                        if name!='exchange':value['exists']=False if name=='state' and value['path']=='NATIVE_VENDOR_STATE' else Path(value['path']).exists()
+                    observation['existing_roots']=normalized
+                except SetupError as error:
+                    if str(error)=='EXISTING_CONTEXT_SECRET_DATA_REFUSED':raise
+                    observation['existing_context_state']='STALE_REQUIRES_OWNER_REPAIR'
+                    observation['existing_root_metadata_errors']=error.metadata_errors or [{'role':'context','reason':'UNSAFE_CONTEXT'}]
+                except (ValueError,TypeError,AttributeError,KeyError,OSError,yaml.YAMLError):
+                    observation['existing_context_state']='STALE_REQUIRES_OWNER_REPAIR'
+                    observation['existing_root_metadata_errors']=[{'role':'context','reason':'UNREADABLE_OR_INVALID_CONTEXT'}]
         return observation
+
+    def diagnose_root_plan(self,observation=None,overrides=None):
+        """Read-only planning diagnostics: no paths, identities, file contents or writes."""
+        try:
+            plan=self.plan(observation if observation is not None else self.probe(),overrides=overrides)
+            return {'status':plan['status'],'code':'NO_ROOT_OVERLAP','roles':list(ROOT_ROLES),'conflicts':[],
+                'host_apply':'NOT_AUTHORIZED','boss_cause':'NOT_DETERMINED'}
+        except SetupError as error:
+            code=str(error)
+            if not re.fullmatch(r'[A-Z][A-Z0-9_]{1,63}',code):code='OPERATION'
+            return {'status':'BLOCKED','code':code,'conflicts':error.conflicts,'metadata_errors':error.metadata_errors,
+                'host_apply':'NOT_AUTHORIZED','boss_cause':'NOT_DETERMINED'}
+        except Exception:
+            return {'status':'BLOCKED','code':'OPERATION','conflicts':[],
+                'host_apply':'NOT_AUTHORIZED','boss_cause':'NOT_DETERMINED'}
+
+    def propose_isolated_roots(self,observation):
+        """Return an unselected new namespace; never mutate or move existing roots."""
+        volumes=[v for v in observation.get('volumes',[]) if (v.get('free_bytes') or 0)>=8*1024**3
+            and v.get('fs') in {'NTFS','ReFS'} and v.get('mount') and v.get('local',True) is not False
+            and str(v.get('bus_type','')).lower() not in {'usb','iscsi','network'}]
+        volumes.sort(key=lambda v:(str(v.get('bus_type','')).upper()=='NVME',str(v.get('media_type','')).upper()=='SSD',
+            v.get('device_id')==observation.get('wslc_storage_device_id'),(v.get('free_bytes') or 0)/max(v.get('capacity_bytes') or 1,1),v.get('free_bytes',0)),reverse=True)
+        if not volumes:raise SetupError('STORAGE_CAPACITY')
+        for volume in volumes:
+            scope=safe_path(Path(volume['mount'])/('AgentRuntime-Setup-'+uuid.uuid4().hex[:12]))
+            try:self.plan(observation,overrides={'isolated_scope':str(scope)})
+            except SetupError as error:
+                if str(error)=='ISOLATED_SCOPE_OVERLAP':continue
+                raise
+            return {'isolated_scope':str(scope),'action':'REVIEW_ONLY_NO_HOST_CHANGES'}
+        raise SetupError('ISOLATED_SCOPE_OVERLAP')
 
     def plan(self,observation,overrides=None,github=None,model=None,durable=None):
         overrides=overrides or {};github=github or {};model=model or {};durable=durable or {}
@@ -175,20 +285,35 @@ class SetupEngine:
         gate('STORAGE_CAPACITY',bool(viable),'At least8GiB headroom on local NTFS/ReFS; respect filesystem and device locality')
         chosen=viable[0] if viable else (volumes[0] if volumes else {'mount':observation.get('documents') or str(Path.cwd())})
         base=Path(chosen['mount'])/'AgentRuntime'
-        existing=observation.get('existing_roots',{})
+        if observation.get('existing_root_metadata_errors'):
+            raise SetupError('EXISTING_ROOT_METADATA_INVALID',metadata_errors=metadata_diagnostics(observation['existing_root_metadata_errors']))
+        existing=normalize_existing_roots(observation.get('existing_roots',{}))
+        isolated=overrides.get('isolated_scope')
+        if isolated:
+            base=safe_path(isolated)
+            if base.exists():raise SetupError('ISOLATED_SCOPE_ALREADY_EXISTS')
+            protected=[old['path'] for name,old in existing.items() if name in (*ROOT_ROLES,'state') and isinstance(old,dict) and old.get('path')]
+            if isinstance(existing.get('exchange'),dict):protected.extend(existing['exchange'][name] for name in ('in','out'))
+            for raw in protected:
+                if raw=='NATIVE_VENDOR_STATE':continue
+                old_path=safe_path(raw)
+                if base==old_path or base.is_relative_to(old_path) or old_path.is_relative_to(base):raise SetupError('ISOLATED_SCOPE_OVERLAP')
         roots={}
+        root_sources={}
         for name,leaf in [('workspace','workspaces'),('config','config'),('cache','cache'),('temp','attempts')]:
-            old=existing.get(name,{})
+            old={} if isolated else existing.get(name,{})
             selected=overrides.get(name) or old.get('path') or str(base/leaf)
-            if old.get('path') and old.get('exists') and safe_path(selected)!=safe_path(old['path']):
+            root_sources[name]='USER_SELECTION' if overrides.get(name) else 'EXISTING_CONTEXT' if old.get('path') else 'NEW_DEFAULT'
+            if old.get('path') and (old.get('exists') or Path(old['path']).exists()) and safe_path(selected)!=safe_path(old['path']):
                 raise SetupError('FIRST_INSTALL_NEVER_RELOCATES_EXISTING_DATA')
             path=safe_path(selected)
+            if isolated and (not path.is_relative_to(base) or path==base):raise SetupError('ISOLATED_SCOPE_TARGET_ESCAPE')
             if hasattr(self.adapter,'validate_owned_path'):self.adapter.validate_owned_path(path)
             # Parent containment alone does not make an arbitrary existing root owned.
             canonical=observation.get('canonical_classification',{})
             classified=(canonical.get('verified') is True and bool(re.fullmatch(r'[a-f0-9]{64}',str(canonical.get('sha256',''))))
                 and canonical.get('sha256')==file_hash(Path(observation['documents'])/'HOST_AGENT.md') and bool(canonical.get('owner_pointer')))
-            owner=old.get('owner','UNKNOWN') if classified else 'HOST_MANAGED' if not path.exists() else 'UNKNOWN'
+            owner=old.get('owner','UNKNOWN') if classified and not isolated else 'HOST_MANAGED' if not path.exists() else 'UNKNOWN'
             marker=path/'.agent-runtime-setup-owner.json'
             if marker.exists():
                 try:
@@ -201,7 +326,8 @@ class SetupEngine:
         state=existing.get('state',{'path':observation.get('vendor_state','NATIVE_VENDOR_STATE'),'owner':'VENDOR_OWNED','relocatable':False})
         roots['state']={**state,'reason':'Preserve vendor/native state; never relocate on first install'}
         managed=[safe_path(roots[n]['path']) for n in ('workspace','config','cache','temp')]
-        if any(a==b or a.is_relative_to(b) or b.is_relative_to(a) for i,a in enumerate(managed) for b in managed[i+1:]):raise SetupError('ROOT_OVERLAP')
+        conflicts=root_conflicts({n:roots[n]['path'] for n in ROOT_ROLES},root_sources)
+        if conflicts:raise SetupError('ROOT_OVERLAP',conflicts=conflicts)
         for writer in observation.get('active_workloads',[]):
             if isinstance(writer,dict) and writer.get('path'):
                 active=safe_path(writer['path'])
@@ -234,7 +360,10 @@ class SetupEngine:
         if durable_meta['destination'] and not re.fullmatch(r'https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[^\s]*)?',durable_meta['destination']):raise SetupError('DURABLE_DESTINATION_INVALID')
         recovery_authorized=gh['authorized'] and durable_meta['authorized'] and bool(durable_meta['destination'])
         exchange={'in':str(base/'exchange/in'),'out':str(base/'exchange/out')}
-        if existing.get('exchange'):exchange=existing['exchange']
+        existing_exchange_classification={name:existing['exchange'][name] for name in ('owner','relocatable','reason')
+            if name in existing.get('exchange',{})}
+        exchange_classification=copy.deepcopy(existing_exchange_classification) if not isolated else {}
+        if existing.get('exchange') and not isolated:exchange={name:existing['exchange'][name] for name in ('in','out')}
         for key in exchange:
             exchange[key]=str(safe_path(exchange[key]))
             if hasattr(self.adapter,'validate_owned_path'):self.adapter.validate_owned_path(exchange[key])
@@ -271,14 +400,20 @@ class SetupEngine:
         documents_state='ONEDRIVE_REDIRECTED' if observation.get('documents_onedrive') is True or any(part.lower().startswith('onedrive') for part in documents.parts) else 'NATIVE_KNOWN_FOLDER'
         ready=all(g['state']=='PASS' for g in gates)
         result={'schema':SCHEMA,'status':'READY' if ready else 'BLOCKED','host_authorized':bool(overrides.get('host_authorized',False)),
-            'gates':gates,'roots':roots,'exchange':exchange,'documents':str(documents),'host_agent':str(target),
+            'gates':gates,'roots':roots,'exchange':exchange,'exchange_classification':exchange_classification,
+            'existing_exchange_classification':existing_exchange_classification,'documents':str(documents),'host_agent':str(target),
             'expected_host_agent_sha256':old_hash,'github':gh,'model':mod,'durable':durable_meta,'image':IMAGE,
             'storage':chosen,'storage_bindings':storage_bindings,'placement_rows':rows,'documents_state':documents_state,'recovery_authorized':bool(recovery_authorized),'platform':observation.get('platform'),'observed_at':observation['observed_at'],
             'operations':[{'kind':'ENSURE_OWNED_ROOT','path':str(p),'reason':'New/preserved scoped ownership'} for p in managed]+[{'kind':'MATERIALIZE_CONTEXT','path':str(target),'reason':'Known Folder discovery projection'}],
             'domains':{name:({'owner':'VENDOR_OWNED','relocatable':False} if name in {'Execution','State'} else {'owner':'HOST_CUSTODY','reference_only':True} if name=='Secrets' else roots[name.lower()]) for name in DOMAINS},
             'placement':'NO_MOVE','runtime_requested':bool(overrides.get('runtime',False))}
+        if isolated:
+            result['preserved_existing_roles']=[name for name in (*ROOT_ROLES,'state','exchange') if existing.get(name)]
+            result['isolated_scope_reviewed']=str(base)
         # Stable semantic binding excludes observation time; new authority must still be explicit.
-        result['install_binding']=digest({'roots':{k:{key:v[key] for key in ('path','owner','relocatable') if key in v} for k,v in roots.items()},'exchange':exchange,'github':gh,'model':mod,'durable':durable_meta,'image':IMAGE})
+        binding={'roots':{k:{key:v[key] for key in ('path','owner','relocatable') if key in v} for k,v in roots.items()},'exchange':exchange,'github':gh,'model':mod,'durable':durable_meta,'image':IMAGE}
+        if exchange_classification:binding['exchange_classification']=exchange_classification
+        result['install_binding']=digest(binding)
         run_id=result['install_binding'][:12]
         result['runtime']={'name':'setup-'+run_id,'attempt':str(Path(roots['temp']['path'])/('setup-'+run_id)),
             'incoming':str(Path(exchange['in'])/('setup-'+run_id)),'outgoing':str(Path(exchange['out'])/('setup-'+run_id)),'port':4096}
@@ -330,7 +465,7 @@ class SetupEngine:
         readiness=readiness or {}
         enabled=bool(config_id and readiness.get('credentials')=='PASS' and readiness.get('model')=='PASS')
         paths={k:{key:v[key] for key in ('path','owner','relocatable','reason') if key in v} for k,v in plan['roots'].items()}
-        paths['exchange']=plan['exchange']
+        paths['exchange']={**plan.get('exchange_classification',{}),**plan['exchange']}
         paths['secrets']={'catalog_ref':'host.native-secret-custody','runtime_root':'/run/secrets','refs':{
             'github_machine':{'ref':plan['github']['ref'] or 'host.github.not-authorized','class':'GITHUB_MACHINE_IDENTITY','custody':'HOST_OWNER','materialize':'EXISTING_APPROVED_HELPER'},
             'model_provider':{'ref':plan['model']['ref'] or 'host.model.not-authorized','class':'MODEL_PROVIDER_AUTH','custody':'HOST_OWNER','materialize':'PUBLIC_PROVIDER_ACTIVATION' if plan['model']['free_route'] else 'EXISTING_APPROVED_HELPER'}}}
