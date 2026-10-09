@@ -8,6 +8,8 @@
 
 secret/output invariant 见 [AGENTS.md §5](../AGENTS.md#5-evidence-bound-mutation)；public cold-start 回归见 [PUBLIC_COLD_START_CHECKLIST.md](PUBLIC_COLD_START_CHECKLIST.md)。
 
+对于面向用户的安装器、容器、Agent 首次使用交付，按需查看 [首次使用真实性验证：证据梯级与用户历史状态矩阵](USER_FIRST_RUN_EVIDENCE_LADDER.md)，将单元/合成/真实二进制/原生只读/用户现场/完整认证分别验收。它是实践指南，不是新的权限来源。
+
 真实异常 / failure mode / recovery case 统一进入 [INCIDENTS/](INCIDENTS/README.md)。Incident 只提供 evidence + diagnostic/recovery guidance，不成为第二套 authority 或 protocol。
 
 按任务阶段调节模型推理强度：见 [Adaptive Reasoning Effort](ADAPTIVE_REASONING_EFFORT.md)。它只提供 provider-agnostic 实践映射；Fresh/takeover 与 steady/escalation 的 normative owner 仍在 Reconnaissance / Agent Interface。
