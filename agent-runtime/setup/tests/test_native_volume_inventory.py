@@ -68,7 +68,7 @@ def test_complete_ps_inventory_is_retained_without_calling_fallback():
 
 def test_one_valid_ps_volume_is_retained_even_when_another_is_incomplete():
     valid=scan(kernel())
-    invalid={'mount':'D:\\','fs':'NTFS','free_bytes':None,'capacity_bytes':80*GIB}
+    invalid={'mount':'Z:\\','fs':'NTFS','free_bytes':None,'capacity_bytes':80*GIB}
     observation=probe({'volumes':[*valid,invalid]},lambda:pytest.fail('A valid PS volume is already observed'))
     assert observation['volumes']==valid
     assert observation['inventory_source']=='WINDOWS_POWERSHELL'
