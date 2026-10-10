@@ -216,7 +216,7 @@ def test_cross_disk_parent_reselection_regenerates_all_roots(tmp_path):
     asyncio.run(scenario())
 
 
-@pytest.mark.parametrize('name', ['..', '../outside', 'other/child', 'C:\\outside', 'cache:stream', 'CON', 'bad.'])
+@pytest.mark.parametrize('name', ['..', '../outside', 'other/child', 'C:\\outside', 'cache:stream', 'CON', 'bad.', 'EXCHANGE'])
 def test_scoped_invalid_names_keep_valid_plan_and_cannot_advance(tmp_path, name):
     async def scenario():
         engine, fast, slow = isolated_machine(tmp_path)

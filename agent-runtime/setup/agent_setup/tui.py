@@ -299,9 +299,9 @@ class SetupApp(App):
             for key in ("workspace", "config", "cache", "temp"):
                 value = self.query_one(f"#root-{key}", Input).value.strip()
                 if value and self.overrides.get('isolated_scope'):
-                    if (value in {'.','..'} or re.search(r'[<>:"/\\|?*\x00-\x1f]', value)
+                    if (value in {'.','..'} or value.casefold() == 'exchange' or re.search(r'[<>:"/\\|?*\x00-\x1f]', value)
                         or value.endswith(('.', ' ')) or re.fullmatch(r'(?:CON|PRN|AUX|NUL|COM[0-9]|LPT[0-9])(?:\..*)?', value, re.I)):
-                        self.set_status('这里只填写新子目录名称；安装位置请在“安装父目录”中选择。输入尚未采用。' if self.words is TEXT['zh'] else 'Enter a new subfolder name here. Select the installation location in Parent. Input has not been adopted.')
+                        self.set_status('这里只填写有效的新子目录名称；exchange 保留给交换目录。安装位置请在“安装父目录”中选择。输入尚未采用。' if self.words is TEXT['zh'] else 'Enter a valid new subfolder name; exchange is reserved. Select the installation location in Parent. Input has not been adopted.')
                         return False
                     value = str(Path(self.overrides['isolated_scope']) / value)
                 if value:
