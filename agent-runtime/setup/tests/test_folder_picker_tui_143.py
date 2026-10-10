@@ -3,6 +3,7 @@ import asyncio
 import copy
 from pathlib import Path
 import threading
+import pytest
 
 from textual.widgets import Button, Collapsible, Input, Static
 from agent_setup.engine import SetupEngine, FixtureAdapter
@@ -109,7 +110,7 @@ def isolated_machine(tmp_path):
     return engine, fast, slow
 
 
-def test_outside_scope_browse_does_not_bypass_plan_or_advance(tmp_path):
+def test_scoped_ui_rejects_absolute_child_input_without_impossible_picker(tmp_path):
     async def scenario():
         engine, fast, slow = isolated_machine(tmp_path)
         scope = engine.propose_isolated_roots(engine.probe())['isolated_scope']
@@ -118,13 +119,76 @@ def test_outside_scope_browse_does_not_bypass_plan_or_advance(tmp_path):
         async with app.run_test(size=(120, 40)) as pilot:
             await placement(app, pilot)
             app.approved_fingerprint = 'old-consent'
-            await press_button(app, pilot, '#browse-workspace')
+            assert not list(app.query('#browse-workspace'))
+            app.query_one('#root-workspace', Input).value = str(slow)
+            await pilot.pause()
+            assert '待重新核验' in str(app.query_one('#root-label-workspace').render())
+            await press_button(app, pilot, '#recompute')
             status = str(app.query_one('#status', Static).render())
-            assert 'ISOLATED_SCOPE_TARGET_ESCAPE' in status and '重新选择隔离根' in status
+            assert '新子目录名称' in status and '安装父目录' in status
             assert app.approved_fingerprint is None
             assert app.overrides['isolated_scope'] == scope and not Path(scope).exists()
             await press_button(app, pilot, '#next')
             assert app.step == 1
+    asyncio.run(scenario())
+
+
+def test_scoped_custom_names_and_typed_parent_succeed_through_review(tmp_path):
+    async def scenario():
+        engine, fast, slow = isolated_machine(tmp_path)
+        scope = engine.propose_isolated_roots(engine.probe())['isolated_scope']
+        app = SetupApp(engine)
+        app.overrides['isolated_scope'] = scope
+        async with app.run_test(size=(120, 40)) as pilot:
+            await placement(app, pilot)
+            old_binding = app.plan_data['install_binding']
+            await press_button(app, pilot, '#placement-custom')
+            names = dict(zip(('workspace','config','cache','temp'), ('工作区','配置','缓存','临时文件')))
+            app.query_one('#isolated-parent', Input).value = str(slow)
+            await pilot.pause()
+            await press_button(app, pilot, '#placement-custom')
+            assert app.query_one('#isolated-parent', Input).value == str(slow)
+            for role, name in names.items():
+                app.query_one('#root-' + role, Input).value = name
+            await pilot.pause()
+            assert app.placement_dirty and '尚未采用' in str(app.query_one('#placement-state', Static).render())
+            await press_button(app, pilot, '#recompute')
+            chosen = Path(app.overrides['isolated_scope'])
+            assert chosen.parent == slow and not chosen.exists()
+            assert not app.placement_dirty and app.plan_data['status'] == 'READY'
+            assert app.plan_data['install_binding'] != old_binding
+            for role, name in names.items():
+                assert Path(app.plan_data['roots'][role]['path']) == chosen / name
+                assert app.query_one('#root-' + role, Input).value == name
+            assert all(Path(path).is_relative_to(chosen) for path in app.plan_data['exchange'].values())
+            await press_button(app, pilot, '#next')
+            await press_button(app, pilot, '#skip-github')
+            await press_button(app, pilot, '#skip-model')
+            await press_button(app, pilot, '#next')
+            assert app.step == 3 and not app.host_authorized and app.approved_fingerprint is None
+            assert not chosen.exists()
+    asyncio.run(scenario())
+
+
+def test_scoped_parent_picker_preserves_custom_names_and_cancel(tmp_path):
+    async def scenario():
+        engine, fast, slow = isolated_machine(tmp_path)
+        scope = engine.propose_isolated_roots(engine.probe())['isolated_scope']
+        answers = iter([None, str(slow)])
+        app = SetupApp(engine, folder_picker=lambda **kwargs: next(answers))
+        app.overrides['isolated_scope'] = scope
+        async with app.run_test(size=(120, 40)) as pilot:
+            await placement(app, pilot)
+            app.query_one('#root-cache', Input).value = '我的缓存'
+            await pilot.pause()
+            before = copy.deepcopy((app.overrides, app.plan_data))
+            await press_button(app, pilot, '#browse-isolated-parent')
+            assert before == (app.overrides, app.plan_data)
+            assert app.query_one('#root-cache', Input).value == '我的缓存'
+            await press_button(app, pilot, '#browse-isolated-parent')
+            chosen = Path(app.overrides['isolated_scope'])
+            assert chosen.parent == slow and Path(app.plan_data['roots']['cache']['path']) == chosen / '我的缓存'
+            assert not chosen.exists() and app.focused.id == 'browse-isolated-parent'
     asyncio.run(scenario())
 
 
@@ -149,4 +213,42 @@ def test_cross_disk_parent_reselection_regenerates_all_roots(tmp_path):
             assert app.plan_data['install_binding'] != old_binding and app.approved_fingerprint is None
             assert app.focused.id == 'browse-isolated-parent' and not app.host_authorized
             assert not app.busy and app.words['busy'] not in app.status_text
+    asyncio.run(scenario())
+
+
+@pytest.mark.parametrize('name', ['..', '../outside', 'other/child', 'C:\\outside', 'cache:stream', 'CON', 'bad.'])
+def test_scoped_invalid_names_keep_valid_plan_and_cannot_advance(tmp_path, name):
+    async def scenario():
+        engine, fast, slow = isolated_machine(tmp_path)
+        scope = engine.propose_isolated_roots(engine.probe())['isolated_scope']
+        app = SetupApp(engine)
+        app.overrides['isolated_scope'] = scope
+        async with app.run_test(size=(80, 24)) as pilot:
+            await placement(app, pilot)
+            before = copy.deepcopy(app.plan_data)
+            app.approved_fingerprint = 'old-consent'
+            app.query_one('#root-cache', Input).value = name
+            await pilot.pause()
+            await press_button(app, pilot, '#next')
+            assert app.step == 1 and app.plan_data == before
+            assert app.approved_fingerprint is None and '输入尚未采用' in app.status_text
+            assert app.query_one('#root-cache', Input).value == name and not Path(scope).exists()
+    asyncio.run(scenario())
+
+
+def test_scoped_duplicate_names_are_rejected_by_original_engine(tmp_path):
+    async def scenario():
+        engine, fast, slow = isolated_machine(tmp_path)
+        scope = engine.propose_isolated_roots(engine.probe())['isolated_scope']
+        app = SetupApp(engine)
+        app.overrides['isolated_scope'] = scope
+        async with app.run_test(size=(120, 40)) as pilot:
+            await placement(app, pilot)
+            before = copy.deepcopy(app.plan_data)
+            app.query_one('#root-cache', Input).value = 'same'
+            app.query_one('#root-config', Input).value = 'same'
+            await pilot.pause()
+            await press_button(app, pilot, '#next')
+            assert app.step == 1 and app.plan_data == before and 'ROOT_OVERLAP' in app.status_text
+            assert app.placement_dirty and not Path(scope).exists()
     asyncio.run(scenario())

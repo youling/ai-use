@@ -59,7 +59,7 @@ def receipt():
             'folder_picker_cases': [{'scenario': name, 'chooser_boundary': 'INJECTED_OWNED_DIRECTORY_OR_CANCEL',
                                     'native_dialog': 'NOT_EXERCISED_BY_SEAM', 'keyboard_browse': 'PASS',
                                     'cancel': 'UNCHANGED', 'scope_escape': 'BLOCKED',
-                                    'parent_scope': 'FRESH_DESCENDANT_NOT_CREATED', 'auto_custom': 'PASS',
+                                    'parent_scope': 'FRESH_DESCENDANT_NOT_CREATED', 'auto_custom': 'PASS', 'custom_new_children': 'PASS',
                                     'prior_consent': 'INVALIDATED_ON_SELECTION', 'existing_files': 'UNCHANGED',
                                     'host_apply': 'DENIED'} for name in ['fresh', 'legacy_v1']],
             'screens': [{'scenario': name, 'size': [80, 24], 'first_next': state} for name, state in

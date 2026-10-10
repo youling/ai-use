@@ -92,7 +92,7 @@ def validate_acceptance_receipt(receipt: dict) -> None:
             or case.get('native_dialog') != 'NOT_EXERCISED_BY_SEAM'
             or case.get('keyboard_browse') != 'PASS' or case.get('cancel') != 'UNCHANGED'
             or case.get('scope_escape') != 'BLOCKED' or case.get('parent_scope') != 'FRESH_DESCENDANT_NOT_CREATED'
-            or case.get('auto_custom') != 'PASS' or case.get('prior_consent') != 'INVALIDATED_ON_SELECTION'
+            or case.get('auto_custom') != 'PASS' or case.get('custom_new_children') != 'PASS' or case.get('prior_consent') != 'INVALIDATED_ON_SELECTION'
             or case.get('existing_files') != 'UNCHANGED' or case.get('host_apply') != 'DENIED'):
             raise RuntimeError('FROZEN_FOLDER_PICKER_BOUNDARY_INVALID')
 
