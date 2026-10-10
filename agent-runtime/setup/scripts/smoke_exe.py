@@ -166,8 +166,10 @@ def smoke(exe: Path, output: Path):
                 # whole multi-case acceptance process gets a larger envelope.
                 # Expanded UI matrix adds fresh read-only native scans for each
                 # browse/cancel/replan. Each provider retains its 25s limit;
-                # the whole acceptance job has a finite 900s envelope.
-                timeout = 900 if arguments[0] == '--self-test' else 180
+                # CI 38064113439 exhausted 900s in the final legacy_v1 picker
+                # matrix without a functional failure. The expanded full matrix
+                # gets a finite 1200s envelope, inside the 25min workflow limit.
+                timeout = 1200 if arguments[0] == '--self-test' else 180
                 run = run_owned([str(exe), *arguments], cwd=cwd, env=env, timeout=timeout)
             except subprocess.TimeoutExpired:
                 safe_failure(output, exe, arguments[0], SimpleNamespace(returncode=124,

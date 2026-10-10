@@ -195,6 +195,7 @@ async def frozen_folder_picker_seams(root: Path, output: Path, pipelines: dict) 
                 raise SetupError('SELF_TEST_FOLDER_PICKER_SCOPE_GUARD_FAILED')
             scope_app.query_one('#root-workspace', Input).value = ''
             answers = iter([str(new_parent), None])
+            acceptance_stage('FOLDER_PICKER_PARENT', scenario)
             scope_app.query_one('#browse-isolated-parent', Button).focus()
             await pilot.press('enter')
             await pilot.pause(0.4)
@@ -211,12 +212,14 @@ async def frozen_folder_picker_seams(root: Path, output: Path, pipelines: dict) 
             await pilot.press('enter')
             await pilot.pause()
             scope_app.query_one('#placement-auto', Button).focus()
+            acceptance_stage('FOLDER_PICKER_AUTO', scenario)
             await pilot.press('enter')
             await pilot.pause(0.3)
             if (scope_app.placement_mode != 'auto' or scope_app.overrides['isolated_scope'] != str(proposed)
                 or any(scope_app.query_one('#root-' + role, Input).value for role in ['workspace', 'config', 'cache', 'temp'])):
                 raise SetupError('SELF_TEST_FOLDER_PICKER_AUTO_CUSTOM_FAILED')
             custom_names = {'workspace':'MyWorkspaces', 'config':'MyConfiguration', 'cache':'MyCache', 'temp':'MyTemporaryFiles'}
+            acceptance_stage('FOLDER_PICKER_CUSTOM', scenario)
             for role, name in custom_names.items():
                 scope_app.query_one('#root-' + role, Input).value = name
             scope_app.query_one('#recompute', Button).focus()
@@ -230,6 +233,7 @@ async def frozen_folder_picker_seams(root: Path, output: Path, pipelines: dict) 
                 scope_app.export_screenshot(title=f'ACTUAL EXE / NATIVE PIPELINE / {scenario} / CHOOSER SEAM / NEW PARENT REVIEW'),
                 encoding='utf-8')
             before = copy.deepcopy((scope_app.overrides, scope_app.plan_data))
+            acceptance_stage('FOLDER_PICKER_CANCEL', scenario)
             scope_app.query_one('#browse-isolated-parent', Button).focus()
             await pilot.press('enter')
             await pilot.pause(0.2)

@@ -11,12 +11,13 @@ validate = runpy.run_path(str(Path(__file__).resolve().parents[1] / 'scripts/smo
                          run_name='synthetic_exe_acceptance')['validate_acceptance_receipt']
 
 
-def test_timeout_failure_retains_only_latest_public_stage(tmp_path):
+@pytest.mark.parametrize('stage', ['FOLDER_PICKER_SEAM', 'FOLDER_PICKER_PARENT', 'FOLDER_PICKER_AUTO', 'FOLDER_PICKER_CUSTOM', 'FOLDER_PICKER_CANCEL'])
+def test_timeout_failure_retains_only_latest_public_stage(tmp_path, stage):
     functions = runpy.run_path(str(Path(__file__).resolve().parents[1] / 'scripts/smoke_exe.py'))
     output = tmp_path / 'owned-evidence'
     (output / 'screens').mkdir(parents=True)
     (output / 'screens/acceptance-progress.json').write_text(json.dumps({
-        'acceptance_stage': 'FOLDER_PICKER_SEAM', 'acceptance_scenario': 'legacy_v1',
+        'acceptance_stage': stage, 'acceptance_scenario': 'legacy_v1',
         'raw_error': 'PUBLIC_SYNTHETIC_TOKEN', 'path': 'PUBLIC_SYNTHETIC_PRIVATE_PATH'}))
     exe = tmp_path / 'public-synthetic-exe'
     exe.write_bytes(b'PUBLIC_SYNTHETIC_TEST_BYTES')
@@ -25,7 +26,7 @@ def test_timeout_failure_retains_only_latest_public_stage(tmp_path):
     content = (output / 'failure-diagnostic.json').read_text()
     diagnostic = json.loads(content)
     assert diagnostic['reason'] == 'ACTUAL_FROZEN_EXE_PROCESS_TIMEOUT'
-    assert diagnostic['acceptance_stage'] == 'FOLDER_PICKER_SEAM'
+    assert diagnostic['acceptance_stage'] == stage
     assert diagnostic['acceptance_scenario'] == 'legacy_v1'
     assert 'PUBLIC_SYNTHETIC_TOKEN' not in content and 'PUBLIC_SYNTHETIC_PRIVATE_PATH' not in content
     assert diagnostic['host_apply'] == 'DENIED' and diagnostic['credentials_read'] is False
