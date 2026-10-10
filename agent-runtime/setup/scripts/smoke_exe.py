@@ -15,6 +15,9 @@ import sys
 from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from owned_windows_job import run_owned
+from agent_setup.exe_main import read_acceptance_progress
 from agent_setup.packaging import (PUBLIC_BUNDLE_CODES, PUBLIC_EXE_CODES, SIGNATURE_PHASES,
                                    ACCEPTANCE_STAGES, ACCEPTANCE_SCENARIOS, NATIVE_CHECKS)
 from agent_setup.packaging import PUBLIC_PLAN_GATES
@@ -75,6 +78,23 @@ def validate_acceptance_receipt(receipt: dict) -> None:
         if not any(screen.get('scenario') == scenario and screen.get('size') == [80, 24]
                    and screen.get('first_next') == result for screen in screens):
             raise RuntimeError('FROZEN_EXISTING_CONTEXT_UI_EVIDENCE_INCOMPLETE')
+    picker = receipt.get('native_folder_picker', {})
+    if (picker.get('status') != 'PASS' or picker.get('evidence') != 'NATIVE_COM_CONFIGURE_ONLY'
+        or picker.get('ui_show') != 'NOT_EXERCISED'
+        or picker.get('history_cleanup') not in {'VERIFIED', 'UNVERIFIED'}):
+        raise RuntimeError('FROZEN_NATIVE_FOLDER_PICKER_CONFIGURE_UNVERIFIED')
+    picker_cases = receipt.get('folder_picker_cases', [])
+    if (not isinstance(picker_cases, list)
+        or {case.get('scenario') for case in picker_cases if isinstance(case, dict)} != {'fresh', 'legacy_v1'}):
+        raise RuntimeError('FROZEN_FOLDER_PICKER_SEAM_EVIDENCE_INCOMPLETE')
+    for case in picker_cases:
+        if (case.get('chooser_boundary') != 'INJECTED_OWNED_DIRECTORY_OR_CANCEL'
+            or case.get('native_dialog') != 'NOT_EXERCISED_BY_SEAM'
+            or case.get('keyboard_browse') != 'PASS' or case.get('cancel') != 'UNCHANGED'
+            or case.get('scope_escape') != 'BLOCKED' or case.get('parent_scope') != 'FRESH_DESCENDANT_NOT_CREATED'
+            or case.get('auto_custom') != 'PASS' or case.get('prior_consent') != 'INVALIDATED_ON_SELECTION'
+            or case.get('existing_files') != 'UNCHANGED' or case.get('host_apply') != 'DENIED'):
+            raise RuntimeError('FROZEN_FOLDER_PICKER_BOUNDARY_INVALID')
 
 
 def safe_failure(output: Path, exe: Path, mode: str, run) -> None:
@@ -105,6 +125,8 @@ def safe_failure(output: Path, exe: Path, mode: str, run) -> None:
     if phase:
         diagnostic['signature_phase'] = phase
     diagnostic.update(safe_stage)
+    if mode == '--self-test':
+        diagnostic.update(read_acceptance_progress(output / 'screens'))
     (output / 'failure-diagnostic.json').write_text(json.dumps(diagnostic, indent=2) + '\n', encoding='utf-8')
     print(json.dumps(diagnostic), flush=True)
 
@@ -142,12 +164,19 @@ def smoke(exe: Path, output: Path):
                 # bounded real PS5 scans and signature checks for every case.
                 # Individual native-process limits stay unchanged; only the
                 # whole multi-case acceptance process gets a larger envelope.
-                timeout = 600 if arguments[0] == '--self-test' else 180
-                run = subprocess.run([str(exe), *arguments], cwd=cwd, env=env, stdin=subprocess.DEVNULL,
-                                     capture_output=True, encoding='utf-8', errors='replace', timeout=timeout)
+                # Expanded UI matrix adds fresh read-only native scans for each
+                # browse/cancel/replan. Each provider retains its 25s limit;
+                # the whole acceptance job has a finite 900s envelope.
+                timeout = 900 if arguments[0] == '--self-test' else 180
+                run = run_owned([str(exe), *arguments], cwd=cwd, env=env, timeout=timeout)
             except subprocess.TimeoutExpired:
-                safe_failure(output, exe, arguments[0], SimpleNamespace(returncode=124, stdout=''))
+                safe_failure(output, exe, arguments[0], SimpleNamespace(returncode=124,
+                             stdout=json.dumps({'reason': 'ACTUAL_FROZEN_EXE_PROCESS_TIMEOUT'})))
                 raise RuntimeError('ACTUAL_FROZEN_EXE_PROCESS_TIMEOUT') from None
+            except RuntimeError:
+                safe_failure(output, exe, arguments[0], SimpleNamespace(returncode=125,
+                             stdout=json.dumps({'reason': 'ACTUAL_FROZEN_EXE_OWNED_JOB_FAILED'})))
+                raise RuntimeError('ACTUAL_FROZEN_EXE_OWNED_JOB_FAILED') from None
             if run.returncode != expected:
                 # Do not leak arbitrary stderr/tracebacks from third-party code.
                 safe_failure(output, exe, arguments[0], run)
@@ -171,8 +200,7 @@ def smoke(exe: Path, output: Path):
             if sorted(p.name for p in temporary.iterdir()) != before:
                 raise RuntimeError('ONEFILE_EXTRACTION_NOT_CLEANED')
         # Rerun is a read-only startup again, never repair/mutation implicitly.
-        rerun = subprocess.run([str(exe), '--check-only'], cwd=cwd, env=env, stdin=subprocess.DEVNULL,
-                               capture_output=True, encoding='utf-8', errors='replace', timeout=90)
+        rerun = run_owned([str(exe), '--check-only'], cwd=cwd, env=env, timeout=180)
         if rerun.returncode != 0 or sorted(p.name for p in temporary.iterdir()) != before:
             raise RuntimeError('FROZEN_RERUN_FAILED')
     result = {'status': 'PASS', 'actual_exe_sha256': hashlib.sha256(exe.read_bytes()).hexdigest(),

@@ -8,6 +8,8 @@ import sys
 import tempfile
 import shutil
 import copy
+import os
+import stat
 
 from .engine import SetupEngine, SetupError
 from .packaging import BundleError, bundle_provenance, verified_bundle_root, validate_bundle, PUBLIC_BUNDLE_CODES
@@ -16,12 +18,61 @@ from .packaging import PUBLIC_EXE_CODES, ACCEPTANCE_STAGES, ACCEPTANCE_SCENARIOS
 
 _CURRENT_STAGE = None
 _CURRENT_SCENARIO = None
+_ACCEPTANCE_OUTPUT = None
+
+
+def register_acceptance_output(output):
+    """Explicit self-test output only; never infer an installation location."""
+    global _ACCEPTANCE_OUTPUT
+    _ACCEPTANCE_OUTPUT = None
+    path = Path(output).absolute()
+    for component in [path, *path.parents]:
+        if component.exists() or component.is_symlink():
+            metadata = component.lstat()
+            if stat.S_ISLNK(metadata.st_mode) or getattr(metadata, 'st_file_attributes', 0) & 0x400:
+                raise SetupError('SELF_TEST_OUTPUT_UNSAFE')
+    path.mkdir(parents=True, exist_ok=True)
+    _ACCEPTANCE_OUTPUT = path
+
+
+def read_acceptance_progress(output):
+    """Only allowlisted categories can enter retained failure evidence."""
+    try:
+        path = Path(output) / 'acceptance-progress.json'
+        for component in [path, *path.parents]:
+            if component.is_symlink() or (component.exists() and getattr(component.lstat(), 'st_file_attributes', 0) & 0x400):
+                return {}
+        if path.stat().st_size > 2048:
+            return {}
+        payload = json.loads(path.read_text(encoding='utf-8'))
+        if not isinstance(payload, dict):
+            return {}
+        return {key: payload[key] for key, allowed in
+                [('acceptance_stage', ACCEPTANCE_STAGES), ('acceptance_scenario', ACCEPTANCE_SCENARIOS)]
+                if type(payload.get(key)) is str and payload[key] in allowed}
+    except (OSError, ValueError):
+        return {}
 
 
 def acceptance_stage(stage, scenario=None):
     global _CURRENT_STAGE, _CURRENT_SCENARIO
     _CURRENT_STAGE = stage if stage in ACCEPTANCE_STAGES else None
     _CURRENT_SCENARIO = scenario if scenario in ACCEPTANCE_SCENARIOS else None
+    if _ACCEPTANCE_OUTPUT is not None and _CURRENT_STAGE is not None:
+        payload = {'acceptance_stage': _CURRENT_STAGE}
+        if _CURRENT_SCENARIO is not None:
+            payload['acceptance_scenario'] = _CURRENT_SCENARIO
+        destination = _ACCEPTANCE_OUTPUT / 'acceptance-progress.json'
+        if destination.is_symlink() or (destination.exists() and getattr(destination.lstat(), 'st_file_attributes', 0) & 0x400):
+            raise SetupError('SELF_TEST_OUTPUT_UNSAFE')
+        descriptor, temporary = tempfile.mkstemp(prefix='.progress-', dir=_ACCEPTANCE_OUTPUT)
+        try:
+            with os.fdopen(descriptor, 'w', encoding='utf-8') as stream:
+                json.dump(payload, stream)
+                stream.write('\n')
+            os.replace(temporary, destination)
+        finally:
+            Path(temporary).unlink(missing_ok=True)
 
 
 class ExeAcceptanceError(SetupError):
@@ -56,6 +107,121 @@ def readonly_native_bundle_scan() -> dict:
             'context_contents_read': False, 'credentials_read': False, 'paths_emitted': False}
 
 
+async def frozen_folder_picker_seams(root: Path, output: Path, pipelines: dict) -> list[dict]:
+    """Only chooser results are injected; native probe/parser/plan remain real."""
+    from .tui import SetupApp
+    from .read_only_acceptance import assert_fixture_unchanged
+    from textual.widgets import Button, Collapsible, Input
+    records = []
+    for scenario in ['fresh', 'legacy_v1']:
+        pipeline = pipelines[scenario]
+        if scenario == 'fresh':
+            selected = pipeline['root'] / 'public-browse-workspace'
+            selected.mkdir()
+        else:
+            selected = pipeline['root'] / 'workspace'  # NO_MOVE: preserve existing V1.
+        answers = iter([str(selected), None])
+        calls = []
+        def chooser(**kwargs):
+            calls.append('OWNED_CHOOSER_BOUNDARY')
+            return next(answers)
+        app = SetupApp(pipeline['engine'], folder_picker=chooser, host_authorized=False)
+        app.overrides.update(pipeline['overrides'])
+        acceptance_stage('FOLDER_PICKER_SEAM', scenario)
+        async with app.run_test(size=(80, 24)) as pilot:
+            app.query_one('#next', Button).focus()
+            await pilot.press('enter')
+            await pilot.pause(0.4)
+            if app.step != 1:
+                raise SetupError('SELF_TEST_FOLDER_PICKER_INITIAL_PLACEMENT_FAILED')
+            app.query_one('#advanced', Collapsible).collapsed = False
+            await pilot.pause()
+            app.approved_fingerprint = 'PUBLIC_SYNTHETIC_PRIOR_CONSENT'
+            app.query_one('#browse-workspace', Button).focus()
+            await pilot.press('enter')
+            await pilot.pause(0.5)
+            if (calls != ['OWNED_CHOOSER_BOUNDARY'] or app.overrides.get('workspace') != str(selected)
+                or app.plan_data['roots']['workspace']['path'] != str(selected)
+                or app.placement_mode != 'custom' or app.approved_fingerprint is not None
+                or app.focused.id != 'root-workspace'):
+                raise SetupError('SELF_TEST_FOLDER_PICKER_BROWSE_FAILED')
+            (output / f'actual-exe-folder-browse-{scenario}-80x24.svg').write_text(
+                app.export_screenshot(title=f'ACTUAL EXE / NATIVE PIPELINE / {scenario} / CHOOSER SEAM / CUSTOM'), encoding='utf-8')
+            app.approved_fingerprint = 'PUBLIC_SYNTHETIC_PRIOR_CONSENT'
+            before = copy.deepcopy((app.overrides, app.plan_data, app.approved_fingerprint,
+                                    {field.id: field.value for field in app.query(Input)}))
+            app.query_one('#browse-config', Button).focus()
+            await pilot.press('enter')
+            await pilot.pause(0.3)
+            after = (app.overrides, app.plan_data, app.approved_fingerprint,
+                     {field.id: field.value for field in app.query(Input)})
+            if before != after or app.focused.id != 'browse-config':
+                raise SetupError('SELF_TEST_FOLDER_PICKER_CANCEL_CHANGED_STATE')
+        assert_fixture_unchanged(pipeline)
+
+        initial_parent = pipeline['root'] / 'public-isolation-parent'
+        new_parent = pipeline['root'] / 'public-reselected-parent'
+        initial_parent.mkdir()
+        new_parent.mkdir()
+        initial_scope = pipeline['engine'].propose_isolated_roots(pipeline['engine'].probe(), parent=str(initial_parent))['isolated_scope']
+        answers = iter([str(new_parent), str(new_parent), None])
+        scope_app = SetupApp(pipeline['engine'], folder_picker=lambda **kwargs: next(answers), host_authorized=False)
+        scope_app.overrides['isolated_scope'] = initial_scope
+        async with scope_app.run_test(size=(120, 40)) as pilot:
+            scope_app.query_one('#next', Button).focus()
+            await pilot.press('enter')
+            await pilot.pause(0.3)
+            if scope_app.step != 1:
+                raise SetupError('SELF_TEST_FOLDER_PICKER_INITIAL_PLACEMENT_FAILED')
+            scope_app.query_one('#advanced', Collapsible).collapsed = False
+            await pilot.pause()
+            scope_app.approved_fingerprint = 'PUBLIC_SYNTHETIC_PRIOR_CONSENT'
+            scope_app.query_one('#browse-workspace', Button).focus()
+            await pilot.press('enter')
+            await pilot.pause(0.3)
+            if ('ISOLATED_SCOPE_TARGET_ESCAPE' not in scope_app.status_text
+                or scope_app.overrides.get('isolated_scope') != initial_scope
+                or scope_app.approved_fingerprint is not None):
+                raise SetupError('SELF_TEST_FOLDER_PICKER_SCOPE_GUARD_FAILED')
+            scope_app.query_one('#browse-isolated-parent', Button).focus()
+            await pilot.press('enter')
+            await pilot.pause(0.4)
+            proposed = Path(scope_app.overrides['isolated_scope'])
+            if (proposed.parent != new_parent or proposed == new_parent or proposed.exists()
+                or Path(initial_scope).exists()
+                or any(role in scope_app.overrides for role in ['workspace', 'config', 'cache', 'temp'])
+                or any(not Path(scope_app.plan_data['roots'][role]['path']).is_relative_to(proposed)
+                       for role in ['workspace', 'config', 'cache', 'temp'])
+                or any(not Path(path).is_relative_to(proposed) for path in scope_app.plan_data['exchange'].values())
+                or scope_app.approved_fingerprint is not None):
+                raise SetupError('SELF_TEST_FOLDER_PICKER_PARENT_REVIEW_FAILED')
+            scope_app.query_one('#placement-custom', Button).focus()
+            await pilot.press('enter')
+            await pilot.pause()
+            scope_app.query_one('#placement-auto', Button).focus()
+            await pilot.press('enter')
+            await pilot.pause(0.3)
+            if (scope_app.placement_mode != 'auto' or scope_app.overrides['isolated_scope'] != str(proposed)
+                or any(scope_app.query_one('#root-' + role, Input).value for role in ['workspace', 'config', 'cache', 'temp'])):
+                raise SetupError('SELF_TEST_FOLDER_PICKER_AUTO_CUSTOM_FAILED')
+            (output / f'actual-exe-folder-parent-{scenario}-120x40.svg').write_text(
+                scope_app.export_screenshot(title=f'ACTUAL EXE / NATIVE PIPELINE / {scenario} / CHOOSER SEAM / NEW PARENT REVIEW'),
+                encoding='utf-8')
+            before = copy.deepcopy((scope_app.overrides, scope_app.plan_data))
+            scope_app.query_one('#browse-isolated-parent', Button).focus()
+            await pilot.press('enter')
+            await pilot.pause(0.2)
+            if before != (scope_app.overrides, scope_app.plan_data):
+                raise SetupError('SELF_TEST_FOLDER_PICKER_CANCEL_CHANGED_STATE')
+        assert_fixture_unchanged(pipeline)
+        records.append({'scenario': scenario, 'chooser_boundary': 'INJECTED_OWNED_DIRECTORY_OR_CANCEL',
+                        'native_dialog': 'NOT_EXERCISED_BY_SEAM', 'keyboard_browse': 'PASS', 'cancel': 'UNCHANGED',
+                        'scope_escape': 'BLOCKED', 'parent_scope': 'FRESH_DESCENDANT_NOT_CREATED',
+                        'auto_custom': 'PASS', 'prior_consent': 'INVALIDATED_ON_SELECTION',
+                        'existing_files': 'UNCHANGED', 'host_apply': 'DENIED'})
+    return records
+
+
 async def frozen_self_test(output: Path) -> dict:
     """Actual production probe/parser/planner on disposable public contexts.
 
@@ -73,6 +239,12 @@ async def frozen_self_test(output: Path) -> dict:
         raise BundleError('BUNDLE_PROVENANCE_UNVERIFIED')
     acceptance_stage('NATIVE_RESOURCE_SCAN')
     native_scan = readonly_native_bundle_scan()
+    acceptance_stage('NATIVE_FOLDER_PICKER_CONFIGURE')
+    from .folder_picker import native_capability_check
+    native_picker = await asyncio.to_thread(native_capability_check)
+    if (native_picker.get('status') != 'PASS' or native_picker.get('evidence') != 'NATIVE_COM_CONFIGURE_ONLY'
+        or native_picker.get('ui_show') != 'NOT_EXERCISED'):
+        raise SetupError('SELF_TEST_NATIVE_FOLDER_PICKER_CONFIGURE_FAILED')
     output.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='setup-exe-fixture-') as scratch:
         root = Path(scratch)
@@ -251,6 +423,7 @@ async def frozen_self_test(output: Path) -> dict:
                 assert_fixture_unchanged(pipeline)
         for pipeline in pipelines.values():
             assert_fixture_unchanged(pipeline)
+        folder_picker_cases = await frozen_folder_picker_seams(root, output, pipelines)
     acceptance_stage('COMPLETE')
     return {'status': 'PASS', 'execution': 'ACTUAL_FROZEN_EXE', 'metadata': 'NATIVE_WINDOWS_WITH_OWNED_CONTEXT_FIXTURES',
             'acceptance': {'BUNDLE_EXECUTION_PASS': True, 'SYNTHETIC_HOST_WIZARD_PASS': True,
@@ -259,6 +432,8 @@ async def frozen_self_test(output: Path) -> dict:
             'screens': records, 'context_cases': cases, 'host_apply': 'DENIED', 'native_opencode': 'UNCHANGED_OWNED_FIXTURE_STATE',
             'forced_fallback_cases': fallback_cases, 'fallback_without_runtime_fixture': fallback_runtime,
             'exchange_schema_variants': exchange_schemas,
+            'folder_picker_cases': folder_picker_cases,
+            'native_folder_picker': native_picker,
             'credentials_read': False, 'network': 'NO_CREDENTIAL_OR_MODEL_CALLS',
             'provenance': proof, 'negative_cases': negatives,
             'native_metadata_scan': native_scan, 'native_read_only_planning': native_plan}
@@ -281,6 +456,11 @@ def main(argv=None) -> int:
         raise SetupError('UNSIGNED_DISTRIBUTION_HOST_APPLY_DENIED')
     if remaining:
         raise SetupError('UNKNOWN_ARGUMENT')
+    if args.self_test:
+        if args.output_dir is None:
+            raise SetupError('SELF_TEST_OUTPUT_REQUIRED')
+        register_acceptance_output(args.output_dir)
+        acceptance_stage('BUNDLE_PROVENANCE')
     proof = bundle_provenance()
     if not proof.get('bundle_verified') or not proof.get('python_verified'):
         reason = proof.get('reason', 'BUNDLE_PROVENANCE_UNVERIFIED')

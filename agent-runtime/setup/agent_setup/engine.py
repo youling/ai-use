@@ -106,6 +106,21 @@ def safe_path(value):
             raise SetupError('REPARSE_PATH_DENIED')
     return p.resolve()
 
+def volume_anchor(mount):
+    """Read-only disk inventory anchor; never a managed installation target."""
+    raw=str(mount)
+    if os.name=='nt' and re.fullmatch(r'[A-Za-z]:[/\\]',raw):
+        root=Path(raw)
+        if not root.is_absolute() or root.parent!=root:raise SetupError('UNSAFE_VOLUME_ANCHOR')
+        if root.is_symlink() or (root.exists() and getattr(root.lstat(),'st_file_attributes',0)&0x400):raise SetupError('REPARSE_PATH_DENIED')
+        return root.resolve()
+    return safe_path(raw)
+
+def containing_volume(path,volumes):
+    destination=safe_path(path)
+    matches=[v for v in volumes if destination.is_relative_to(volume_anchor(v['mount']))]
+    return max(matches,key=lambda v:len(str(volume_anchor(v['mount'])))) if matches else None
+
 def reference(value):
     value=str(value or '')
     if not value:return ''
@@ -253,7 +268,7 @@ class SetupEngine:
             return {'status':'BLOCKED','code':'OPERATION','conflicts':[],
                 'host_apply':'NOT_AUTHORIZED','boss_cause':'NOT_DETERMINED'}
 
-    def propose_isolated_roots(self,observation):
+    def propose_isolated_roots(self,observation,parent=None):
         """Return an unselected new namespace; never mutate or move existing roots."""
         volumes=[v for v in observation.get('volumes',[]) if (v.get('free_bytes') or 0)>=8*1024**3
             and v.get('fs') in {'NTFS','ReFS'} and v.get('mount') and v.get('local',True) is not False
@@ -261,11 +276,23 @@ class SetupEngine:
         volumes.sort(key=lambda v:(str(v.get('bus_type','')).upper()=='NVME',str(v.get('media_type','')).upper()=='SSD',
             v.get('device_id')==observation.get('wslc_storage_device_id'),(v.get('free_bytes') or 0)/max(v.get('capacity_bytes') or 1,1),v.get('free_bytes',0)),reverse=True)
         if not volumes:raise SetupError('STORAGE_CAPACITY')
-        for volume in volumes:
-            scope=safe_path(Path(volume['mount'])/('AgentRuntime-Setup-'+uuid.uuid4().hex[:12]))
-            try:self.plan(observation,overrides={'isolated_scope':str(scope)})
+        if parent is not None:
+            # Roots/home are never install targets. They can be a read-only
+            # parent only when a fresh child passes every destination guard.
+            raw=str(parent)
+            if not Path(raw).is_absolute():raise SetupError('UNSAFE_PATH')
+            selected=safe_path(Path(raw)/('AgentRuntime-Parent-Check-'+uuid.uuid4().hex[:12])).parent
+            if not selected.is_dir():raise SetupError('ISOLATED_PARENT_DIRECTORY_REQUIRED')
+            parents=[selected]
+        else:parents=[Path(volume['mount']) for volume in volumes]
+        for selected in parents:
+            scope=safe_path(selected/('AgentRuntime-Setup-'+uuid.uuid4().hex[:12]))
+            try:
+                candidate=self.plan(observation,overrides={'isolated_scope':str(scope)})
+                if any(gate['state']!='PASS' for gate in candidate['gates'] if gate['code'].startswith('PLACEMENT_')):
+                    raise SetupError('ISOLATED_PARENT_STORAGE_UNSUPPORTED_OR_PRESSURE')
             except SetupError as error:
-                if str(error)=='ISOLATED_SCOPE_OVERLAP':continue
+                if str(error)=='ISOLATED_SCOPE_OVERLAP' and parent is None:continue
                 raise
             return {'isolated_scope':str(scope),'action':'REVIEW_ONLY_NO_HOST_CHANGES'}
         raise SetupError('ISOLATED_SCOPE_OVERLAP')
@@ -292,6 +319,9 @@ class SetupEngine:
         if isolated:
             base=safe_path(isolated)
             if base.exists():raise SetupError('ISOLATED_SCOPE_ALREADY_EXISTS')
+            selected_volume=containing_volume(base,observation.get('volumes',[]))
+            if not selected_volume:raise SetupError('ISOLATED_SCOPE_VOLUME_UNKNOWN')
+            chosen=selected_volume
             protected=[old['path'] for name,old in existing.items() if name in (*ROOT_ROLES,'state') and isinstance(old,dict) and old.get('path')]
             if isinstance(existing.get('exchange'),dict):protected.extend(existing['exchange'][name] for name in ('in','out'))
             for raw in protected:
@@ -321,7 +351,7 @@ class SetupEngine:
                 except (ValueError,OSError):raise SetupError('OWNERSHIP_MARKER_INVALID')
             gate('ROOT_'+name.upper(),owner=='HOST_MANAGED','Preserve classified existing roots or create explicitly owned new roots; unknown ownership blocks')
             roots[name]={'path':str(path),'owner':owner,'relocatable':old.get('relocatable',not path.exists()),
-                'reason':'NO_MOVE: preserve existing root; ownership still independently verified' if old.get('path') else 'Recommended local NVMe/SSD with capacity headroom; no data migration',
+                'reason':'NO_MOVE: preserve existing root; ownership still independently verified' if old.get('path') else 'Reviewed fresh isolated scope on selected local volume; no data migration' if isolated else 'Recommended local NVMe/SSD with capacity headroom; no data migration',
                 'existed':path.exists()}
         state=existing.get('state',{'path':observation.get('vendor_state','NATIVE_VENDOR_STATE'),'owner':'VENDOR_OWNED','relocatable':False})
         roots['state']={**state,'reason':'Preserve vendor/native state; never relocate on first install'}
@@ -370,23 +400,8 @@ class SetupEngine:
         docs_parent=bool(observation.get('documents')) and documents.exists() and documents.is_dir()
         gate('DOCUMENTS_KNOWN_FOLDER',docs_parent,'Use resolved OS-native Documents; do not invent fallback placement')
         # Bind every selected managed root to its actual volume, including advanced overrides.
-        def volume_anchor(mount):
-            # Drive roots are read-only inventory anchors, not eligible install
-            # destinations. Keep safe_path() root rejection for every managed
-            # workspace/config/cache/temp/exchange target.
-            raw=str(mount)
-            if os.name=='nt' and re.fullmatch(r'[A-Za-z]:[/\\]',raw):
-                root=Path(raw)
-                if not root.is_absolute() or root.parent!=root:
-                    raise SetupError('UNSAFE_VOLUME_ANCHOR')
-                if root.is_symlink() or (root.exists() and getattr(root.lstat(),'st_file_attributes',0)&0x400):
-                    raise SetupError('REPARSE_PATH_DENIED')
-                return root.resolve()
-            return safe_path(raw)
         def volume_for(path):
-            destination=safe_path(path)
-            matches=[v for v in volumes if destination.is_relative_to(volume_anchor(v['mount']))]
-            return max(matches,key=lambda v:len(str(v['mount']))) if matches else None
+            return containing_volume(path,volumes)
         storage_bindings=[]
         rows=[]
         for name,path in [(n,roots[n]['path']) for n in ('workspace','config','cache','temp')]+[('exchange',exchange['in']),('host_agent',str(target))]:

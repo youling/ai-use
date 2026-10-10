@@ -3,10 +3,32 @@ import copy
 from pathlib import Path
 import runpy
 import pytest
+import json
+from types import SimpleNamespace
 
 
 validate = runpy.run_path(str(Path(__file__).resolve().parents[1] / 'scripts/smoke_exe.py'),
                          run_name='synthetic_exe_acceptance')['validate_acceptance_receipt']
+
+
+def test_timeout_failure_retains_only_latest_public_stage(tmp_path):
+    functions = runpy.run_path(str(Path(__file__).resolve().parents[1] / 'scripts/smoke_exe.py'))
+    output = tmp_path / 'owned-evidence'
+    (output / 'screens').mkdir(parents=True)
+    (output / 'screens/acceptance-progress.json').write_text(json.dumps({
+        'acceptance_stage': 'FOLDER_PICKER_SEAM', 'acceptance_scenario': 'legacy_v1',
+        'raw_error': 'PUBLIC_SYNTHETIC_TOKEN', 'path': 'PUBLIC_SYNTHETIC_PRIVATE_PATH'}))
+    exe = tmp_path / 'public-synthetic-exe'
+    exe.write_bytes(b'PUBLIC_SYNTHETIC_TEST_BYTES')
+    functions['safe_failure'](output, exe, '--self-test', SimpleNamespace(
+        returncode=124, stdout=json.dumps({'reason': 'ACTUAL_FROZEN_EXE_PROCESS_TIMEOUT'})))
+    content = (output / 'failure-diagnostic.json').read_text()
+    diagnostic = json.loads(content)
+    assert diagnostic['reason'] == 'ACTUAL_FROZEN_EXE_PROCESS_TIMEOUT'
+    assert diagnostic['acceptance_stage'] == 'FOLDER_PICKER_SEAM'
+    assert diagnostic['acceptance_scenario'] == 'legacy_v1'
+    assert 'PUBLIC_SYNTHETIC_TOKEN' not in content and 'PUBLIC_SYNTHETIC_PRIVATE_PATH' not in content
+    assert diagnostic['host_apply'] == 'DENIED' and diagnostic['credentials_read'] is False
 
 
 def receipt():
@@ -32,6 +54,14 @@ def receipt():
                                      'runtime_capability': 'SYNTHETIC_WSLC_ONLY'} for name in ['fresh', 'legacy_v1']],
             'fallback_without_runtime_fixture': {'runtime_fixture': False, 'plan_status': 'BLOCKED',
                                                 'wslc_state': 'UNKNOWN', 'inventory_source': 'WINDOWS_WIN32_FALLBACK'},
+            'native_folder_picker': {'status': 'PASS', 'evidence': 'NATIVE_COM_CONFIGURE_ONLY',
+                                     'ui_show': 'NOT_EXERCISED', 'history_cleanup': 'UNVERIFIED'},
+            'folder_picker_cases': [{'scenario': name, 'chooser_boundary': 'INJECTED_OWNED_DIRECTORY_OR_CANCEL',
+                                    'native_dialog': 'NOT_EXERCISED_BY_SEAM', 'keyboard_browse': 'PASS',
+                                    'cancel': 'UNCHANGED', 'scope_escape': 'BLOCKED',
+                                    'parent_scope': 'FRESH_DESCENDANT_NOT_CREATED', 'auto_custom': 'PASS',
+                                    'prior_consent': 'INVALIDATED_ON_SELECTION', 'existing_files': 'UNCHANGED',
+                                    'host_apply': 'DENIED'} for name in ['fresh', 'legacy_v1']],
             'screens': [{'scenario': name, 'size': [80, 24], 'first_next': state} for name, state in
                         [('fresh', 'PASS'), ('legacy_v1', 'PASS'), ('malformed_exchange', 'BLOCKED_OWNER_REVIEW')]]}
 
@@ -116,6 +146,28 @@ def test_classification_annotation_never_grants_metadata_authority():
     value = receipt()
     value['exchange_schema_variants'][1]['metadata_authority'] = 'HOST_APPLY_AUTHORIZED'
     with pytest.raises(RuntimeError, match='SCHEMA_EVIDENCE_INCOMPLETE'):
+        validate(value)
+
+
+def test_injected_chooser_cannot_claim_actual_native_dialog_show():
+    value = receipt()
+    value['folder_picker_cases'][0]['native_dialog'] = 'ACTUAL_NATIVE_SHOW_PASS'
+    with pytest.raises(RuntimeError, match='BOUNDARY_INVALID'):
+        validate(value)
+
+
+def test_native_configure_only_does_not_claim_visible_show_or_verified_history():
+    value = receipt()
+    validate(value)  # UNVERIFIED history is reported, never promoted to absence.
+    value['native_folder_picker']['ui_show'] = 'PASS'
+    with pytest.raises(RuntimeError, match='CONFIGURE_UNVERIFIED'):
+        validate(value)
+
+
+def test_empty_picker_case_evidence_cannot_publish_artifact():
+    value = receipt()
+    value['folder_picker_cases'] = []
+    with pytest.raises(RuntimeError, match='SEAM_EVIDENCE_INCOMPLETE'):
         validate(value)
     value = receipt()
     value['native_metadata_scan']['inventory_source'] = 'UNVERIFIED'

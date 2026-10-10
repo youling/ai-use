@@ -6,11 +6,65 @@ import platform
 from types import SimpleNamespace
 import subprocess
 import runpy
+import asyncio
+import os
 import pytest
 
 from agent_setup import packaging
 from agent_setup.engine import SetupError
 from agent_setup import exe_main
+
+
+def test_acceptance_progress_is_atomic_and_category_only(tmp_path, monkeypatch):
+    output = tmp_path / 'explicit-owned-output'
+    monkeypatch.setattr(exe_main, '_ACCEPTANCE_OUTPUT', None)
+    calls = []
+    actual = os.replace
+    def replace(source, destination):
+        assert Path(source).parent == output and Path(destination).parent == output
+        calls.append((source, destination))
+        actual(source, destination)
+    monkeypatch.setattr(os, 'replace', replace)
+    exe_main.register_acceptance_output(output)
+    exe_main.acceptance_stage('FOLDER_PICKER_SEAM', 'legacy_v1')
+    assert exe_main.read_acceptance_progress(output) == {
+        'acceptance_stage': 'FOLDER_PICKER_SEAM', 'acceptance_scenario': 'legacy_v1'}
+    exe_main.acceptance_stage('PUBLIC_SYNTHETIC_UNKNOWN_STAGE', 'PUBLIC_SYNTHETIC_UNKNOWN_CASE')
+    assert len(calls) == 1 and list(output.iterdir()) == [output / 'acceptance-progress.json']
+    (output / 'acceptance-progress.json').write_text(json.dumps({
+        'acceptance_stage': 'CONTEXT_PLAN', 'acceptance_scenario': 'fresh',
+        'raw_error': 'PUBLIC_SYNTHETIC_SECRET', 'path': 'PUBLIC_SYNTHETIC_PATH', 'authority': 'PASS'}))
+    assert exe_main.read_acceptance_progress(output) == {'acceptance_stage': 'CONTEXT_PLAN', 'acceptance_scenario': 'fresh'}
+    (output / 'acceptance-progress.json').write_text('{invalid')
+    assert exe_main.read_acceptance_progress(output) == {}
+
+
+def test_self_test_registers_progress_before_bundle_verification(tmp_path, monkeypatch):
+    monkeypatch.setattr(exe_main, '_ACCEPTANCE_OUTPUT', None)
+    output = tmp_path / 'explicit-test-output'
+    def fail_proof():
+        assert exe_main.read_acceptance_progress(output) == {'acceptance_stage': 'BUNDLE_PROVENANCE'}
+        raise packaging.BundleError('BUNDLE_PROVENANCE_UNVERIFIED')
+    monkeypatch.setattr(exe_main, 'bundle_provenance', fail_proof)
+    with pytest.raises(packaging.BundleError):
+        exe_main.main(['--self-test', '--output-dir', str(output)])
+    assert not (tmp_path / 'AgentRuntime').exists()
+
+
+def test_progress_output_reparse_rejected(tmp_path, monkeypatch):
+    monkeypatch.setattr(exe_main, '_ACCEPTANCE_OUTPUT', None)
+    output = tmp_path / 'owned-output'
+    output.mkdir()
+    actual = Path.lstat
+    def metadata(path, *args, **kwargs):
+        result = actual(path, *args, **kwargs)
+        if path == output:
+            return SimpleNamespace(st_mode=result.st_mode, st_file_attributes=0x400)
+        return result
+    monkeypatch.setattr(Path, 'lstat', metadata)
+    with pytest.raises(SetupError, match='SELF_TEST_OUTPUT_UNSAFE'):
+        exe_main.register_acceptance_output(output)
+    assert not list(output.iterdir()) and exe_main._ACCEPTANCE_OUTPUT is None
 
 
 def contract(tmp_path):
@@ -337,3 +391,20 @@ def test_smoke_keeps_registered_setup_reason_and_rejects_arbitrary_stage_scenari
     payload.update(acceptance_stage='PRIVATE_VALUE', acceptance_scenario='PRIVATE_VALUE')
     safe_failure(tmp_path, exe, '--self-test', SimpleNamespace(returncode=2, stdout=json.dumps(payload)))
     assert 'PRIVATE_VALUE' not in (tmp_path / 'failure-diagnostic.json').read_text()
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='Actual native Windows public fixture pipeline')
+def test_frozen_picker_seam_uses_production_pipeline_with_owned_directories(tmp_path):
+    from agent_setup.read_only_acceptance import owned_fixture_pipeline
+    pipelines = {}
+    for name in ['fresh', 'legacy_v1']:
+        root = tmp_path / name
+        root.mkdir()
+        pipelines[name] = owned_fixture_pipeline(root, name)
+    output = tmp_path / 'public-ui-evidence'
+    output.mkdir()
+    records = asyncio.run(exe_main.frozen_folder_picker_seams(tmp_path, output, pipelines))
+    assert {record['scenario'] for record in records} == {'fresh', 'legacy_v1'}
+    assert all(record['cancel'] == 'UNCHANGED' and record['scope_escape'] == 'BLOCKED' for record in records)
+    assert all(record['native_dialog'] == 'NOT_EXERCISED_BY_SEAM' and record['host_apply'] == 'DENIED' for record in records)
+    assert len(list(output.glob('*.svg'))) == 4
