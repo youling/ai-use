@@ -2,6 +2,8 @@
 
 施工基线：`main@ebba67e26042f28d56ecefc64443cfd4ab3fd242`，工作项 [#143](https://github.com/youling/ai-use/issues/143)。沿用 SetupEngine、WindowsAdapter、HOST_AGENT、冻结来源检查与公共不可变 OCI；本轮不增加安装引擎或 Host 权限。
 
+自定义成功路径修复基线为合并 PR #144 后的 `main@ba20a59e0799b5e1bf257c34a1336d8d99eb58ec`。新隔离 UI 的原生选择器只选择现存父目录，四项输入为新子目录名称；通过原 `propose_isolated_roots` 生成独立作用域，再由原 `plan` 核验实际四项路径和 Exchange。验收必须核对自定义名称被采用、合法重新选址保留名称、两项 Skip 到最终审阅且退出前未创建安装根。仅证明越界输入被拒绝或弹窗能打开，不构成自定义成功。
+
 交付必须绑定当前 PR 的精确 HEAD、完整 CI、真实 EXE artifact 和 SHA256。尚未上传的文件不得称为可下载产物。本说明不以旧版 CI 或本机工程构建替代新候选证据。
 
 | 验证层 | 验证内容／适用条件 | 结论范围 |

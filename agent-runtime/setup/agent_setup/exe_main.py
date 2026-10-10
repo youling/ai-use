@@ -176,13 +176,26 @@ async def frozen_folder_picker_seams(root: Path, output: Path, pipelines: dict) 
             scope_app.query_one('#advanced', Collapsible).collapsed = False
             await pilot.pause()
             scope_app.approved_fingerprint = 'PUBLIC_SYNTHETIC_PRIOR_CONSENT'
-            scope_app.query_one('#browse-workspace', Button).focus()
+            # Keep the engine escape counterexample separate from the usable
+            # scoped UI: its picker selects a parent, never an absent child.
+            try:
+                pipeline['engine'].plan(scope_app.probe_data, overrides={'isolated_scope':initial_scope, 'workspace':str(new_parent)})
+            except SetupError as error:
+                if str(error) != 'ISOLATED_SCOPE_TARGET_ESCAPE':
+                    raise
+            else:
+                raise SetupError('SELF_TEST_FOLDER_PICKER_SCOPE_GUARD_FAILED')
+            scope_app.query_one('#root-workspace', Input).value = str(new_parent)
+            scope_app.query_one('#recompute', Button).focus()
             await pilot.press('enter')
             await pilot.pause(0.3)
-            if ('ISOLATED_SCOPE_TARGET_ESCAPE' not in scope_app.status_text
+            if ('输入尚未采用' not in scope_app.status_text
                 or scope_app.overrides.get('isolated_scope') != initial_scope
                 or scope_app.approved_fingerprint is not None):
                 raise SetupError('SELF_TEST_FOLDER_PICKER_SCOPE_GUARD_FAILED')
+            scope_app.query_one('#root-workspace', Input).value = ''
+            answers = iter([str(new_parent), None])
+            acceptance_stage('FOLDER_PICKER_PARENT', scenario)
             scope_app.query_one('#browse-isolated-parent', Button).focus()
             await pilot.press('enter')
             await pilot.pause(0.4)
@@ -199,15 +212,28 @@ async def frozen_folder_picker_seams(root: Path, output: Path, pipelines: dict) 
             await pilot.press('enter')
             await pilot.pause()
             scope_app.query_one('#placement-auto', Button).focus()
+            acceptance_stage('FOLDER_PICKER_AUTO', scenario)
             await pilot.press('enter')
             await pilot.pause(0.3)
             if (scope_app.placement_mode != 'auto' or scope_app.overrides['isolated_scope'] != str(proposed)
                 or any(scope_app.query_one('#root-' + role, Input).value for role in ['workspace', 'config', 'cache', 'temp'])):
                 raise SetupError('SELF_TEST_FOLDER_PICKER_AUTO_CUSTOM_FAILED')
+            custom_names = {'workspace':'MyWorkspaces', 'config':'MyConfiguration', 'cache':'MyCache', 'temp':'MyTemporaryFiles'}
+            acceptance_stage('FOLDER_PICKER_CUSTOM', scenario)
+            for role, name in custom_names.items():
+                scope_app.query_one('#root-' + role, Input).value = name
+            scope_app.query_one('#recompute', Button).focus()
+            await pilot.press('enter')
+            await pilot.pause(0.3)
+            if (scope_app.plan_data.get('status') != 'READY'
+                or any(Path(scope_app.plan_data['roots'][role]['path']) != proposed / name for role, name in custom_names.items())
+                or proposed.exists()):
+                raise SetupError('SELF_TEST_FOLDER_PICKER_AUTO_CUSTOM_FAILED')
             (output / f'actual-exe-folder-parent-{scenario}-120x40.svg').write_text(
                 scope_app.export_screenshot(title=f'ACTUAL EXE / NATIVE PIPELINE / {scenario} / CHOOSER SEAM / NEW PARENT REVIEW'),
                 encoding='utf-8')
             before = copy.deepcopy((scope_app.overrides, scope_app.plan_data))
+            acceptance_stage('FOLDER_PICKER_CANCEL', scenario)
             scope_app.query_one('#browse-isolated-parent', Button).focus()
             await pilot.press('enter')
             await pilot.pause(0.2)
@@ -217,7 +243,7 @@ async def frozen_folder_picker_seams(root: Path, output: Path, pipelines: dict) 
         records.append({'scenario': scenario, 'chooser_boundary': 'INJECTED_OWNED_DIRECTORY_OR_CANCEL',
                         'native_dialog': 'NOT_EXERCISED_BY_SEAM', 'keyboard_browse': 'PASS', 'cancel': 'UNCHANGED',
                         'scope_escape': 'BLOCKED', 'parent_scope': 'FRESH_DESCENDANT_NOT_CREATED',
-                        'auto_custom': 'PASS', 'prior_consent': 'INVALIDATED_ON_SELECTION',
+                        'auto_custom': 'PASS', 'custom_new_children': 'PASS', 'prior_consent': 'INVALIDATED_ON_SELECTION',
                         'existing_files': 'UNCHANGED', 'host_apply': 'DENIED'})
     return records
 
