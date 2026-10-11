@@ -248,7 +248,7 @@ class SetupApp(App):
                 advanced.append(Horizontal(Input(value=self.placement_parent_draft if self.placement_parent_draft is not None else str(scope.parent), id='isolated-parent'), Button('选择父目录…' if zh else 'Choose parent…', id='browse-isolated-parent'), classes='account-actions'))
                 advanced.append(Static(('将新建独立目录：' if zh else 'New separate namespace: ') + display(str(scope), 500), markup=False))
             for key, label in zip(("workspace", "config", "cache", "temp"), self.words["paths"]):
-                mode = ('自定义值' if zh else 'Custom value') if self.overrides.get(key) else ('自动推荐 · 仅预览' if zh else 'Recommended preview')
+                mode = ('自定义值' if zh else 'Custom value') if self.overrides.get(key) else (('默认名称' if zh else 'Default name') if self.overrides.get('isolated_scope') else ('自动推荐 · 仅预览' if zh else 'Recommended preview'))
                 path = self.plan_data.get('roots', {}).get(key, {}).get('path')
                 if self.overrides.get('isolated_scope'):
                     advanced += [Label(f'{label} · 新子目录名称 · {mode}' if zh else f'{label} · New subfolder name · {mode}', id=f'root-label-{key}'), Input(value=self.root_field_value(key), placeholder=Path(path).name if path else '', id=f'root-{key}')]
@@ -310,6 +310,12 @@ class SetupApp(App):
                     candidate.pop(key, None)
             self.overrides = candidate
         return True
+
+    def mark_placement_custom(self) -> None:
+        self.placement_mode = 'custom'
+        if self.query('#placement-auto'):
+            self.query_one('#placement-auto', Button).variant = 'default'
+            self.query_one('#placement-custom', Button).variant = 'primary'
 
     async def recalculate_placement(self, *, new_parent_selected: bool = False) -> bool:
         """Resolve UI names through the existing owner-reviewed parent contract."""
@@ -376,7 +382,7 @@ class SetupApp(App):
             return
         self.save_fields()
         self.invalidate_approval()
-        self.placement_mode = 'custom'
+        self.mark_placement_custom()
         self.advanced_open = True
         self.overrides[role] = selected
         self.query_one(f'#root-{role}', Input).value = selected
@@ -391,6 +397,7 @@ class SetupApp(App):
             return
         self.invalidate_approval()
         self.query_one('#isolated-parent', Input).value = selected
+        self.mark_placement_custom()
         if not await self.recalculate_placement(new_parent_selected=True):
             return
         self.advanced_open = True
@@ -433,6 +440,8 @@ class SetupApp(App):
                 explanation+=('；保留已有数据，请审阅独立的新作用域目录。可运行只读目录诊断。' if self.words is TEXT['zh'] else '; preserve existing data, review separate scoped roots. Read-only root diagnostics are available.')
             if safe_code=='ISOLATED_SCOPE_TARGET_ESCAPE':
                 explanation+=(' 自定义子目录必须位于当前隔离根内。要换磁盘，请明确选择“重新选择隔离根目录/磁盘”，审阅新方案；已有数据保留。' if self.words is TEXT['zh'] else ' Custom folders must stay inside the current isolation root. To change disk, explicitly reselect the isolation parent and review a new plan; preserve existing data.')
+            if safe_code=='ISOLATED_SCOPE_NAME_UNAVAILABLE':
+                explanation+=(' 短目录名已被占用，请选择另一个安装父目录；已有目录保留。' if self.words is TEXT['zh'] else 'Short directory names are occupied. Choose another installation parent; existing directories are preserved.')
             self.set_status(f"{prefix} [{safe_code}]{explanation}")
             return None
         finally:
@@ -489,6 +498,7 @@ class SetupApp(App):
         self.invalidate_approval()
         if self.step == 1 and event.input.id == 'isolated-parent':
             if event.value != str(Path(self.overrides['isolated_scope']).parent):
+                self.mark_placement_custom()
                 self.placement_parent_draft = event.value
                 self.placement_dirty = True
                 self.query_one('#placement-state', Static).update('上次核验方案；父目录输入尚未采用' if self.words is TEXT['zh'] else 'Last validated plan; parent edit not adopted')
@@ -498,7 +508,7 @@ class SetupApp(App):
             if role not in ('workspace','config','cache','temp'):
                 return
             if event.value:
-                self.placement_mode = 'custom'
+                self.mark_placement_custom()
             if event.value.strip() != self.root_field_value(role):
                 self.placement_dirty = True
                 zh = self.words is TEXT['zh']

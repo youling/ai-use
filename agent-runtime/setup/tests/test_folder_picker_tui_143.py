@@ -213,6 +213,9 @@ def test_cross_disk_parent_reselection_regenerates_all_roots(tmp_path):
             assert app.plan_data['install_binding'] != old_binding and app.approved_fingerprint is None
             assert app.focused.id == 'browse-isolated-parent' and not app.host_authorized
             assert not app.busy and app.words['busy'] not in app.status_text
+            assert app.placement_mode=='custom'
+            assert app.query_one('#placement-custom',Button).variant=='primary'
+            assert app.query_one('#placement-auto',Button).variant=='default'
     asyncio.run(scenario())
 
 

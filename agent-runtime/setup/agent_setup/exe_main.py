@@ -201,6 +201,9 @@ async def frozen_folder_picker_seams(root: Path, output: Path, pipelines: dict) 
             await pilot.pause(0.4)
             proposed = Path(scope_app.overrides['isolated_scope'])
             if (proposed.parent != new_parent or proposed == new_parent or proposed.exists()
+                or proposed.name != 'agent' or scope_app.placement_mode != 'custom'
+                or scope_app.query_one('#placement-custom', Button).variant != 'primary'
+                or scope_app.query_one('#placement-auto', Button).variant != 'default'
                 or Path(initial_scope).exists()
                 or any(role in scope_app.overrides for role in ['workspace', 'config', 'cache', 'temp'])
                 or any(not Path(scope_app.plan_data['roots'][role]['path']).is_relative_to(proposed)
