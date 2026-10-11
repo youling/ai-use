@@ -407,4 +407,8 @@ def test_frozen_picker_seam_uses_production_pipeline_with_owned_directories(tmp_
     assert {record['scenario'] for record in records} == {'fresh', 'legacy_v1'}
     assert all(record['cancel'] == 'UNCHANGED' and record['scope_escape'] == 'BLOCKED' for record in records)
     assert all(record['native_dialog'] == 'NOT_EXERCISED_BY_SEAM' and record['host_apply'] == 'DENIED' for record in records)
-    assert len(list(output.glob('*.svg'))) == 4
+    assert len(list(output.glob('*.svg'))) == 6
+    for scenario in ('fresh', 'legacy_v1'):
+        svg = (output / f'actual-exe-preview-complete-{scenario}-120x40.svg').read_text(encoding='utf-8')
+        assert '预览完成' in svg and '未执行安装' in svg
+        assert '本地容器已安装' not in svg and '重新验收' not in svg
