@@ -111,7 +111,8 @@ async def frozen_folder_picker_seams(root: Path, output: Path, pipelines: dict) 
     """Only chooser results are injected; native probe/parser/plan remain real."""
     from .tui import SetupApp
     from .read_only_acceptance import assert_fixture_unchanged
-    from textual.widgets import Button, Collapsible, Input
+    from textual import events
+    from textual.widgets import Button, Collapsible, Input, Static
     records = []
     for scenario in ['fresh', 'legacy_v1']:
         pipeline = pipelines[scenario]
@@ -168,6 +169,20 @@ async def frozen_folder_picker_seams(root: Path, output: Path, pipelines: dict) 
         scope_app = SetupApp(pipeline['engine'], folder_picker=lambda **kwargs: next(answers), host_authorized=False)
         scope_app.overrides['isolated_scope'] = initial_scope
         async with scope_app.run_test(size=(120, 40)) as pilot:
+            acceptance_stage('MOUSE_REMOUNT', scenario)
+            await pilot.pause()
+            checks = scope_app.query_one('#checks', Static)
+            point = checks.region.offset
+            if scope_app.screen.get_widget_and_offset_at(point.x + 2, point.y)[0] is not checks:
+                raise SetupError('SELF_TEST_MOUSE_REMOUNT_FAILED')
+            with scope_app.batch_update():
+                await checks.remove()
+                if checks.parent is not None:
+                    raise SetupError('SELF_TEST_MOUSE_REMOUNT_FAILED')
+                for event_type in (events.MouseDown, events.MouseMove, events.MouseUp):
+                    await scope_app.on_event(event_type(None, point.x + 2, point.y, 0, 0, 1, False, False, False))
+            await scope_app.render_step()
+            await pilot.pause()
             scope_app.query_one('#next', Button).focus()
             await pilot.press('enter')
             await pilot.pause(0.3)
@@ -264,6 +279,7 @@ async def frozen_folder_picker_seams(root: Path, output: Path, pipelines: dict) 
                         'native_dialog': 'NOT_EXERCISED_BY_SEAM', 'keyboard_browse': 'PASS', 'cancel': 'UNCHANGED',
                         'scope_escape': 'BLOCKED', 'parent_scope': 'FRESH_DESCENDANT_NOT_CREATED',
                         'auto_custom': 'PASS', 'custom_new_children': 'PASS', 'prior_consent': 'INVALIDATED_ON_SELECTION',
+                        'mouse_remount': 'PASS_APP_EVENT_REAL_STALE_COMPOSITOR',
                         'existing_files': 'UNCHANGED', 'host_apply': 'DENIED'})
     return records
 

@@ -8,6 +8,7 @@ from typing import Any
 
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, VerticalScroll
+from textual.screen import Screen
 from textual.widgets import Button, Checkbox, Collapsible, Footer, Input, Label, Static
 
 
@@ -60,6 +61,16 @@ def display(value: Any, limit: int = 240) -> str:
     return text[:limit] + ("…" if len(text) > limit else "")
 
 
+class SetupScreen(Screen):
+    """Discard hit-map entries detached before the next compositor refresh."""
+
+    def get_widget_and_offset_at(self, x: int, y: int):
+        widget, offset = super().get_widget_and_offset_at(x, y)
+        if widget is not None and widget is not self and (widget.parent is None or not widget.is_attached):
+            return None, None
+        return widget, offset
+
+
 class SetupApp(App):
     CSS = """
     Screen { background: $surface; }
@@ -105,6 +116,9 @@ class SetupApp(App):
         if self.overrides.get('isolated_scope'):
             return Path(value).name if value else ''
         return value
+
+    def get_default_screen(self) -> Screen:
+        return SetupScreen(id='_default')
 
     def compose(self) -> ComposeResult:
         yield Static(self.words["title"], id="heading", markup=False)

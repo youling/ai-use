@@ -11,7 +11,7 @@ validate = runpy.run_path(str(Path(__file__).resolve().parents[1] / 'scripts/smo
                          run_name='synthetic_exe_acceptance')['validate_acceptance_receipt']
 
 
-@pytest.mark.parametrize('stage', ['FOLDER_PICKER_SEAM', 'FOLDER_PICKER_PARENT', 'FOLDER_PICKER_AUTO', 'FOLDER_PICKER_CUSTOM', 'FOLDER_PICKER_CANCEL', 'PREVIEW_COMPLETION'])
+@pytest.mark.parametrize('stage', ['FOLDER_PICKER_SEAM', 'FOLDER_PICKER_PARENT', 'FOLDER_PICKER_AUTO', 'FOLDER_PICKER_CUSTOM', 'FOLDER_PICKER_CANCEL', 'PREVIEW_COMPLETION', 'MOUSE_REMOUNT'])
 def test_timeout_failure_retains_only_latest_public_stage(tmp_path, stage):
     functions = runpy.run_path(str(Path(__file__).resolve().parents[1] / 'scripts/smoke_exe.py'))
     output = tmp_path / 'owned-evidence'
@@ -61,6 +61,7 @@ def receipt():
                                     'native_dialog': 'NOT_EXERCISED_BY_SEAM', 'keyboard_browse': 'PASS',
                                     'cancel': 'UNCHANGED', 'scope_escape': 'BLOCKED',
                                     'parent_scope': 'FRESH_DESCENDANT_NOT_CREATED', 'auto_custom': 'PASS', 'custom_new_children': 'PASS',
+                                    'mouse_remount': 'PASS_APP_EVENT_REAL_STALE_COMPOSITOR',
                                     'prior_consent': 'INVALIDATED_ON_SELECTION', 'existing_files': 'UNCHANGED',
                                     'host_apply': 'DENIED'} for name in ['fresh', 'legacy_v1']],
             'screens': [{'scenario': name, 'size': [80, 24], 'first_next': state} for name, state in
@@ -69,6 +70,13 @@ def receipt():
 
 def test_native_wscl_blocked_is_honest_read_only_planning_not_runtime_success():
     validate(receipt())
+
+
+def test_missing_mouse_remount_evidence_cannot_publish_artifact():
+    value = receipt()
+    value['folder_picker_cases'][0].pop('mouse_remount')
+    with pytest.raises(RuntimeError, match='FROZEN_FOLDER_PICKER_BOUNDARY_INVALID'):
+        validate(value)
 
 
 @pytest.mark.parametrize('missing', ['legacy_v1', 'malformed_exchange', 'stale', 'junction'])
