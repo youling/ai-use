@@ -221,7 +221,14 @@ class SetupApp(App):
         return " · ".join(f"{label}: {display(value)}" for label, value in fields)
 
     async def render_step(self) -> None:
-        self.query_one("#heading", Static).update(f"{self.words['title']} · {min(self.step + 1, 4)}/4 · {self.words['steps'][self.step]}")
+        zh = self.words is TEXT['zh']
+        title = self.words['steps'][self.step]
+        if self.step == 3:
+            title = ('安装确认' if self.host_authorized else '方案预览') if zh else ('Confirm installation' if self.host_authorized else 'Plan preview')
+        elif self.step == 4 and not self.result:
+            title = '预览完成' if zh else 'Preview complete'
+        progress = ('完成' if zh else 'Complete') if self.step == 4 else f'{self.step + 1}/4'
+        self.query_one("#heading", Static).update(f"{self.words['title']} · {progress} · {title}")
         body = self.query_one("#body", VerticalScroll)
         await body.remove_children()
         widgets: list = []
@@ -266,22 +273,26 @@ class SetupApp(App):
             changes = "核验安装目录并写入 HOST_AGENT.md。" if self.words is TEXT["zh"] else "Verify owned roots and write HOST_AGENT.md."
             if self.overrides.get("runtime"):
                 changes += " 拉取固定公开镜像；启动隔离本地验证容器（暂不联网）。" if self.words is TEXT["zh"] else " Pull the pinned public image; start an isolated local verification container (offline)."
-            widgets = [Static(self.words["review"], markup=False), Static(changes, markup=False), Static(self.placement_summary(), classes="summary", markup=False), Checkbox(self.words["local"], value=bool(self.overrides.get("runtime")), id="runtime-requested"), Checkbox(self.words["approve"], id="approve"), Button(self.words["apply"], id="apply", disabled=True)]
+            intro = self.words['review'] if self.host_authorized else ('以下仅为方案预览，本版本不会执行安装。' if zh else 'Plan preview only. This session cannot install.')
+            local_label = self.words['local'] if self.host_authorized else ('方案包含本地容器' if zh else 'Include local container in plan')
+            widgets = [Static(intro, markup=False), Static(changes, markup=False), Static(self.placement_summary(), classes="summary", markup=False), Checkbox(local_label, value=bool(self.overrides.get("runtime")), id="runtime-requested")]
+            if self.host_authorized:
+                widgets.append(Checkbox(self.words["approve"], id="approve"))
         else:
-            widgets = [Static(self.result_summary(), id="results", classes="summary", markup=False), Button(self.words["verify"], id="verify"), Button(self.words["repair"], id="repair")]
-            if not self.result:
-                widgets.insert(0, Static(self.words["preview"], markup=False))
+            if self.result:
+                widgets = [Static(self.result_summary(), id="results", classes="summary", markup=False), Button(self.words["verify"], id="verify"), Button(self.words["repair"], id="repair")]
+            else:
+                widgets = [Static('方案预览已结束，未执行安装，也未创建安装目录。' if zh else 'Preview finished. No installation was performed and no installation directories were created.', id='preview-complete', markup=False)]
         if self.probe_data.get('runtime_provenance',{}).get('distribution')=='UNSIGNED_TEST_ONLY':
             widgets.insert(0,Static('未签名测试版本 · 仅预览；内容核验不代表发布者签名。' if self.words is TEXT['zh'] else 'Unsigned test build · preview only; content verification is not publisher signing.',id='unsigned-notice',markup=False))
         await body.mount(*widgets)
-        self.query_one("#back", Button).disabled = self.step == 0 or self.busy
-        self.query_one("#next", Button).disabled = self.step == 4 or self.busy
+        self.update_navigation()
         self.query_one("#next", Button).focus()
         blocker = self.plan_blocker() if self.step in {1, 3} else ""
         if blocker:
             self.set_status(blocker)
         elif self.step == 3 and not self.host_authorized:
-            self.set_status(self.words["blocked"])
+            self.set_status('本次仅预览，结束预览不会执行安装。' if zh else 'Preview only. Finishing this preview will not install anything.')
 
     def set_status(self, value: str) -> None:
         self.status_text=value
@@ -291,7 +302,25 @@ class SetupApp(App):
         self.approved_fingerprint = None
         if self.step == 3 and self.query("#approve"):
             self.query_one("#approve", Checkbox).value = False
-            self.query_one("#apply", Button).disabled = True
+            self.update_navigation()
+
+    def can_install(self) -> bool:
+        return bool(self.step == 3 and self.host_authorized and self.plan_data.get('host_authorized') is True
+            and self.plan_data.get('status') == 'READY' and self.query('#approve')
+            and self.query_one('#approve', Checkbox).value
+            and self.approved_fingerprint == self.plan_data.get('fingerprint'))
+
+    def update_navigation(self) -> None:
+        zh = self.words is TEXT['zh']
+        button = self.query_one('#next', Button)
+        if self.step < 3:
+            button.label = self.words['next']
+        elif self.step == 3:
+            button.label = self.words['apply'] if self.host_authorized else ('结束预览' if zh else 'Finish preview')
+        else:
+            button.label = '完成' if zh else 'Finish'
+        button.disabled = self.busy or (self.step == 3 and self.host_authorized and not self.can_install())
+        self.query_one('#back', Button).disabled = self.busy or self.step == 0 or (self.step == 4 and bool(self.result))
 
     def save_fields(self) -> bool:
         if self.step == 1:
@@ -408,6 +437,7 @@ class SetupApp(App):
 
     async def invoke(self, phase: str, *args: Any, **kwargs: Any) -> dict | None:
         self.busy = True
+        self.update_navigation()
         self.set_status(self.words["busy"])
         try:
             return await asyncio.to_thread(getattr(self.engine, phase), *args, **kwargs)
@@ -446,6 +476,7 @@ class SetupApp(App):
             return None
         finally:
             self.busy = False
+            self.update_navigation()
 
     async def replan(self) -> bool:
         self.invalidate_approval()
@@ -463,7 +494,23 @@ class SetupApp(App):
         return True
 
     async def advance(self) -> None:
-        if self.busy or self.step == 4:
+        if self.busy:
+            return
+        if self.step == 4:
+            self.exit()
+            return
+        if self.step == 3:
+            if self.host_authorized:
+                if not self.can_install():
+                    return
+                result = await self.invoke('apply', self.plan_data, approved=True)
+                if result is None:
+                    self.invalidate_approval()
+                    return
+                self.result = result
+            self.step = 4
+            self.set_status('')
+            await self.render_step()
             return
         if self.step == 1:
             if not await self.recalculate_placement():
@@ -527,7 +574,7 @@ class SetupApp(App):
             await self.render_step()
         elif event.checkbox.id == "approve" and self.step == 3:
             self.approved_fingerprint = self.plan_data.get("fingerprint") if event.value else None
-            self.query_one("#apply", Button).disabled = not (event.value and self.host_authorized and self.plan_data.get("status") == "READY" and self.plan_data.get("host_authorized") is True and not self.busy)
+            self.update_navigation()
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         if self.busy:
@@ -594,14 +641,6 @@ class SetupApp(App):
                 else:
                     setattr(self, kind, {})
                 self.invalidate_approval()
-                await self.render_step()
-        elif action == "apply":
-            if self.step != 3 or not self.host_authorized or self.plan_data.get("host_authorized") is not True or self.plan_data.get("status") != "READY" or not self.query_one("#approve", Checkbox).value or self.approved_fingerprint != self.plan_data.get("fingerprint"):
-                return
-            result = await self.invoke("apply", self.plan_data, approved=True)
-            if result is not None:
-                self.result, self.step = result, 4
-                self.set_status("")
                 await self.render_step()
         elif action in ("verify", "repair"):
             result = await self.invoke(action, self.plan_data)

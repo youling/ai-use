@@ -242,6 +242,23 @@ async def frozen_folder_picker_seams(root: Path, output: Path, pipelines: dict) 
             await pilot.pause(0.2)
             if before != (scope_app.overrides, scope_app.plan_data):
                 raise SetupError('SELF_TEST_FOLDER_PICKER_CANCEL_CHANGED_STATE')
+            # Exercise the shipping preview navigation, never an Apply seam.
+            acceptance_stage('PREVIEW_COMPLETION', scenario)
+            for selector in ('#next', '#skip-github', '#skip-model', '#next'):
+                scope_app.query_one(selector, Button).focus()
+                await pilot.press('enter')
+                await pilot.pause(0.2)
+            if (scope_app.step != 3 or scope_app.query('#apply') or scope_app.query('#approve')
+                or str(scope_app.query_one('#next', Button).label) != '结束预览'):
+                raise SetupError('SELF_TEST_PREVIEW_NAVIGATION_FAILED')
+            scope_app.query_one('#next', Button).focus()
+            await pilot.press('enter')
+            await pilot.pause(0.2)
+            if (scope_app.step != 4 or scope_app.result or scope_app.query('#results')
+                or scope_app.query('#verify') or scope_app.query('#repair') or proposed.exists()):
+                raise SetupError('SELF_TEST_PREVIEW_NAVIGATION_FAILED')
+            (output / f'actual-exe-preview-complete-{scenario}-120x40.svg').write_text(
+                scope_app.export_screenshot(title='ACTUAL EXE / PREVIEW COMPLETE / NO INSTALLATION'), encoding='utf-8')
         assert_fixture_unchanged(pipeline)
         records.append({'scenario': scenario, 'chooser_boundary': 'INJECTED_OWNED_DIRECTORY_OR_CANCEL',
                         'native_dialog': 'NOT_EXERCISED_BY_SEAM', 'keyboard_browse': 'PASS', 'cancel': 'UNCHANGED',

@@ -11,7 +11,7 @@ validate = runpy.run_path(str(Path(__file__).resolve().parents[1] / 'scripts/smo
                          run_name='synthetic_exe_acceptance')['validate_acceptance_receipt']
 
 
-@pytest.mark.parametrize('stage', ['FOLDER_PICKER_SEAM', 'FOLDER_PICKER_PARENT', 'FOLDER_PICKER_AUTO', 'FOLDER_PICKER_CUSTOM', 'FOLDER_PICKER_CANCEL'])
+@pytest.mark.parametrize('stage', ['FOLDER_PICKER_SEAM', 'FOLDER_PICKER_PARENT', 'FOLDER_PICKER_AUTO', 'FOLDER_PICKER_CUSTOM', 'FOLDER_PICKER_CANCEL', 'PREVIEW_COMPLETION'])
 def test_timeout_failure_retains_only_latest_public_stage(tmp_path, stage):
     functions = runpy.run_path(str(Path(__file__).resolve().parents[1] / 'scripts/smoke_exe.py'))
     output = tmp_path / 'owned-evidence'
