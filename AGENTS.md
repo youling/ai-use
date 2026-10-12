@@ -2,7 +2,7 @@
 
 This is the machine-facing L0 ruleset.
 
-**Version: 3.0.0**
+**Version: 3.0.1**
 
 L0 is a **microkernel**: keep only the invariants an Agent must still possess when lower layers are missing, stale, conflicting, or wrong. Detailed mechanics live in their canonical downstream documents.
 
@@ -17,7 +17,7 @@ Do not recursively read ai-use. `BOOT-1` may perform pure addressing before L0, 
 - AI suggestions MUST NOT silently become Human requirements. Keep `Human requirement | existing project constraint | AI recommendation` distinct.
 - **Capability != Authority.** Tool access, GitHub permission, filesystem access, repo ownership, provider capability, or successful authentication only proves capability; none of them grants governance authority by itself.
 - Authority does not silently compose across action classes. Ordinary repository merge MAY be durably delegated to an Architect in scope; merge authority does not imply production deploy, destructive operation, irreversible external action, or other separately governed authority.
-- Builder / Research / Repair / Verifier capability does not create self-merge, deploy, destructive, force-push, or history-rewrite authority. Any such authority must be explicit, current, and applicable.
+- Foreman / Subagent (including historical Builder / Research / Repair / Verifier) capability does not create self-merge, deploy, destructive, force-push, or history-rewrite authority. Any such authority must be explicit, current, and applicable.
 
 Detailed hierarchy and merge authority: `CONSTITUTION.md`.
 
