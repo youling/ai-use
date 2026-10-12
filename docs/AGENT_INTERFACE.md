@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** Read when dispatching/executing Agent work, choosing Architect execution mode, advancing an authorized program, or producing/reviewing Human/Agent interface artifacts.
 
-**Protocol Version: 2.10.0**
+**Protocol Version: 2.11.0**
 
 本文是 **execution / dispatch / continuation interface** 的 canonical home。公共 `ai-use` 不绑定特定 owner/repo、私有 control-plane 名称或账号。[Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md) 拥有 recovery、Work Context、正交 context/mode 与 independence/delegation 语义；[CONTEXT_MODE_SEED](../50_TEMPLATES/CONTEXT_MODE_SEED.md) 只给形态。本文保留 continuation、`PREMATURE_YIELD` 与完成边界。
 
@@ -12,7 +12,7 @@
 
 执行先区分 `DIRECT | DELEGATE`：
 
-- `DIRECT`：Project/Global Architect 在 current durable authority、pre-existing scope/acceptance 与本节 eligibility 同时满足时自己施工；不为了角色仪式制造 Builder dispatch / Agent Seed。
+- `DIRECT`：Project/Global Architect 在 current durable authority、pre-existing scope/acceptance 与本节 eligibility 同时满足时自己施工；不为了角色仪式制造 Foreman dispatch / Agent Seed。
 - `DELEGATE`：由 durable Work Order + current Architect dispatch 启动可替换 executor。Human 可以手工 transport Seed，也可以使用 current durable authority 允许的 execution transport；Human copy/paste 不是普通 executor 的治理必经节点。
 
 `DIRECT | DELEGATE` 是执行方式，不产生 authority，也不改变 merge / deploy / destructive / production / irreversible authority。
@@ -39,11 +39,16 @@ L0 只保留“不越 scope、不破坏不明确 ownership”的 root invariant�
 ARCHITECT_EXECUTOR_DISPATCH
 ---
 work_coordinate: `<owner>/<repo>#<issue>@<step>`
-role: `<Builder | Verifier | Research | Repair | Release>`
-startup_mode: `<Fresh Builder | Warm Resume | Fresh Verifier | ...>`
+role: `<Foreman | Subagent>`
+mode: `<PLAN | BUILD | REPAIR | SELF_REVIEW | VERIFY | INVESTIGATE | optional>`
+startup_mode: `<Fresh Context | Warm Resume | ...>`
 access: `github-private | github-public`
 status: `DISPATCHED`
 ```
+
+新 delegated Work 的默认执行主责是 [Foreman](../20_ROLES/FOREMAN.md)；`Subagent` 是 Work 内的有界执行上下文，不是另一层 Architect/Foreman。历史 Work Order 中的 `Builder / Research / Repair / Verifier / Release` role/startup_mode 继续按原授权合同生效，不追溯改写，也不产生新的长期治理角色。
+
+有效的 Foreman dispatch 默认授权该 Work 范围内**第一层有界子对话**（被 current Work/higher rule 禁止时除外）；每个内部 routine 子步骤不必另请 Architect 派单。独立 child Work Coordinate 仍需 own durable dispatch/ownership。子对话递归派发默认不授权，provider 有能力创建 child 不等于权限扩大。Work/source/identity/secret/side-effect scope 不因子对话派发扩大。
 
 具体机器 gate 由 deployment-local control-plane contract 定义。公共 contract 不假设 control plane 一定叫 `ai-hub`，也不指向上游维护者 private repo。
 
@@ -230,9 +235,9 @@ HIGHER_AUTHORITY_STILL_WINS
 
 Agent 准备进入 `HUMAN_REQUIRED / AWAITING_DECISION` 或等价等待前，必须先 live-reconcile exact Work 的最新 Human/Architect durable ruling；已被解除的旧 gate 不能靠惯性继续生效。
 
-#### Builder / Foreman boundary
+#### Foreman / Subagent boundary
 
-Builder / Research / Repair / Foreman SHOULD 识别明显坏约束，但默认没有 governance override authority。它们应 durable 报告 challenge，停止受争议约束影响且可能越权的动作，继续其它 authorized work；不得因为发现坏约束就扩大 scope、merge、deploy 或 destructive authority。
+Foreman / Subagent（含历史 Builder / Research / Repair 标记）SHOULD 识别明显坏约束，但默认没有 governance override authority。它们应 durable 报告 challenge，停止受争议约束影响且可能越权的动作，继续其它 authorized work；不得因为发现坏约束就扩大 scope、merge、deploy 或 destructive authority。
 
 最小 durable finding：
 
@@ -254,7 +259,7 @@ Constraint Challenge 不授权绕过 Human current explicit requirement、securi
 
 ### 1.4.3 Architect Watch / Reconciliation Wake
 
-Architect 的持续推进不要求一个模型会话永久在线。deployment 若提供 scheduler / automation / event wake，Project/Global Architect MAY 通过周期或条件唤醒重新进入 current durable state，并执行一次**观察—重建—裁决**循环：
+Architect 的持续推进不要求一个模型会话永久在线。deployment 若提供 scheduler / automation / event wake，Project/Global Architect MAY 通过周期或条件唤醒重新进入 current durable state，并执行一次**观察—重建—裁决**循环。ChatGPT dots、定时巡检、authorized event wake、GitHub Actions 或其它 transport 可依实际 capability 参与协调；**Actions 不是 Agent 消息必经总线**，GitHub 仍是 durable truth。定时唤醒 Architect 也不能凭空证明外部 Foreman 已被实际启动或恢复：
 
 ```text
 WAKE
@@ -317,6 +322,8 @@ PLAN -> BUILD -> TEST -> REPAIR -> SELF_REVIEW -> REPAIR
 
 ### 1.7 `PREMATURE_YIELD`：retryable execution failure
 
+Foreman 每次消费子对话返回、完成局部实现/研究或考虑终止 attempt 前，必须重新核对**受托父级 Work / 有限阶段的当前验收**和剩余合法动作：子对话 `SUCCESS`、文件生成、测试通过或局部总结不自动满足父级 completion predicate。父验收未满足且存在合法下一动作，应继续执行/修复，而不是退化为一次性 Builder 并退出。若明确约定本轮终点只是可审阅 PR / 有界证据，则完成 durable terminal/readback 后可结束本轮 attempt 并等待 Architect Review；这不意味着整个 Work 已关闭或被接受。
+
 `PREMATURE_YIELD` 是正式定义的 retryable execution failure class，不是合法 stop：
 
 ```text
@@ -355,7 +362,7 @@ EXECUTION_FINISHED != COMPLETION_REACHED
 WRITEBACK_ATTEMPTED != DURABLE_WRITEBACK_CONFIRMED
 ```
 
-只有 current Work acceptance 要求的 deterministic checks / currentness / commit-push / exact-head / evidence 已满足，且适用 delegated attempt 的 terminal writeback 已被 durable readback 确认，才可 `COMPLETION_REACHED`。
+只有 current Work acceptance 要求的 deterministic checks / currentness / commit-push / exact-head / evidence 已满足，且适用 delegated attempt 的 terminal writeback 已被 durable readback 确认，才可 `COMPLETION_REACHED`。Foreman 必须区分其受托有限阶段的合法终点与后续 Architect acceptance；child terminal 不替代 Foreman terminal。
 
 Executor 自述 `done / completed` 只是 observation，不能覆盖 deterministic finish / review / evidence gates。父 Architect / orchestrator 收到 executor 返回后必须 live-read terminal pointer 与 current Work state，再消费结果；聊天中的 self-report 不是 completion evidence。
 
@@ -456,6 +463,8 @@ Human Completion Card 仅保留为 Architect / orchestrator 在**非 delegated e
 
 ## 6. Versioned Definitions
 
+- `2.11.0`：Role Model V2（#146）。Foreman 作为 delegated Work / finite tranche 的执行主责；历史 Builder/Research/Repair/Verifier 作为 Subagent mode 与兼容标记；Foreman scope 内第一层子对话默认允许（递归/权限扩张不包含）；父级验收/terminal gate 防止子任务成功造成 PREMATURE_YIELD；中立调度不改 GitHub durable truth 或外部 wake 证据。
+
 - `2.10.0`：Architect Watch / Reconciliation Wake（#91）。deployment 可用 scheduler/event 周期唤醒 Architect，但每轮必须从 current Git/GitHub durable state 重建；Watch 只消费既有 Work/CLAIM/CHECKPOINT/TERMINAL/refs，不创建第二 lifecycle 或 authority。stale/pickup threshold 留 deployment；超时只产生 derived SUSPECT/UNKNOWN，不自动 failure/takeover。Daily Brief 明确为派生 Human memory projection，mutation 前仍 live revalidate。
 
 - `2.9.0`：Architect Constraint Challenge（#106）。Architect 对 material constraint quality 负有判断责任；按 constraint owner 区分可直接 amend、向 higher authority challenge、或采用 newer ruling supersede stale gate。Builder/Foreman 可 durable 报告 challenge 但不获得 governance override authority；等待 Human 前必须 live-reconcile newer durable ruling；不受争议的 authorized work 继续。Challenge 不改变 Human/security/destructive/deploy/verification authority。
@@ -486,7 +495,7 @@ Human Completion Card 仅保留为 Architect / orchestrator 在**非 delegated e
 - current durable dispatch / Work Order 在 Minimal Seed / transport 之前；Seed 不替代 dispatch。
 - 派发前 Architect 必须确认 durable source 足以让 fresh Agent 执行；否则先修 Work Order/dispatch。
 - Human Dispatch Card 只属于 Human manual transport / scheduling UX；authorized automated transport 不需要先生成 Human Card。
-- Architect continuous advancement 只适用于 Project/Global Architect current durable authority 内；不得扩展为 Builder/Research/Repair/Verifier 的长期自治或 merge authority。
+- Architect continuous advancement 只适用于 Project/Global Architect current durable authority 内；Foreman 仅在受托 Work execution scope 内持续推进，不获得长期 governance/merge authority；Subagent mode 亦不扩权。
 - Human-facing narrative 遵守 `00_KERNEL/LANGUAGE_POLICY.md`；本文件不再维护第二份语言规则。
 - public portability 不产生任何新的 repo permission / governance authority / deploy authority。
 - provider-specific 命令名（ slash command、custom command 名、内置 agent 名）不进 canonical semantics；如需示例，只作 informative / non-normative / freshness-marked 呈现，机器映射由 deployment / control-plane adapter 持有。

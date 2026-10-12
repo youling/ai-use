@@ -1,7 +1,7 @@
 # Recovery & Handoff — Canonical Protocol
 
 **Classification: L2 Targeted Reference**
-**Protocol Version: 1.0.0**
+**Protocol Version: 1.1.0**
 
 本文拥有 recovery/handoff、Work Context、正交 context 维度与 independence/delegation 的长期语义。模板只提供形态。启动顺序与执行门由 [Bootstrap](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md) 拥有；continuation、`PREMATURE_YIELD` 与完成边界由 [Agent Interface](../docs/AGENT_INTERFACE.md) §1.4、§1.6–§1.8 拥有；checkpoint 格式与频率由 [Durable Trace](DURABLE_TRACE_PRINCIPLE.md) 拥有。
 
@@ -51,7 +51,9 @@ Fresh/takeover Architect 的 Bootstrap Report 必须按 Bootstrap §3C 写入 cu
 
 ## 4. Work Context 与正交维度
 
-Work Context = Work Coordinate + session binding + isolated workspace/worktree + current exact head + current mode + context health/checkpoint。Project Architect Context 保存跨工单架构与方向，保持低工具噪声；Work Context 保存一条 Issue/PR/implementation lineage，完成后归档或 compact。长期角色不等于永久 session。会话名仅作 Human 导航，不是状态源。
+Work Context = Work Coordinate + session binding + isolated workspace/worktree + current exact head + current mode + context health/checkpoint。Project Architect Context 保存跨工单架构与方向，保持低工具噪声；Foreman Context 负责一个 delegated Work / finite tranche 的执行协调，Work Context 保存其 Issue/PR/implementation lineage，完成后归档或 compact。长期角色不等于永久 session。会话名仅作 Human 导航，不是状态源。
+
+Foreman 是职责身份，`PLAN / BUILD / REPAIR / SELF_REVIEW / VERIFY / INVESTIGATE` 是正交工作模式；模式切换不能把 Foreman 变成一次性 Builder。父级 Work 的完成判定以 [Agent Interface §1.7–1.8](../docs/AGENT_INTERFACE.md#17-premature_yieldretryable-execution-failure) 为准。
 
 下列字段和值是长期 machine seam；convenience label 不是新增枚举：
 
@@ -72,13 +74,13 @@ Work Context = Work Coordinate + session binding + isolated workspace/worktree +
 
 在 compaction、provider/backend handoff、session termination/replacement、workspace ownership transition、long-running crash 风险前，先建立 current durable checkpoint；不可预测的 crash 发生后按 §3.2 恢复，不能倒推“旧方未写 checkpoint，所以永远不可接任”。压缩摘要与 provider memory 仍是 cache。
 
-Subagent 是隔离/并行机制，不是 authority 来源或默认 mode 切换方式：
+Subagent 是隔离/并行机制，不是 authority 来源或默认 mode 切换方式。有效 Foreman dispatch 允许其 Work 范围内**第一层 bounded delegation**（被 Work/higher rule 禁止时除外），不授权子 Agent 继续递归派发；Foreman 可以亲自处理简单合法步骤而不丢失角色：
 
-- `MAIN_CONTEXT_OWNS_WORK = YES`；`SUBAGENT_OWNS_WORK = NO`，除非显式委托 isolated child Work Coordinate/workspace。
+- `FOREMAN_CONTEXT_OWNS_DELEGATED_ATTEMPT = YES`；`SUBAGENT_OWNS_WORK = NO`，除非显式委托 isolated child Work Coordinate/workspace。历史无 Foreman 的 primary execution 依原 Work/dispatch owner 判定。
 - `SUBAGENT_RESULT = evidence/summary/pointer`，不是 canonical acceptance truth；`SUBAGENT_IS_FRESH_VERIFY_BY_DEFAULT = NO`。
-- `MODE_CHANGE != SPAWN_SUBAGENT`；`SAME_LINEAGE_REPAIR = WARM_PRIMARY_BY_DEFAULT`；`NESTED_SUBAGENT_DEFAULT = DENY`；`PRIMARY_CONTEXT_REMAINS_ORCHESTRATOR = YES`。
+- `MODE_CHANGE != SPAWN_SUBAGENT`；`SAME_LINEAGE_REPAIR = WARM_PRIMARY_BY_DEFAULT`；`FOREMAN_FIRST_LEVEL_SUBAGENT = WITHIN_DELEGATED_WORK`；`NESTED_SUBAGENT_DEFAULT = DENY`；`PRIMARY_CONTEXT_REMAINS_ORCHESTRATOR = YES`。
 - 优先委托独立 exploration、upstream research、test/log triage、有界安全/质量审计、大证据分区与并行只读验证；不因 mode 切换、已知 finding、可合法修复的红测或 Human 说“继续”就 spawn。
-- 父保持 orchestrator/final synthesizer。子 contract 只带 work pointer、narrow question、allowed tools/write scope、expected return shape、stop condition；返回有界 evidence/pointer，不倾倒 transcript/log。子失败不自动成为 Human gate。
+- Foreman 保持 orchestrator/final synthesizer 与 GitHub durable closeout 主责，不因 child `SUCCESS`、自己进入 BUILD/REPAIR mode 而收工。子 contract 只带 work pointer、narrow question、allowed tools/write scope、expected return shape、stop condition；返回有界 evidence/pointer，不倾倒 transcript/log。子失败不自动成为 Human gate。
 - 子写需 isolated branch/worktree/generation ownership 与 exact-head handoff；两个子不能共享 mutable workspace，除非显式冲突安全机制。`READ_ONLY` 优先；`PARALLEL_WRITES = ISOLATED_WORKSPACE_OR_DENY`。
 - side/fork/subagent 结果不转移 Work ownership/authority。provider action/命令名不能产生 authority 或证明 capability；不支持时 fail closed，仅用可证明等价的 adapter 行为。
 
