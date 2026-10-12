@@ -12,7 +12,7 @@
       "url": "https://github.com/youling/ai-use",
       "provider": "github",
       "link_mode": "web",
-      "revision": "399650f05d1a51c642dda55bbbf2920e53c50fb4"
+      "revision": "5af1b2c0097cd852874ee7e9a5a07ccb7ad6af59"
     },
     "views": [
       {
@@ -161,7 +161,7 @@
       "id": "roles",
       "type": "backend",
       "label": "Role & Authority",
-      "sublabel": "Global / Project Architect · Executors · Runner",
+      "sublabel": "Global / Project Architect · Foreman · Subagent modes",
       "tag": "RESPONSIBILITY",
       "row": 0,
       "col": 3,
@@ -173,6 +173,10 @@
         {
           "path": "CONSTITUTION.md",
           "label": "Governance hierarchy"
+        },
+        {
+          "path": "20_ROLES/FOREMAN.md",
+          "label": "Foreman role contract"
         },
         {
           "path": "docs/AGENT_INTERFACE.md",
