@@ -28,3 +28,5 @@ jobs:
         run: python tools/routing.py --check --check-whitespace
       - name: Structural regressions
         run: python tools/test_routing.py
+      - name: Foreman role V2 contract regressions
+        run: python tools/test_role_model_v2.py
