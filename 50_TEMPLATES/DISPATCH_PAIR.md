@@ -62,7 +62,7 @@ Machine 字段形态见 [CONTEXT_MODE_SEED.md](CONTEXT_MODE_SEED.md)，值与语
 
 ## 工头任务合同与阶段裁决补充
 
-以下是 [异步主工头指南](../40_GUIDES/ASYNC_FOREMEN.md) 的可选形态，填写在现有 Work / durable dispatch / checkpoint 内；不是短 Seed 的新增必填键。派单和停止语义仍以 [Agent Interface](../docs/AGENT_INTERFACE.md) 为准，子对话 ownership 以 [Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md#5-durable-before-fragile-与-delegation) 为准。
+以下是 [工头协作指南](../40_GUIDES/ASYNC_FOREMEN.md) 的可选形态，填写在现有 Work / durable dispatch / checkpoint 内；不是短 Seed 的新增必填键。派单和停止语义仍以 [Agent Interface](../docs/AGENT_INTERFACE.md) 为准，子对话 ownership 以 [Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md#5-durable-before-fragile-与-delegation) 为准。
 
 ### Durable dispatch 的任务合同补充
 
@@ -106,7 +106,7 @@ next: <一个具体动作；本轮已达终点则转 canonical terminal writebac
 下一步：<责任 owner；沿用原 scope 续接 / 独立新任务 / 等待真实 gate / 有限收尾>
 ```
 
-已有 finite acceptance 满足后，“等待架构师”可记录为 `next` 的说明；它不替代 `AGENT_TERMINAL_RESULT` / readback，也不免除尚可合法修复的工作。最终 delegated chat 返回继续只包含 exact terminal GitHub pointer。只有获得独立 child Work delegation 的子对话才承担该 Work 的关闭义务；只读证据子对话由主工头综合并关闭主 attempt。
+已有 finite acceptance 满足后，“等待架构师”可记录为 `next` 的说明；它不替代 `AGENT_TERMINAL_RESULT` / readback，也不免除尚可合法修复的工作。最终 delegated chat 返回继续只包含 exact terminal GitHub pointer。只有获得独立 child Work delegation 的子对话才承担该 Work 的关闭义务；只读证据子对话由工头综合并关闭主 attempt。
 
 <!-- Compatibility anchors; current semantics are linked above. -->
 <a id="agent-seed-最小化规则"></a>

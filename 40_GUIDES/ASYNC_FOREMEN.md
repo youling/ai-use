@@ -1,8 +1,8 @@
-# 异步主工头协作指南
+# 工头协作与异步执行指南
 
-**Classification: L2 Targeted Guidance / non-normative.** 按需用于多方向探索、大资料分区、并行施工与阶段验收；本指南不建立新的角色权限、任务状态、scheduler 或 provider adapter。此次变更等级为 L1，阅读层级为 L2，两者是不同维度。
+**Classification: L2 Targeted Guidance / non-normative.** 按需用于多方向探索、大资料分区、并行施工与阶段验收；正式职责由 [Foreman Role Contract](../20_ROLES/FOREMAN.md) 拥有，本指南不建立新的权限、任务状态、scheduler 或 provider adapter。
 
-架构师可以继续处理全局方向或另一项任务，主工头自行协调其子对话，并把有界完整成果及时交到 GitHub。架构师随后读取交付和证据，裁决接受范围及下一步。减少逐子对话协调，可以把架构师的注意力留给跨方向综合、优先级和争议判断。
+架构师可以继续处理全局方向或另一项任务，工头自行协调其子对话，并把有界完整成果及时交到 GitHub。架构师随后读取交付和证据，裁决接受范围及下一步。减少逐子对话协调，可以把架构师的注意力留给跨方向综合、优先级和争议判断。
 
 ## 1. 沿用现有语义 owner
 
@@ -14,9 +14,9 @@
 | 私有实例、源事实与派生投影 | [Owner / Instance Boundary](../30_PROTOCOLS/OWNER_INSTANCE_BOUNDARY.md) |
 | 可复制派单与交付补充形态 | [Dispatch Pair](../50_TEMPLATES/DISPATCH_PAIR.md#工头任务合同与阶段裁决补充) |
 
-“工头”是一个 Work scope 内主上下文的协作称呼，不是新的 authority role。架构师负责授权任务、验收、跨任务依赖和最终裁决；工头负责本轮拆分、其子对话的协调、证据综合及 GitHub 交付。没有 durable 写能力的子对话只返回有界证据，由主责工头核验并回写。
+Foreman（工头）是受托 Work 的正式执行主责角色，而非临时 Builder 称呼，也不设另一个“主工头”。架构师负责授权、验收和最终裁决；工头负责自主规划、子对话协调、普通故障修复、证据综合及 GitHub 回写。子任务完成不等于父 Work 完成。没有 durable 写能力的子对话只返回有界证据，由工头核验并回写。
 
-嵌套委派仍受现有 `NESTED_SUBAGENT_DEFAULT = DENY` 约束。本模式用于 Human 或适用合同明确授权主工头开启子对话的场景；一次授权不扩大到无关任务、仓库或外部副作用。OpenCode、Codex 或其它运行器的能力不产生授权。
+有效 Foreman 派单默认授权 Work 范围内第一层有界子对话（明确禁止时除外），普通 child 不需 Architect 再派一次；child 再递归仍受 `NESTED_SUBAGENT_DEFAULT = DENY` 约束。一次授权不扩大无关任务、仓库或外部副作用。OpenCode、Codex 或其它运行器的 capability 不产生 authority。
 
 ## 2. 给工头完整任务合同，给启动消息短指针
 
@@ -32,13 +32,13 @@
 
 各方向可以先交可消费的一段，不必等待所有工头完成再回写。架构师可在处理另一项工作后读取这些交付，按“接受哪些、拒绝哪些、哪些未知、为何、下一步由谁处理”作 durable 裁决。工头自行管理自己的子对话；常规细节不需要再由架构师向每个建造者追问。
 
-若本轮验收明确终止于一段完整证据或可审阅 PR，且继续需要架构师裁决，工头可以收尾该 attempt 并等待。`WAITING_ARCHITECT` 只可作为描述下一步的派生注记，不能另立 Work、attempt 或 provider 状态。尚未满足本轮验收而仍有合法修复动作，按现有 `PREMATURE_YIELD` / repair 规则处理。
+每次子任务返回后工头必须重新核对父 Work / 有限阶段验收与剩余合法动作；仅因 child `SUCCESS` 就收尾是 `PREMATURE_YIELD`。若本轮验收明确终止于一段完整证据或可审阅 PR，且继续需要架构师裁决，工头可以收尾该 attempt 并等待。`WAITING_ARCHITECT` 只可作为描述下一步的派生注记，不能另立 Work、attempt 或 provider 状态。尚未满足本轮验收而仍有合法修复动作，按现有 `PREMATURE_YIELD` / repair 规则处理。
 
 主责工头的收尾仍须 `AGENT_TERMINAL_RESULT` 和 durable readback；终止聊天返回仍是 exact GitHub pointer only。只有显式委派独立 child Work 的子对话承担该 Work 的关闭义务；没有独立 Work 的证据子对话不需要另造工单或终止事件。终止 attempt 不自动关闭 Work、不接受结论、不合并 PR。等待裁决的已终止任务不需要保持模型空转。
 
 ## 4. 动态调整并发
 
-在有独立 READY 任务、合法授权和可用资源时，增加主工头或子对话；共享对象冲突、依赖未就绪、provider 错误/延迟增加、内存压力或验证积压出现时，调整拆分、顺序或并发。评估当前任务与设备实测，不以固定的全项目工头数或总 attempt 配额代替判断。
+在有独立 READY 任务、合法授权和可用资源时，增加工头或子对话；共享对象冲突、依赖未就绪、provider 错误/延迟增加、内存压力或验证积压出现时，调整拆分、顺序或并发。评估当前任务与设备实测，不以固定的全项目工头数或总 attempt 配额代替判断。
 
 每次操作仍可以有适合该目的的超时、步骤或输出形状边界，防止失控并使失败可观察；它们不自动成为整个项目的探索上限。资料量、provider 延迟和已观察的失败类型变化时，给出本次调整理由。未改变输入、机制或判别目的且没有信息增益的失败，不原样反复重跑。
 
