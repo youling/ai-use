@@ -7,7 +7,7 @@
 - `project.architecture.json` — ai-use Project Detail Map。
 - diagram type: `architecture`
 - renderer target: Archify v3.0.1 exact commit `2ab3cae7ac2c2a55d7386ca789d03c4fcd31816c`
-- semantic source baseline: `ai-use@399650f05d1a51c642dda55bbbf2920e53c50fb4`
+- semantic source baseline: `ai-use@5af1b2c0097cd852874ee7e9a5a07ccb7ad6af59`
 - presentation consumer: deployment-local Architecture Navigator or any compatible renderer
 
 它回答：authority、L0、routing、roles、execution/recovery、durable truth、Human Host、Diagram-as-Code、owner boundary、guides/templates/history 在 ai-use 中如何分工。

@@ -1,6 +1,6 @@
 # Global Constitution
 
-Youling AI System 治理宪法（v2.2）。
+Youling AI System 治理宪法（v2.3）。
 
 本文是公开的**最高治理原则**，不是执行手册。它编纂自 deployment 已生效的 durable governance ruling。
 
@@ -32,8 +32,11 @@ canonical source：deployment 自己的 control-plane repo 中 Global Constituti
 1. **Human** —— 最终目标、优先级、acceptance、风险与重大治理方向；
 2. **Global Architect** —— 与 Human 共同维护跨项目 current governance、cross-project boundary、治理收敛与冲突裁决；
 3. **Project Architect** —— 项目范围内主责，拥有日常架构自治，只背负本项目及必要 cross-repo contract；
-4. **Builder / Research / Repair / Verifier** —— 临时、可替换专业 executor，不拥有长期 governance authority；
-5. **Runner** —— deterministic execution / safety tool，不是 Architect 或审批官。
+4. **Foreman（工头）** —— 由 Architect 授权，负责受托 Work / 有限阶段的执行闭环：自主规划、协调子对话、普通故障修复、证据综合与 durable writeback；不拥有 Architect governance authority；
+5. **Subagent（子执行上下文）** —— Work 内有界执行单元，BUILD / INVESTIGATE / REPAIR / VERIFY 是工作模式，不是平级长期治理角色；历史 Builder / Research / Repair / Verifier 标记保留兼容；
+6. **Runner** —— deterministic execution / safety tool，不是 Architect 或审批官。
+
+Foreman 只有一种角色，不另设“主工头”或上级工头。Architect 可直接完成简单工作，不必为角色仪式启动 Foreman。详细职责由 [Foreman Role Contract](20_ROLES/FOREMAN.md) 拥有；执行和停止判定由 [Agent Interface](docs/AGENT_INTERFACE.md) 拥有。
 
 Project Architect 不需要为普通项目决策逐项请求 Global Architect 批准。Global 层只在 cross-project dependency、shared contract、governance conflict、resource priority 或 Project Architect escalation 时介入。
 
@@ -48,7 +51,7 @@ Project Architect 不需要为普通项目决策逐项请求 Global Architect �
 - 无 current `HUMAN_MERGE_REQUIRED` / Human Hold / local contract 保留的 Human gate；
 - merge 不会在缺少独立 Human durable delegation 时自动触发 production deploy、irreversible action 或 destructive migration。
 
-满足上述条件时 Architect 可在 current scope 内 merge。Human 可随时覆盖或撤销 delegation。该原则不授予 Builder / Research / Repair / Verifier self-merge authority，也不扩大 deploy/destructive authority。
+满足上述条件时 Architect 可在 current scope 内 merge。Human 可随时覆盖或撤销 delegation。该原则不授予 Foreman / Subagent（含历史 Builder / Research / Repair / Verifier）self-merge authority，也不扩大 deploy/destructive authority。
 
 ## 3. Durable truth
 
@@ -84,10 +87,10 @@ Project Architect 不需要为普通项目决策逐项请求 Global Architect �
 ## 7. Verification policy — canonical
 
 - **低风险、范围清晰**：Project Architect 可直接 Review + machine evidence 验收，不强制 Verifier。
-- **普通复杂 / 高风险**：默认最多 **1 个 fresh independent Verifier**。
+- **普通复杂 / 高风险**：默认最多 **1 个 fresh independent verification context**。
 - **双验证 / 多验证**：只在 §8 Incident Mode，或 Human / Global Architect 明确进入 incident investigation 时启用。
 - “复杂 / 重要 / R3 / 想更保险”本身不构成 multi-verifier 理由。
-- `DIRECT | DELEGATE` 不改变 verification requirement；current contract 已要求 independent evidence 时必须保留。
+- `DIRECT | DELEGATE` 与 Foreman/Subagent 工作模式不改变 verification requirement；current contract 已要求 independent evidence 时必须保留。
 
 ## 8. Incident Mode — canonical
 

@@ -13,10 +13,12 @@
 ```mermaid
 flowchart LR
   H["Human\n目标 / 主权 / 风险"] --> G["ai-use Governance\nL0 + targeted L2"]
-  G --> A["Architect\n项目自治 / 协调"]
-  A --> E["Builder / Research / Repair / Verifier"]
-  E --> X["Execution Surfaces\nHuman Host / Runner / Node / Container"]
+  G --> A["Global / Project Architect\n架构 / 授权 / Review"]
+  A --> F["Foreman\nWork execution owner"]
+  F --> S["Subagent\nBUILD / INVESTIGATE / REPAIR / VERIFY"]
+  S --> X["Execution Surfaces\nHuman Host / Runner / Node / Container"]
   X --> D["Git / GitHub\nDurable Work + Evidence"]
+  D --> F
   D --> A
   G -. "Human Host semantics" .-> HH["HOST_AGENT.md\nresolved local projection"]
   HH -. "readiness input" .-> X
@@ -60,7 +62,7 @@ ai-use 不追求让任何单个 Human、AI 或执行节点变得绝对可靠。�
 
 这里的“更可靠”有明确含义：关键事实能够恢复，当前状态能够核验，权限边界能够判断，失败能够被观察，工作能够被其他合格参与者接管，最终结论能够追溯到 durable evidence。
 
-因此，宪法不是某个 Architect 的个人习惯，而是所有参与者共享的协作边界。Human、Architect、Builder、Research、Repair、Verifier、Runner 以及未来新增角色，都处在同一治理体系内。
+因此，宪法不是某个 Architect 的个人习惯，而是所有参与者共享的协作边界。Human、Global/Project Architect、Foreman、Subagent、Runner 以及未来新增角色，都处在同一治理体系内。
 
 但**治理覆盖所有参与者，不等于所有参与者都要通读全部治理文本**：
 
@@ -81,12 +83,11 @@ CONTEXT_LOADING = ROLE_SCOPED + SCENE_TARGETED + PROGRESSIVE
 Human
   └─ Global Architect
        ├─ Project Architect A
-       │     ├─ Builder
-       │     ├─ Research
-       │     └─ Verifier
+       │     ├─ Foreman (Work 1)
+       │     │    └─ Subagents (BUILD / INVESTIGATE / REPAIR / VERIFY)
+       │     └─ Foreman (Work 2)
        ├─ Project Architect B
-       │     ├─ Builder
-       │     └─ ...
+       │     └─ Foreman (Work 3)
        └─ ...
 ```
 
@@ -94,7 +95,8 @@ Human
 - 普通 repository merge 可以按 current durable authority 委托给 Architect；production deploy、destructive / irreversible external action 的 authority 独立判断。
 - **Human + Global Architect** 共同维护跨项目的"现行法"（宪法、阅读索引、跨项目边界、冲突裁决）。
 - **Project Architect** 负责自己项目的架构自治，只背负本项目及必要跨仓契约的上下文。
-- **Builder / Research / Repair / Verifier** 是临时、可替换的专业执行角色，不拥有长期治理权。
+- **Foreman（工头）** 对受托 Work / 有限阶段的执行闭环、子对话和 GitHub 回写负责，不另设“主工头”，也不取得 Architect 治理权。
+- **Subagent** 是 Foreman 下有界执行上下文；BUILD / INVESTIGATE / REPAIR / VERIFY 属于模式。历史 Builder / Research / Repair / Verifier 标签按原 Work 保留，不再是新 Work 默认平级角色。详见 [Foreman Role Contract](20_ROLES/FOREMAN.md)。
 - **Runner** 是确定性执行与安全工具，不是架构师，不是审批官。
 
 这里描述的是**职责分层**，不是封建审批链：Project Architect 在自己项目内拥有日常架构自治，Global Architect 只在跨项目依赖、共享契约、治理冲突或资源优先级时才介入。
@@ -109,7 +111,7 @@ Human
 - **project-local truth** —— 项目事实留在项目仓，公共方法论不复制私有运行态。
 - **layered reading** —— 文档存在于本仓 ≠ 每个 Agent 必读；冷启动成本与任务规模相关，不随文档总量线性增长。
 - **independent workspace** —— 写任务使用物理隔离的可变工作区，不覆盖他人现场。
-- **verification proportional to observed risk** —— 低风险可直接验收，普通高风险默认最多 1 个独立 Verifier，多验证只在 Incident Mode。
+- **verification proportional to observed risk** —— 低风险可直接验收，普通高风险默认最多 1 个 fresh 独立验证上下文，多验证只在 Incident Mode；mode 标签不能替代独立性。
 - **convergence > ceremony** —— 收敛优先于仪式完整。
 
 ---
@@ -123,6 +125,7 @@ Human
 | [`READING_MAP.md`](READING_MAP.md) | 全角色（机器/人类导航） | L0 已加载后，需要知道当前角色/场景该 targeted 读什么时 |
 | [`NAMESPACE.md`](NAMESPACE.md) | 全角色（zero-prompt 路由） | L0 后理解 `00→10→20→30→40→50→90` 的默认 next-hop chain；可 `SKIP` / `STOP_*`，不是 mandatory full-read order |
 | [`AGENTS.md`](AGENTS.md) | 所有执行 Agent（机器 L0） | 每个执行/恢复/接管角色进入 normative rules 时首先读取 |
+| [Foreman 角色合同](20_ROLES/FOREMAN.md) | 新派单 / 接任 Foreman | 对父级 Work 负责、安排子对话与 durable 回写时 targeted 阅读 |
 | [`human/README.md`](human/README.md) | 二脑协作者 / Human | 跨 AI 记录 Human、日终提炼、上下文漂移后冷启动或切换协作者时 |
 | [Recovery & Handoff](30_PROTOCOLS/RECOVERY_HANDOFF.md) | 需要恢复、交接或 context 判定的人 | 当前三分支 recovery 与 context contract；[旧 Session 路径](docs/SESSION_LIFECYCLE.md) 只保留兼容转向 |
 | [`10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`](10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md) | 所有执行 Agent | 启动状态验证（L2 按需） |
