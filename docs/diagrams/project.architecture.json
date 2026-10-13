@@ -16,23 +16,8 @@
     },
     "views": [
       {
-        "id": "architectColdStart",
-        "label": "Architect 冷启动与技术路线",
-        "focus": [
-          "human",
-          "kernel",
-          "routing",
-          "bootstrap",
-          "roles",
-          "agentInterface",
-          "durable",
-          "projectTruth"
-        ],
-        "note": "首读 L0，再按 Routing Catalog 到 Bootstrap；重大新领域进入 Architect ARCH-0/Discovery→durable Decision；Foreman 承接已授权 Work，按需跳转图节点的 source 文档。"
-      },
-      {
         "id": "executionPath",
-        "label": "执行闭环",
+        "label": "Architect 冷启动与执行闭环",
         "focus": [
           "human",
           "kernel",
@@ -43,7 +28,7 @@
           "durable",
           "recovery"
         ],
-        "note": "从 Human authority 到 targeted execution，再从 Git/GitHub durable state 恢复。"
+        "note": "首读 L0 → Bootstrap/targeted routing；Material 新领域进入 Architect ARCH-0/Decision，之后 Foreman Work；点击 role 节点来源继续阅读。"
       },
       {
         "id": "hostPath",
@@ -190,12 +175,8 @@
           "label": "Human / Architect / Foreman authority"
         },
         {
-          "path": "20_ROLES/ARCHITECT_DISCOVERY.md",
-          "label": "Architect Discovery ownership"
-        },
-        {
           "path": "docs/ARCHITECT_RECONNAISSANCE.md",
-          "label": "ARCH-0 prior art / reuse decision"
+          "label": "ARCH-0 prior art / architecture decision"
         },
         {
           "path": "20_ROLES/FOREMAN.md",

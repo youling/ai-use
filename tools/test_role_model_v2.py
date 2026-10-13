@@ -67,11 +67,10 @@ class ForemanContractTests(unittest.TestCase):
         self.assertIn("新 delegated Work", interface)
 
         diagram = json.loads(source("docs/diagrams/project.architecture.json"))
-        view = next(x for x in diagram["meta"]["views"] if x["id"] == "architectColdStart")
+        view = next(x for x in diagram["meta"]["views"] if x["id"] == "executionPath")
         self.assertIn("roles", view["focus"])
         role_node = next(x for x in diagram["components"] if x["id"] == "roles")
         pointers = {x["path"] for x in role_node["sources"]}
-        self.assertIn("20_ROLES/ARCHITECT_DISCOVERY.md", pointers)
         self.assertIn("docs/ARCHITECT_RECONNAISSANCE.md", pointers)
         self.assertIn("20_ROLES/FOREMAN.md", pointers)
 

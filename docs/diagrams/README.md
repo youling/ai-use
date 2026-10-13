@@ -12,7 +12,7 @@
 
 它回答：authority、L0、routing、roles、Architect Discovery / ARCH-0、Foreman execution/recovery、durable truth、Human Host、Diagram-as-Code、owner boundary、guides/templates/history 在 ai-use 中如何分工。
 
-首次接手的 Architect 使用图中“Architect 冷启动与技术路线”视图定位下一跳；图节点 `sources[]` 直接指向当前 owner 的规范，而不是要求逐页通读所有文件。Material architecture 决策应下钻 `20_ROLES/ARCHITECT_DISCOVERY.md` → `docs/ARCHITECT_RECONNAISSANCE.md`；普通 Work 可按当前 Bootstrap/Work 继续，不因总图存在额外 mandatory hop。
+首次接手的 Architect 使用图中“Architect 冷启动与执行闭环”视图定位下一跳；role 节点 `sources[]` 指向 ARCH-0 与 Foreman 等当前 owner 的规范，而不是要求逐页通读所有文件。Material architecture 决策应下钻 `20_ROLES/ARCHITECT_DISCOVERY.md` → `docs/ARCHITECT_RECONNAISSANCE.md`；普通 Work 可按当前 Bootstrap/Work 继续，不因总图存在额外 mandatory hop。
 
 ## Authority
 
