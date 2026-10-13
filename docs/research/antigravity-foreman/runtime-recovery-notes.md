@@ -31,3 +31,15 @@
 5. 发布只含可审材料、精确 head、终态与 readback。原生未完成记 PARTIAL；host-corrected 交付的结论单独记。resume 的累计 usage 不相加当费用，USD、子账单、独立配置根和长期可靠性保持 UNKNOWN。
 
 没有客户原文、凭据、私有 repo/path/会话 ID 或原始思考过程进入本公共材料。这里的工程经验是 observed-derived，不改变现有 Foreman/Agent Interface/Recovery/Durable Trace 权威。
+
+## 后续观察：独立额度、继承模型与换行运输
+
+2026-10-14（本地日期；UTC运行起于10月13日）的另一有界尝试，fresh父请求/init为 thinking Opus型号、省略独立effort，实际完成两轮BOOT。第一轮父自述ready仍承认target rules未读；宿主先要求补读并纠正“offline/synthetic所以local gate不适用”的错误分类，再允许执行。只要实际在选定主机使用本地工具链，offline/synthetic也需按合同判断local gate，不能由模型自述跳过。
+
+父实际创建两个不同branch/物理目录的child，每个第一显式规范读为完整kernel；随后接口返回 `Individual quota reached`，没有产生实现或测试。一次同父会话请求Gemini高型号的恢复，其init和管理/发消息工具成功，但原先以inherit启动的两个child仍未推进，最终result仍ERROR。继承型号何时绑定、是否能随parent切换必须看该版本的真实行为，不能从新parent init推定旧child已切换。本次不是成功的跨provider子对话迁移认证；先前GUI额度观察也不证明此时每模型/上下文/订阅可用。
+
+这次恢复的CLI exit0与最终result ERROR同时出现。宿主保留两个原child和同Work的PARTIAL终态，没有新建第二fresh verifier、没有把只有kernel读取的上下文说成独立测试已执行，没有承诺额度恢复后自动后台续跑。原子对话状态、实际工件和既有CLAIM应作为恢复输入；quota重置提示只是该次请求返回时的观察。
+
+Git工作区运输另发现：父在LF字节上冻结的16份规则/dispatch文档，child checkout后变成CRLF，原SHA256逐项不一致；宿主实际逐字节换行归一比较，证明差异仅为换行。应同时保留source Git blob身份、运输byte hash和实测差异，不能把语义相同写成byte drift=0。未来在创建child前用task-local gitattributes/core配置明确固定EOL；本轮没有修改已读的readonly输入去掩盖差异，也没有修改全局Git配置。
+
+接口审计还应避免将含历史解密常量的整个源码送入模型工具输出：本机确定性AST提取命令参数、函数接口和hash通常已足够；实际解密材料与客户数据留在获准本地处理区，公共笔记和派单只引用安全接口/指纹。这里是工程恢复经验，不是额外凭据操作或生产许可。
