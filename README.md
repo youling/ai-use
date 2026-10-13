@@ -15,7 +15,7 @@ flowchart LR
   H["Human\n目标 / 主权 / 风险"] --> G["ai-use Governance\nL0 + targeted L2"]
   G --> A["Global / Project Architect\n架构 / 授权 / Review"]
   A --> F["Foreman\nWork execution owner"]
-  A -. "material architecture discovery" .-> R["ARCH-0 / Prior Art\\nArchitect 决策（非新角色）"]
+  A -. "material architecture discovery" .-> R["ARCH-0 / Prior Art\nArchitect 决策（非新角色）"]
   R -. "current decision pointer" .-> F
   F --> S["Subagent\nBUILD / INVESTIGATE / REPAIR / VERIFY"]
   S --> X["Execution Surfaces\nHuman Host / Runner / Node / Container"]
