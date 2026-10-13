@@ -51,5 +51,29 @@ class ForemanContractTests(unittest.TestCase):
         self.assertIn("历史 Work Order", source("docs/AGENT_INTERFACE.md"))
 
 
+    def test_architect_discovery_is_owned_before_foreman_execution(self):
+        import json
+        role = source("20_ROLES/ARCHITECT_DISCOVERY.md")
+        reconnaissance = source("docs/ARCHITECT_RECONNAISSANCE.md")
+        foreman = source("20_ROLES/FOREMAN.md")
+        interface = source("docs/AGENT_INTERFACE.md")
+        self.assertIn("not a new organizational role", role)
+        self.assertIn("single canonical owner of ARCH-0", role)
+        self.assertIn("唯一 ARCH-0 规范 owner", reconnaissance)
+        self.assertIn("Architect Challenge", role)
+        self.assertIn("Architecture Discovery", foreman)
+        self.assertIn("architecture_decision", source("50_TEMPLATES/DISPATCH_PAIR.md"))
+        self.assertIn("ordinary bugfix", role)
+        self.assertIn("新 delegated Work", interface)
+
+        diagram = json.loads(source("docs/diagrams/project.architecture.json"))
+        view = next(x for x in diagram["meta"]["views"] if x["id"] == "architectColdStart")
+        self.assertIn("roles", view["focus"])
+        role_node = next(x for x in diagram["components"] if x["id"] == "roles")
+        pointers = {x["path"] for x in role_node["sources"]}
+        self.assertIn("20_ROLES/ARCHITECT_DISCOVERY.md", pointers)
+        self.assertIn("docs/ARCHITECT_RECONNAISSANCE.md", pointers)
+        self.assertIn("20_ROLES/FOREMAN.md", pointers)
+
 if __name__ == "__main__":
     unittest.main()

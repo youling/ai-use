@@ -7,10 +7,12 @@
 - `project.architecture.json` — ai-use Project Detail Map。
 - diagram type: `architecture`
 - renderer target: Archify v3.0.1 exact commit `2ab3cae7ac2c2a55d7386ca789d03c4fcd31816c`
-- semantic source baseline: `ai-use@5af1b2c0097cd852874ee7e9a5a07ccb7ad6af59`
+- semantic source baseline: `ai-use@0aee90d4e457056129d785ff238bab56b62ca2fa`
 - presentation consumer: deployment-local Architecture Navigator or any compatible renderer
 
-它回答：authority、L0、routing、roles、execution/recovery、durable truth、Human Host、Diagram-as-Code、owner boundary、guides/templates/history 在 ai-use 中如何分工。
+它回答：authority、L0、routing、roles、Architect Discovery / ARCH-0、Foreman execution/recovery、durable truth、Human Host、Diagram-as-Code、owner boundary、guides/templates/history 在 ai-use 中如何分工。
+
+首次接手的 Architect 使用图中“Architect 冷启动与技术路线”视图定位下一跳；图节点 `sources[]` 直接指向当前 owner 的规范，而不是要求逐页通读所有文件。Material architecture 决策应下钻 `20_ROLES/ARCHITECT_DISCOVERY.md` → `docs/ARCHITECT_RECONNAISSANCE.md`；普通 Work 可按当前 Bootstrap/Work 继续，不因总图存在额外 mandatory hop。
 
 ## Authority
 
