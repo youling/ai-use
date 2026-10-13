@@ -12,7 +12,7 @@
       "url": "https://github.com/youling/ai-use",
       "provider": "github",
       "link_mode": "web",
-      "revision": "0aee90d4e457056129d785ff238bab56b62ca2fa"
+      "revision": "4278d659fa254e73dd6c90ceb274bd7e33a65596"
     },
     "views": [
       {
@@ -64,7 +64,7 @@
           "support",
           "history"
         ],
-        "note": "L0 后按 scene targeted 读取；模板/历史按需，不做全仓通读。"
+        "note": "冷启动按 L0/routing、角色/任务精确下钻；重大新领域由 Architect 参考 L3 research 并形成自身决策；Antigravity/Magpie 资料不是 provider/runtime authority。"
       },
       {
         "id": "ownerPath",
@@ -393,8 +393,8 @@
     {
       "id": "history",
       "type": "database",
-      "label": "History / ADR",
-      "sublabel": "rationale · provenance · Incident deep-dive",
+      "label": "Research / History / ADR",
+      "sublabel": "L3 prior art · 经验账本 · 历史裁决（non-normative）",
       "tag": "L3 DEFAULT SKIP",
       "row": 3,
       "col": 2,
@@ -406,6 +406,10 @@
         {
           "path": "90_HISTORY/README.md",
           "label": "History index"
+        },
+        {
+          "path": "docs/research/README.md",
+          "label": "Non-normative research and factory experience"
         }
       ]
     },
@@ -590,7 +594,7 @@
       "title": "Reading discipline",
       "items": [
         "执行/恢复先读 L0 Kernel，再由 Routing Catalog 按 role + scene targeted 展开。",
-        "document exists != every Agent must read it；History/ADR 默认 L3 跳过。",
+        "document exists != every Agent must read it；Research/History/ADR 默认 L3 跳过，遇到 ARCH-0 / 外部集成才按源指针读取。",
         "图是下一跳索引，不是让 Agent 递归通读整个治理仓。",
         "重大新领域：Architect 按 ARCH-0 先调研并裁决路线，Foreman 执行已授权 Work；各图节点 source[] 指向下一跳 canonical 文档。"
       ]
