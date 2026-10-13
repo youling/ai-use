@@ -1,0 +1,77 @@
+{
+  "artifact_version": "1.0.0",
+  "classification": "NON_NORMATIVE_RESEARCH",
+  "observed_on": "2026-10-14",
+  "timezone": "Asia/Shanghai",
+  "cli_version": "1.3.4",
+  "auth_route_observed": "native Google login",
+  "audit_method": "HOST_METADATA_PROJECTION_OF_EXISTING_LOGS_NO_NEW_PROVIDER_CALL",
+  "audit_scope": {
+    "run_groups": 4,
+    "parent_invocations": 24,
+    "all_account_activity_audited": false,
+    "all_child_backend_model_routes_audited": false
+  },
+  "parent_init_models_observed": [
+    "gemini-3.8-flash-medium",
+    "gemini-3.8-flash-high",
+    "claude-opus-4-6-thinking"
+  ],
+  "gpt_parent_request_or_init_in_audited_scope": "NOT_OBSERVED",
+  "sonnet_parent_request_or_init_in_audited_scope": "NOT_OBSERVED",
+  "opus_fresh_parent": {
+    "boot_success_results": 2,
+    "branch_children_created": 2,
+    "child_model_request": "inherit",
+    "child_implementation_or_tests": "NOT_PRODUCED",
+    "final_failure": "Individual quota reached"
+  },
+  "opus_resume_attempt": {
+    "initial_explicit_high_effort": "PARAMETER_REJECTED",
+    "retry_effort": "OMITTED",
+    "init_model": "claude-opus-4-6-thinking",
+    "final_error_model_label": "gemini-3.8-flash-high",
+    "final_failure": "503 No capacity available",
+    "full_effective_model_switch": "NOT_PROVEN"
+  },
+  "gemini_parent_recovery": {
+    "init_model": "gemini-3.8-flash-high",
+    "existing_children_progressed": false,
+    "existing_children_model_migrated": "NOT_PROVEN",
+    "cli_exit_code": 0,
+    "final_result": "ERROR"
+  },
+  "human_screenshot_observation": {
+    "plan_label": "Google AI Pro",
+    "quota_groups": ["Gemini Models", "Claude and GPT models"],
+    "window_labels": ["Weekly Limit Remaining", "Five Hour Limit Remaining"],
+    "both_five_hour_remaining_percent": 100,
+    "both_weekly_have_usage": true,
+    "exact_weekly_percent": "NOT_SHOWN",
+    "ai_credit_overages_toggle": "OFF_AT_SCREENSHOT_TIME",
+    "historical_toggle_state": "UNKNOWN",
+    "raw_screenshot_published": false
+  },
+  "current_cli_config_observation": {
+    "useG1Credits_field": "ABSENT",
+    "effective_default": "UNKNOWN",
+    "gui_cli_setting_equivalence": "NOT_PROVEN",
+    "configuration_modified_by_this_audit": false
+  },
+  "accounting": {
+    "resume_usage_may_be_cumulative": true,
+    "cross_model_cumulative_usage_attribution": "NOT_SUPPORTED",
+    "automatic_gemini_to_opus_fallback": "NOT_PROVEN",
+    "per_request_quota_debit": "UNKNOWN",
+    "child_billing": "UNKNOWN",
+    "billing_usd": null,
+    "separate_anthropic_or_openai_api_billing": "NOT_PROVEN"
+  },
+  "capability_promotion": "NONE",
+  "raw_transcripts_or_private_topology_published": false,
+  "reference_docs": [
+    "https://antigravity.google/docs/plans/",
+    "https://antigravity.google/docs/cli/credits/",
+    "https://antigravity.google/docs/cli/commands/usage"
+  ]
+}
