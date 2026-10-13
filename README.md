@@ -125,6 +125,7 @@ Human
 | [`READING_MAP.md`](READING_MAP.md) | 全角色（机器/人类导航） | L0 已加载后，需要知道当前角色/场景该 targeted 读什么时 |
 | [`NAMESPACE.md`](NAMESPACE.md) | 全角色（zero-prompt 路由） | L0 后理解 `00→10→20→30→40→50→90` 的默认 next-hop chain；可 `SKIP` / `STOP_*`，不是 mandatory full-read order |
 | [`AGENTS.md`](AGENTS.md) | 所有执行 Agent（机器 L0） | 每个执行/恢复/接管角色进入 normative rules 时首先读取 |
+| [Architect Discovery 边界](20_ROLES/ARCHITECT_DISCOVERY.md) | 新领域/重大架构阶段的 Architect | Architecture Discovery 属于 Architect；按现有 [ARCH-0](docs/ARCHITECT_RECONNAISSANCE.md) 调研并裁决后再授权实施 |
 | [Foreman 角色合同](20_ROLES/FOREMAN.md) | 新派单 / 接任 Foreman | 对父级 Work 负责、安排子对话与 durable 回写时 targeted 阅读 |
 | [`human/README.md`](human/README.md) | 二脑协作者 / Human | 跨 AI 记录 Human、日终提炼、上下文漂移后冷启动或切换协作者时 |
 | [Recovery & Handoff](30_PROTOCOLS/RECOVERY_HANDOFF.md) | 需要恢复、交接或 context 判定的人 | 当前三分支 recovery 与 context contract；[旧 Session 路径](docs/SESSION_LIFECYCLE.md) 只保留兼容转向 |

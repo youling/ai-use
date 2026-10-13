@@ -3,6 +3,7 @@
 角色层定义谁对什么结果负责，不把每种工具动作都设成长期职位。
 
 - [Constitution §2](../CONSTITUTION.md#2-governance-hierarchy)：Human、Global Architect、Project Architect、Foreman 的职责与权限边界。
+- [Architect Discovery role boundary](ARCHITECT_DISCOVERY.md)：穷尽调研与路线选择归 Architect，规范细节引用现有 [Architect Reconnaissance](../docs/ARCHITECT_RECONNAISSANCE.md)。
 - [Foreman Role Contract](FOREMAN.md)：工头对受托 Work/有限阶段的完整执行责任、子对话与父级验收原则。
 - [Agent Interface](../docs/AGENT_INTERFACE.md)：派发、continuation、PREMATURE_YIELD、terminal 与 Architect Review 的语义 owner。
 - [Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md)：session/context、子对话隔离、独立性和恢复。

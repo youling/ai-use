@@ -66,6 +66,8 @@ Machine 字段形态见 [CONTEXT_MODE_SEED.md](CONTEXT_MODE_SEED.md)，值与语
 
 ### Durable dispatch 的任务合同补充
 
+对 material architecture-dependent Work，可在已有 Work Order/dispatch 中增加 `architecture_decision: <accepted ADR / current Architect ruling / project contract pointer>` 与 `prior_art_status: <completed | reused_current | not_applicable + reason>`。它们是**可选的阶段证据索引**，不是短 Seed 必填、第二审批状态或每条 bugfix 的 mandatory gate。触发语义见 [Architect Reconnaissance](../docs/ARCHITECT_RECONNAISSANCE.md)。
+
 ```text
 问题：<本轮要消除的未知；输入的 namespace / 版本 / 时间范围>
 验收与本轮终点：<existing Work acceptance；有界证据 / 可审阅 PR；继续的真实依赖>

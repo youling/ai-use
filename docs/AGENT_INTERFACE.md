@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** Read when dispatching/executing Agent work, choosing Architect execution mode, advancing an authorized program, or producing/reviewing Human/Agent interface artifacts.
 
-**Protocol Version: 2.11.0**
+**Protocol Version: 2.11.1**
 
 本文是 **execution / dispatch / continuation interface** 的 canonical home。公共 `ai-use` 不绑定特定 owner/repo、私有 control-plane 名称或账号。[Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md) 拥有 recovery、Work Context、正交 context/mode 与 independence/delegation 语义；[CONTEXT_MODE_SEED](../50_TEMPLATES/CONTEXT_MODE_SEED.md) 只给形态。本文保留 continuation、`PREMATURE_YIELD` 与完成边界。
 
@@ -46,7 +46,7 @@ access: `github-private | github-public`
 status: `DISPATCHED`
 ```
 
-新 delegated Work 的默认执行主责是 [Foreman](../20_ROLES/FOREMAN.md)；`Subagent` 是 Work 内的有界执行上下文，不是另一层 Architect/Foreman。历史 Work Order 中的 `Builder / Research / Repair / Verifier / Release` role/startup_mode 继续按原授权合同生效，不追溯改写，也不产生新的长期治理角色。
+新 delegated Work 的默认执行主责是 [Foreman](../20_ROLES/FOREMAN.md)；`Subagent` 是 Work 内的有界执行上下文，不是另一层 Architect/Foreman。对已触发 [Architect Reconnaissance](ARCHITECT_RECONNAISSANCE.md) 的 material architecture Work，Architect 在正式执行委派前应给出已接受的方向或可恢复的 decision/ADR/current contract pointer；普通 bugfix 和已经冻结路线的 Work 不强制另造 ADR。Foreman 对缺失、失效的架构决策进行 [Architect Challenge](../20_ROLES/ARCHITECT_DISCOVERY.md)，而不是将自己的长期执行上下文变为无界先验研究会话。历史 Work Order 中的 `Builder / Research / Repair / Verifier / Release` role/startup_mode 继续按原授权合同生效，不追溯改写，也不产生新的长期治理角色。
 
 有效的 Foreman dispatch 默认授权该 Work 范围内**第一层有界子对话**（被 current Work/higher rule 禁止时除外）；每个内部 routine 子步骤不必另请 Architect 派单。独立 child Work Coordinate 仍需 own durable dispatch/ownership。子对话递归派发默认不授权，provider 有能力创建 child 不等于权限扩大。Work/source/identity/secret/side-effect scope 不因子对话派发扩大。
 
@@ -462,6 +462,8 @@ Human Completion Card 仅保留为 Architect / orchestrator 在**非 delegated e
 ---
 
 ## 6. Versioned Definitions
+
+- `2.11.1`：Role Model V2.1（Architect Discovery）：明确重要 Prior Art / Landscape、架构路线与 ADR 归 Architect；沿用 Reconnaissance 作为唯一 ARCH-0 owner。Foreman 只消费 applicable current decision，不承担无界战略扫描；普通 repair 不增设 gate。新 dispatch 可携带 decision pointer，旧 Work 不追溯更改。
 
 - `2.11.0`：Role Model V2（#146）。Foreman 作为 delegated Work / finite tranche 的执行主责；历史 Builder/Research/Repair/Verifier 作为 Subagent mode 与兼容标记；Foreman scope 内第一层子对话默认允许（递归/权限扩张不包含）；父级验收/terminal gate 防止子任务成功造成 PREMATURE_YIELD；中立调度不改 GitHub durable truth 或外部 wake 证据。
 

@@ -12,12 +12,12 @@
       "url": "https://github.com/youling/ai-use",
       "provider": "github",
       "link_mode": "web",
-      "revision": "5af1b2c0097cd852874ee7e9a5a07ccb7ad6af59"
+      "revision": "0aee90d4e457056129d785ff238bab56b62ca2fa"
     },
     "views": [
       {
         "id": "executionPath",
-        "label": "执行闭环",
+        "label": "Architect 冷启动与执行闭环",
         "focus": [
           "human",
           "kernel",
@@ -28,7 +28,7 @@
           "durable",
           "recovery"
         ],
-        "note": "从 Human authority 到 targeted execution，再从 Git/GitHub durable state 恢复。"
+        "note": "首读 L0 → Bootstrap/targeted routing；Material 新领域进入 Architect ARCH-0/Decision，之后 Foreman Work；点击 role 节点来源继续阅读。"
       },
       {
         "id": "hostPath",
@@ -161,7 +161,7 @@
       "id": "roles",
       "type": "backend",
       "label": "Role & Authority",
-      "sublabel": "Global / Project Architect · Foreman · Subagent modes",
+      "sublabel": "Architect Discovery/ADR · Foreman Work · Subagents",
       "tag": "RESPONSIBILITY",
       "row": 0,
       "col": 3,
@@ -172,15 +172,15 @@
       "sources": [
         {
           "path": "CONSTITUTION.md",
-          "label": "Governance hierarchy"
+          "label": "Human / Architect / Foreman authority"
+        },
+        {
+          "path": "docs/ARCHITECT_RECONNAISSANCE.md",
+          "label": "ARCH-0 prior art / architecture decision"
         },
         {
           "path": "20_ROLES/FOREMAN.md",
-          "label": "Foreman role contract"
-        },
-        {
-          "path": "docs/AGENT_INTERFACE.md",
-          "label": "Execution discretion"
+          "label": "Foreman execution scope"
         }
       ]
     },
@@ -591,7 +591,8 @@
       "items": [
         "执行/恢复先读 L0 Kernel，再由 Routing Catalog 按 role + scene targeted 展开。",
         "document exists != every Agent must read it；History/ADR 默认 L3 跳过。",
-        "图是下一跳索引，不是让 Agent 递归通读整个治理仓。"
+        "图是下一跳索引，不是让 Agent 递归通读整个治理仓。",
+        "重大新领域：Architect 按 ARCH-0 先调研并裁决路线，Foreman 执行已授权 Work；各图节点 source[] 指向下一跳 canonical 文档。"
       ]
     },
     {
