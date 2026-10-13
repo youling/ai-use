@@ -1,0 +1,69 @@
+{
+  "artifact_version": "1.0.0",
+  "classification": "NON_NORMATIVE_RESEARCH",
+  "observed_on": "2026-10-13",
+  "cli_version": "1.3.4",
+  "auth_route": "native Google login",
+  "model": "gemini-3.8-flash-high",
+  "effort": "high",
+  "verdict": "QUALIFIED_SYNTHETIC_ONLY",
+  "native_parent_count": 1,
+  "native_child_count": 2,
+  "native_child_modes": [
+    "builder",
+    "independent_verifier"
+  ],
+  "native_workspace_mode": "branch; distinct git worktrees verified",
+  "parent_resume_turns": 3,
+  "existing_child_ack_verified": true,
+  "ack_marker": "AG_CONTINUITY_20261013_R1",
+  "test_hashes": {
+    "test_reader.py": "e03d91bc6e59dcc71364994a8ae284231490e09c2627e746e165a53f5c68d8cf",
+    "builder_reader.py": "924b554c14f761b89c207f1a129a79a57791fb32cdf9119f26a60af3bb9b952a",
+    "baseline_reader.py": "dfb477e3a2d57c4a5046a3d4c9bad707df164afd8687a17bb4776f3ba494b2e6"
+  },
+  "tests": {
+    "baseline": {
+      "exit_code": 1,
+      "tests": 12,
+      "failures": 10,
+      "errors": 1
+    },
+    "builder": {
+      "exit_code": 0,
+      "tests": 12,
+      "failures": 0,
+      "errors": 0
+    }
+  },
+  "test_files_changed_during_execution": false,
+  "parent_candidate_unchanged": true,
+  "denied_parent_artifact_write_observed": true,
+  "denied_target_not_retried": true,
+  "final_report_transport": "finish terminal structured JSON; host-owned durable publication",
+  "manual_auth_change": {
+    "human_authorized": true,
+    "removed_field": "modelProvider",
+    "other_fields_semantically_preserved_at_manual_patch": true,
+    "global_config_unchanged_through_entire_experiment": false
+  },
+  "not_proven": [
+    "full kernel-first delegated BOOT",
+    "adversarial permission enforcement",
+    "independent config root",
+    "long-running unattended reliability",
+    "cost USD",
+    "provider quota accounting",
+    "real application capability"
+  ],
+  "billing_usd": null,
+  "raw_transcripts_published": false,
+  "private_topology_published": false,
+  "scope": "pure synthetic runtime qualification",
+  "reference_docs": [
+    "https://antigravity.google/docs/cli/headless/",
+    "https://antigravity.google/docs/subagents?tab=cli",
+    "https://antigravity.google/docs/permissions/",
+    "https://github.com/google-antigravity/antigravity-cli/issues/155"
+  ]
+}
