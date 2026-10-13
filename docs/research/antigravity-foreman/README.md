@@ -1,6 +1,6 @@
 # Antigravity CLI 工头模式研究
 
-**Artifact Version: 1.0.0 · NON-NORMATIVE RESEARCH**
+**Artifact Version: 1.1.0 · NON-NORMATIVE RESEARCH**
 
 Rationale / acceptance: [ai-use #148](https://github.com/youling/ai-use/issues/148)。本目录保存 2026-10-13 对官方 Antigravity CLI 1.3.4 的运行实证与可重跑合成材料。它不建立新权限、默认模型、派单协议、Work 状态或调度服务。角色、派单和持续推进仍由现有 [Foreman](../../../20_ROLES/FOREMAN.md)、[Agent Interface](../../AGENT_INTERFACE.md)、[Recovery](../../../30_PROTOCOLS/RECOVERY_HANDOFF.md)、[Durable Trace](../../../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) 拥有。
 
@@ -44,6 +44,16 @@ python reproduce.py
 脚本检查固定文件 hash，再在临时目录执行相同测试，对照 baseline 红和 builder 绿。预期重跑脚本 exit0，表示两个对照都与冻结判别一致；baseline 子测试仍为 exit1。它不启动模型、不访问网络、不读用户配置。`evidence.json` 是原试跑的事实摘要，新一次输出只代表固定测试的再次执行，不伪装原生父子会话重跑。
 
 `examples/agents/` 为当时最小 Agent 定义，non-normative，必须置于新隔离 Git 项目的 `.agents/agents/` 并提供 current AGENTS 与自己的 synthetic TASK 才可用。实验后的 qn 工作输入、私有拓扑与实时 owner 状态不进入此目录。示例中父禁止写报告对应实际 headless 拒绝；使用它不产生其它路径或 action 的授权。
+
+## 后续运行观察：首规范读与测试判别
+
+2026-10-13 后续离线应用中，宿主检查了三个真实 native branch child 的第一份工具回执：均为完整 AGENTS.md，100/100 行、7472 bytes，后续按路由读取 BOOT 与 target contract。它补上的是显式 kernel-first 读取证明，不把初始试跑“未证明”改写为历史成功，也不自动证明完整 lifecycle、ACL 或配置隔离。该应用的代码、实例拓扑、当前 Work 与业务结论保留在其私有 owner；此处只沉淀运行方法。
+
+宿主执行还发现几类可复用判别问题：schema 已存在时重新建库、随机字段未冻结导致顺序对照不可比、合法 ID 文法/分页大小含义误解、等价时间戳按字符串比较、以及猜测 raw locator 或错误返回名称。测试红项先区分 fixture / contract interpretation / candidate defect，由原 child 修自己的测试并保留原红快照；不能只改期望拿到绿，也不能把代码能运行或报告自称覆盖当独立验收。
+
+成功检测缺陷的反例测试本身可以是绿色；这证明反例被复现，不能推导业务 gate 已解决。测试名含“并发/constant memory/process crash”也不证明活动事务中的并发、实测 RSS 或每个原子写入窗口。单个受控 worker 在文件写完后的 sleep 窗口被终止，只证明该样本的后续恢复路径。无符号链接权限必须显式 SKIP / INCOMPARABLE，不能 return 伪计 PASS。
+
+调用超时也应随实际资料量调整：早期 4m 调用结束时父 SUCCESS/response 空而 child 未完成；后续将单次边界调为 12m，保持原 parent/child ID 接续，没有新增重复 writer。超时值是本次工程选择，不能成为公共固定配额或全天在线承诺。
 
 ## 经验账本的后续增补
 
