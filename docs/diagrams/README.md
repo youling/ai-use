@@ -7,10 +7,10 @@
 - `project.architecture.json` — ai-use Project Detail Map。
 - diagram type: `architecture`
 - renderer target: Archify v3.0.1 exact commit `2ab3cae7ac2c2a55d7386ca789d03c4fcd31816c`
-- semantic source baseline: `ai-use@0aee90d4e457056129d785ff238bab56b62ca2fa`
+- semantic source baseline: `ai-use@4278d659fa254e73dd6c90ceb274bd7e33a65596`
 - presentation consumer: deployment-local Architecture Navigator or any compatible renderer
 
-它回答：authority、L0、routing、roles、Architect Discovery / ARCH-0、Foreman execution/recovery、durable truth、Human Host、Diagram-as-Code、owner boundary、guides/templates/history 在 ai-use 中如何分工。
+它回答：authority、L0、routing、roles、Architect Discovery / ARCH-0、Foreman execution/recovery、durable truth、Human Host、Diagram-as-Code、owner boundary、guides/templates/history 和 **Research / 工厂经验（L3）** 在 ai-use 中如何分工。研究入口消费 `docs/research/README.md`，不把 Antigravity 合成试跑或 Magpie 方案推导为当前生产节点。
 
 首次接手的 Architect 使用图中“Architect 冷启动与执行闭环”视图定位下一跳；role 节点 `sources[]` 指向 ARCH-0 与 Foreman 等当前 owner 的规范，而不是要求逐页通读所有文件。Material architecture 决策应下钻 `20_ROLES/ARCHITECT_DISCOVERY.md` → `docs/ARCHITECT_RECONNAISSANCE.md`；普通 Work 可按当前 Bootstrap/Work 继续，不因总图存在额外 mandatory hop。
 
@@ -48,7 +48,7 @@ ai-hub / Architecture Navigator 只允许：
 
 ## Source pointers
 
-节点的 `sources[]` 指向 ai-use 内 canonical homes。验证时应对 semantic source baseline 使用 repository-backed validation；source path 不存在、revision 不匹配或行/路径越界都应 fail closed。
+规范/角色节点的 `sources[]` 指向 ai-use 内 canonical homes；`Research / History / ADR` 节点另外提供清楚标记为非规范的研究索引。来源文档不会因图形展示而获得更高 authority。验证时应对 semantic source baseline 使用 repository-backed validation；source path 不存在、revision 不匹配或行/路径越界都应 fail closed。
 
 参见：[`../../30_PROTOCOLS/DIAGRAM_AS_CODE.md`](../../30_PROTOCOLS/DIAGRAM_AS_CODE.md)。
 
