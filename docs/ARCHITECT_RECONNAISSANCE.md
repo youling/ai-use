@@ -8,7 +8,7 @@ GitHub Actions resource-budget amendment: `youling/ai-use#89` / ADR-0007
 
 ## 1. 目的与位置
 
-Progressive Context Boot 解决“内部 durable context 当前是什么、我有没有权做”；Architect Reconnaissance 解决“今天外部世界是什么、现有路径今天还是否值得继续”。
+Progressive Context Boot 解决“内部 durable context 当前是什么、我有没有权做”；Architect Reconnaissance 解决“今天外部世界是什么、现有路径今天还是否值得继续”。本文件是 Architecture Discovery 的 **唯一 ARCH-0 规范 owner**；[Architect Discovery role boundary](../20_ROLES/ARCHITECT_DISCOVERY.md) 仅回答该工作为什么由 Architect 主责、不由 Foreman 自行承担无界战略调研。
 
 固定顺序：
 
@@ -224,19 +224,19 @@ first_architecture_direction: <first material work direction>
 
 阶段变化本身是 architecture delta。Greenfield 阶段曾经合理的 `REUSE_ARTIFACT` 决策，不会自动成为成熟阶段继续引入相似新依赖的先例。
 
-## 8. 与 Research Agent 的关系
+## 8. 与 Research Subagent 的关系
 
 Architect reconnaissance 负责 current-state alignment、stage-aware reuse/build boundary 和研究问题切分；不要求 Architect 自己研究到底。
 
 ```text
 Architect reconnaissance
 -> freeze narrow discriminator/question
--> Fresh Research Agent
+-> Fresh bounded research subagent
 -> durable findings/evidence
 -> Architect reconcile/update architecture
 ```
 
-Research Agent 不因 findings 获得 Architect authority。成熟项目的 Research Agent 可以深入阅读外部代码，但输出优先为机制、算法、pattern、failure model、protocol、可移植技术点与引用位置；除非 Work Order 明确要求 External Wheel Admission Gate，否则不得把“发现可用代码”直接升级为“应导入依赖”。
+Research Subagent（历史标签 Research Agent / Researcher）不因 findings 获得 Architect authority。该研究模式不是新的平级长期组织角色，Architect 必须承担综合、路线选择与对 Foreman 的 handoff。成熟项目的 Research Agent 可以深入阅读外部代码，但输出优先为机制、算法、pattern、failure model、protocol、可移植技术点与引用位置；除非 Work Order 明确要求 External Wheel Admission Gate，否则不得把“发现可用代码”直接升级为“应导入依赖”。
 
 ## 9. Must preserve
 

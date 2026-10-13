@@ -1,80 +1,36 @@
-# Architecture Discovery Gate — Architect Phase Contract
+# Architecture Discovery — Architect-owned role boundary
 
-**Role Model Version: 2.1.0** · **Classification: L1 role boundary**
+**Role Model Version: 2.1.0 · Classification: L1 Role Boundary**
 
-## Purpose
+Architecture Discovery is an **Architect decision activity**, not a new organizational role, execution mode, Work lifecycle, mandatory extra approval layer, or replacement for [Architect Reconnaissance](../docs/ARCHITECT_RECONNAISSANCE.md). That document is the single canonical owner of ARCH-0 triggers, external prior-art search, project reconciliation, stage-aware reuse, freshness, research evidence quality and its existing report format.
 
-Architecture Discovery defines the research and decision phase before execution. It is not a new permanent Agent role and does not replace Foreman.
+## Who owns the decision
 
-The goal is to prevent high-speed implementation of a poorly chosen direction by requiring appropriate prior-art and landscape analysis before major capability decisions.
+- **Global / Project Architect** owns the research question, landscape/prior-art coverage, competing routes, external standard/OSS/commercial evaluation, Build / Buy / Adapt / Combine / Defer judgment, and acceptance of an architecture direction inside current authority.
+- Architect MAY delegate *bounded source collection, coding probes and technical comparison* to fresh independent research/execution contexts; ownership of synthesis, scope, route selection and the applicable decision remains with Architect. The Architect need not perform every tool call personally.
+- **Foreman** owns execution coordination of the already-scoped Work/tranche, not an open-ended strategic/industry sweep. Its own implementation techniques, repairs and bounded task-local inquiries remain its discretion. See [Foreman Role](FOREMAN.md).
+- **Subagents** provide narrowly bounded evidence and execution artifacts. “Researcher” names in historical records indicate an execution mode, not a parallel long-term architecture office.
 
-## Ownership
+## When to re-open discovery
 
-Architecture Discovery belongs to **Global Architect / Project Architect**.
+Follow [ARCH-0 triggers and reuse rules](../docs/ARCHITECT_RECONNAISSANCE.md#2-何时必须触发). New domains, major capability or architecture pivots, production-core external-wheel admission, and material stale external assumptions require an Architect-owned discovery check **before freezing a new execution route**.
 
-Architect owns:
+An ordinary bugfix, narrow repair, deterministic continuation or Work already covered by a current accepted architecture is not subject to a fresh landscape review. Existing evidence may be reused after targeted currentness checks. “穷尽” means sufficient coverage to discriminate the material alternatives, **not** unlimited searching or a mandatory full-Internet crawl.
 
-- Prior Art Research;
-- Landscape Scan;
-- ecosystem and standard analysis;
-- Build / Buy / Combine evaluation;
-- Architecture Decision Record (ADR);
-- route selection and scope boundary.
-
-Foreman does not own strategic exploration. Foreman receives an Architect Decision and executes the resulting Work.
-
-## Flow
+## Decision-to-execution handoff
 
 ```text
-Human Goal
-    ↓
-Architect Discovery
-    ↓
-Prior Art / Landscape Research
-    ↓
-Architecture Decision Record
-    ↓
-Foreman Execution Work
-    ↓
-Subagents
-    ↓
-Delivery / Review
+Human goal / current project architecture
+  -> Architect: ARCH-0 as triggered; reusable research evidence and options
+  -> Architect: durable direction / ADR or equivalent current Work decision
+  -> Foreman: authorized Work scope + acceptance + decision pointer (when material)
+  -> Subagents: bounded BUILD / INVESTIGATE / REPAIR / VERIFY modes
+  -> Foreman: synthesized evidence + durable execution closeout
+  -> Architect: exact-head review and any architecture re-decision
 ```
 
-## Trigger conditions
+Do not require a new ADR for every small Work. An already durable project contract or accepted Architect ruling can be sufficient decision input. The relevant owner must be identifiable from a pointer; a local chat summary alone is not authority.
 
-Architecture Discovery SHOULD be used for:
+If a Foreman discovers that a material prerequisite decision is missing, superseded or contradicted, it submits an evidence-backed **Architect Challenge** to the current decision owner, holds only the affected architecture-dependent action, and continues other authorized READY work. It does not silently re-select the strategic route or treat ordinary implementation choice as missing architecture.
 
-- new product capabilities;
-- new infrastructure systems;
-- new technical domains;
-- major architecture changes;
-- expensive or difficult-to-reverse technical choices.
-
-It is not required for ordinary bug fixes, local refactors, or established patterns with existing decisions.
-
-## Foreman boundary
-
-Foreman MUST verify that an applicable Architect Decision exists before executing architecture-dependent Work.
-
-If execution reveals:
-
-- the decision is invalidated by new evidence;
-- acceptance cannot be reached;
-- the chosen route creates material risk;
-- important prior art was missed;
-
-Foreman submits an Architect Challenge. It does not silently replace the architecture decision with its own strategic research.
-
-## Decision output
-
-A completed Architecture Discovery should produce a durable decision pointer:
-
-```text
-architecture_decision:
-  status: DECIDED
-  record: <ADR pointer>
-  route: BUILD | BUY | COMBINE | DEFER
-```
-
-The decision record becomes execution input for Foreman; it is not replaced by runtime chat context.
+This boundary **does not** create authority, promote research self-reports into facts, or bypass the existing security, scope, independent verification and Human gates. Git/GitHub durable truth, current role ownership and project-local SSOT remain unchanged.
