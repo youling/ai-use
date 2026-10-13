@@ -1,6 +1,6 @@
 # Antigravity CLI 工头模式研究
 
-**Artifact Version: 1.1.0 · NON-NORMATIVE RESEARCH**
+**Artifact Version: 1.3.0 · NON-NORMATIVE RESEARCH**
 
 Rationale / acceptance: [ai-use #148](https://github.com/youling/ai-use/issues/148)。本目录保存 2026-10-13 对官方 Antigravity CLI 1.3.4 的运行实证与可重跑合成材料。它不建立新权限、默认模型、派单协议、Work 状态或调度服务。角色、派单和持续推进仍由现有 [Foreman](../../../20_ROLES/FOREMAN.md)、[Agent Interface](../../AGENT_INTERFACE.md)、[Recovery](../../../30_PROTOCOLS/RECOVERY_HANDOFF.md)、[Durable Trace](../../../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) 拥有。
 
@@ -60,3 +60,11 @@ python reproduce.py
 每次有语义变化时，保留版本、认证路线、requested/observed model+effort、真实 parent/child、物理写域与共享对象、commit/blob/byte hash、工具/拒绝、宿主回执、结论和 UNKNOWN。实例 ID/path/实时 Work 状态留 owner；公共目录只收去敏可复制方法、合成材料和范围。新结论需要新证据，不覆盖旧失败，不因额度充足推导权限或无限可靠性。
 
 官方资料：[headless](https://antigravity.google/docs/cli/headless/)、[subagents](https://antigravity.google/docs/subagents?tab=cli)、[permissions](https://antigravity.google/docs/permissions/)、[独立配置根议题](https://github.com/google-antigravity/antigravity-cli/issues/155)。这些是上游资料，本文结论以本机 1.3.4 的实际观察为范围。
+
+## 第二轮原生运行与恢复
+
+[运行恢复笔记](runtime-recovery-notes.md)补充三原生 child 的 kernel-first-read/物理隔离实证、连接重置与503容量失败、空 SUCCESS、模型 init 与实际路由区分、资源拒绝及宿主隔离恢复。原生最终第二阶段未完成；后续 host-corrected 材料和原生 PARTIAL 分别记账。初次 evidence.json 与冻结合成回放保持原字节；这些新增观察不扩大 QUALIFIED_SYNTHETIC_ONLY、不认证 OS ACL 或生产能力。
+
+## 模型与额度补记
+
+[模型路线与额度账本](model-quota-observations.md)明确记录 Gemini 与 Opus 的实际调用、旧父 init 与最终错误模型不一致、fresh Opus 两轮启动成功后 child quota 失败、Gemini 恢复不能证明旧 child 迁移，以及截图中额度组/时间窗口/AI credits 的区别。[机器摘要](model-quota-observations.json)保留有限审计范围与 UNKNOWN，不作计费或全账号调用证明。
