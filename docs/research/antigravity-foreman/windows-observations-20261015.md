@@ -1,6 +1,7 @@
 # Windows 多工头运行：有效路径与失败边界
 
-**Artifact Version: 1.0.0 · NON-NORMATIVE RESEARCH**  
+**Artifact Version: 1.0.0 · NON-NORMATIVE RESEARCH**
+
 观察日期：2026-10-15（Asia/Shanghai；首轮终态综合截至 2026-10-14 17:25 UTC，恢复施工有限跟进截至 17:45 UTC）。后续终态不在本文范围。
 
 本轮由一个已授权宿主协调上下文管理三个 Antigravity CLI 父会话及其第一层原生 children。两条方向产出实际独立分支工件；另一条保留工作区失败和部分源码审阅。它证明这种宿主协调方式可用于有界 source/synthetic 工作，未证明长期无人值守或通用工作区修复。宿主席位无需与每个 worker 一对一对应；本次三个只是实际调度结果，数量随 READY 工作、资源、provider 结果和 owner 冲突变化。
