@@ -74,5 +74,21 @@ class ForemanContractTests(unittest.TestCase):
         self.assertIn("docs/ARCHITECT_RECONNAISSANCE.md", pointers)
         self.assertIn("20_ROLES/FOREMAN.md", pointers)
 
+
+    def test_foreman_orchestration_first_dynamic_scheduling(self):
+        role = source("20_ROLES/FOREMAN.md")
+        guidance = source("40_GUIDES/ASYNC_FOREMEN.md")
+        self.assertIn("ORCHESTRATION_FIRST", role)
+        self.assertIn("不为一个慢 child 阻塞所有独立进展", role)
+        self.assertIn("不强制补满并发", role)
+        self.assertIn("小范围状态检查", role)
+        self.assertIn("child terminal", guidance)
+        self.assertIn("关键路径", guidance)
+        self.assertIn("不另建具有权威的第二任务数据库", guidance)
+        self.assertIn("不自动取消/夺取 Work", guidance)
+        self.assertIn("免费模型也不是自动合格的执行者", guidance)
+        self.assertIn("Human 为推进工作发出", guidance)
+
+
 if __name__ == "__main__":
     unittest.main()
