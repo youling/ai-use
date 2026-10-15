@@ -40,6 +40,32 @@ Foreman（工头）是受托 Work 的正式执行主责角色，而非临时 Bui
 
 在有独立 READY 任务、合法授权和可用资源时，增加工头或子对话；共享对象冲突、依赖未就绪、provider 错误/延迟增加、内存压力或验证积压出现时，调整拆分、顺序或并发。评估当前任务与设备实测，不以固定的全项目工头数或总 attempt 配额代替判断。
 
+复杂多子任务 Work 默认由工头负责 `ORCHESTRATION_FIRST`（主责任务协调、排产、验收），把代码实现、资料搬运和独立验证交给专职 worker/Subagent；Foreman 亲自做低成本检查或无需派人的微小合法步骤，并不违背其职责。**工人不是新的治理层级；免费模型也不是自动合格的执行者。**
+
+### 4.1 异步调度：让可观察事件触发补位
+
+同步 `wait(all_children)` 容易让一个慢 child 阻塞其它独立方向。更好的目标是：当有真实事件或工作可用性变化时，低成本观察层重新核对已有 Work/attempt、依赖和资源；如果有独立 READY 且当前授权、资源与预期收益均允许，直接继续派发；无 READY 则休眠，不把保持高并发当验收。
+
+候选唤醒信号可来自已确认的 child terminal、交付有价值的阶段产物、依赖变 READY、资源释放、provider limit/可恢复工具异常、验证队列积压，或部署侧发现事件丢失后的有界 reconcile。**心跳/最近工具活动不等于语义进度**：用工件、测试和被接受的依赖变化判断是否真的前进；没有消息只产生 SUSPECT/UNKNOWN 派生健康判断，不自动取消/夺取 Work、创建重复 writer 或把正在运行的 session 判 FAILED。
+
+调度器应先做无需模型推理的筛选：current scope/authority → dependency READY → 写域/lease/generation/副作用 fencing → 可用工具/模型真实能力 → CPU、RAM、IO、磁盘、数据库/Ghidra 等共享资源 → quota、成本与验证负载。之后才按关键路径、阻塞解除价值、预计完成时间、重做风险与任务老化等排优先级。低成本 worker 宜处理范围窄、可机器验收的任务；关键路径、复杂推理或修复反复失败时，不应机械追求免费模型。需要的审查/验证资源也要纳入约束，不能只优化生成数量。
+
+实例的 worker 队列和健康/资源投影应由部署侧既有控制面/Execution Fabric、Runner、Host/Fleet 受控 adapter 持有；它们消费原 Work Graph / durable authority，不另建具有权威的第二任务数据库、attempt 状态机或自动 approval。模型根据真实证据处理难以规则化的拆分、冲突和异常；例行观察、补位、安全资源筛选由确定性进程处理。没有实际已运行的 scheduler/supervisor 证据，不能承诺 Foreman 聊天结束后仍自动运转。
+
+### 4.2 运筹学：先可靠启发式，再判断是否引入求解器
+
+对有依赖的有界工作，把 Work/子任务看作 DAG，并对每个候选记录当前可证明的前置、可分割性、资源需求和合法执行手段。默认先满足不可逾越的硬约束（权限/安全/互斥/资源），再按关键路径影响、信息增益、老化公平性与质量调整的预期工期做选择；不将“20 分钟切片”“6 槽补满”“某免费模型真无限”等经验假设写成永久政策。估算未知时标记 UNKNOWN，积累样本再校正。
+
+需要特别区分 CPU 核、内存、存储 I/O、磁盘工件、GPU、共享 Ghidra 工程/数据库、外部账号/模型可用性以及独立验证者供给。一个重型导入进程与几个只读分析子任务可有不同资源轮廓，**不代表一定能并发**；资源许可应从实时 Host/owner 证据计算。要防止任务切得过碎，造成模型启动/上下文读取/结果综合成本超过并行收益。迟到子任务可先输出阶段证据，不因某一 slow tail 抑制其它独立方向。
+
+运筹方法可借鉴 [OR-Tools scheduling/CP-SAT](https://github.com/google/or-tools/blob/stable/ortools/sat/docs/scheduling.md) 的 precedence、no-overlap、cumulative resource constraints；多节点组合预留参考 [Ray placement groups](https://docs.ray.io/en/latest/ray-core/scheduling/placement-group.html)。**这是 prior art，不要求现在引入求解器、Ray 或第二 scheduler。** 当前任务时长和模型能力估计不可靠时，先用可解释、可回退的增量启发式，收集真实样本后再做 solver baseline 对照。
+
+### 4.3 检验是否比人工提醒更好
+
+建议观察：可运行任务从 READY 到 START 的 p50/p90 等待时间、关键路径停滞时间、有效交付/独立验收吞吐、过期/重复启动与资源冲突次数、失败重做时间、成本/额度、审查队列积压和 Human 为推进工作发出“继续/补位”提醒的次数。优化目标是**在权限和质量约束下缩短达到真实 acceptance 的时间**，不是尽量增加子 Agent 数或堆满模型使用量。
+
+先在可重放合成 DAG/低风险 owner-local canary 比较「同步等待/人工补位」与「事件驱动自动补位」，包括：慢 child + 独立 READY、不够资源、依赖阻塞、权限未知、重复事件、provider limit、失联但 lease 未释放、独立验证产能不足等反例；通过后再由实际 owner 裁决部署。
+
 每次操作仍可以有适合该目的的超时、步骤或输出形状边界，防止失控并使失败可观察；它们不自动成为整个项目的探索上限。资料量、provider 延迟和已观察的失败类型变化时，给出本次调整理由。未改变输入、机制或判别目的且没有信息增益的失败，不原样反复重跑。
 
 | 观测量 | 必须区分的含义 |
