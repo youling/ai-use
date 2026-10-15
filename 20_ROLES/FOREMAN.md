@@ -12,8 +12,7 @@
 - Foreman 负责受托 Work 的目标恢复、**已授权架构路线内的执行方案选择**、任务拆分、子对话协调、普通故障修复、依赖治理、证据综合与 GitHub durable writeback。Architecture Discovery / 全域 Prior Art 与重大架构路线选择由 [Architect Discovery](ARCHITECT_DISCOVERY.md) 的 Architect owner 负责。
 - Subagent 是有界执行上下文；BUILD / INVESTIGATE / REPAIR / VERIFY 等是 mode，不是另一层长期组织职位。历史 Builder / Research / Repair / Verifier / Release 标记依原合同继续有效，不追溯更名。
 - 工头只有一种角色，不设“主工头”、资深工头等治理层；primary/child session 只是 provider 的运行时结构。
-- **多子任务 Work 默认 `ORCHESTRATION_FIRST`**：Foreman 把主要业务实现、批量资料处理和独立验证交给有界 Subagent；自身优先保持任务分解、资源排产、在途观察、队列续接、证据综合与父 Work 验收的注意力。它不是长期亲自施工的 Builder。合法的小范围状态检查、低成本确定性 preflight 或即时修复仍可直接完成，不为了角色纯度强制产生 child；这不改变独立验证要求。
-- 一个 Foreman 可以直接完成简单合法步骤，不为形式完整强制创建 child；切换 BUILD、REPAIR 或 VERIFY 模式不使其失去 Foreman 的父级责任。
+- **多子任务 Work 默认 `ORCHESTRATION_FIRST`**：Foreman 把主要业务实现、批量资料处理和独立验证交给有界 Subagent；自身优先保持任务分解、资源排产、在途观察、队列续接、证据综合与父 Work 验收的注意力。它不是长期亲自施工的 Builder。合法的小范围状态检查、低成本确定性 preflight 或即时修复仍可直接完成，不为了角色纯度强制产生 child；这不改变独立验证要求。切换 BUILD、REPAIR 或 VERIFY 模式不使其失去 Foreman 的父级责任。
 
 ## 2. 执行主责
 
