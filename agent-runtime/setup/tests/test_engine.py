@@ -55,6 +55,34 @@ def test_idempotent_exact_plan_and_rerun(setup):
     assert new['install_binding']==plan['install_binding']
     assert engine.apply(new,approved=True)['host_agent_sha256']==first['host_agent_sha256']
 
+
+@pytest.mark.parametrize('reason,expected',[
+    ('EXACT_IMAGE_PULL_FAILED','EXACT_IMAGE_PULL_FAILED'),
+    ('native secret stderr','IMAGE_DIGEST_NOT_VERIFIED')])
+def test_image_failure_preserves_safe_category_only(setup,reason,expected):
+    engine,adapter,_=setup
+    plan=engine.plan(engine.probe(),overrides={'host_authorized':True,'runtime':True})
+    adapter.pull_image=lambda _: {'state':'BLOCKED','reason':reason}
+    with pytest.raises(SetupError,match=expected):engine.apply(plan,approved=True)
+    assert not Path(plan['host_agent']).exists()
+    receipt=json.loads((engine._control(plan)/'receipt.json').read_text())
+    assert receipt['failure']==expected
+
+
+@pytest.mark.parametrize('active_count,allowed',[(1,True),(2,False)])
+def test_lost_start_receipt_recovery_cannot_exempt_other_workloads(setup,active_count,allowed):
+    engine,adapter,_=setup
+    plan=engine.plan(engine.probe(),overrides={'host_authorized':True,'runtime':True})
+    adapter.start_local_runtime=lambda *args: {'state':'BLOCKED','reason':'LOST_RECEIPT'}
+    engine.apply(plan,approved=True)
+    adapter.data['active_workloads']=[{'kind':'WSLC','state':'ACTIVE','count':active_count}]
+    adapter.reconcile_local_runtime=lambda *args: {'state':'READY','local_only':True}
+    if allowed:
+        engine.apply(plan,approved=True)
+        assert json.loads((engine._control(plan)/'receipt.json').read_text())['runtime']['state']=='READY'
+    else:
+        with pytest.raises(SetupError,match='ACTIVE_WORKLOAD_REVIEW_REQUIRED'):engine.apply(plan,approved=True)
+
 def test_stale_context_blocks_apply(setup):
     engine,adapter,plan=setup
     Path(plan['host_agent']).write_text('user unique edits')

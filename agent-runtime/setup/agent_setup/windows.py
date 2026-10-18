@@ -21,6 +21,9 @@ from .engine import SECRET_PATTERN, SetupError, safe_path
 from datetime import datetime, timezone
 
 PINNED_IMAGE = "ghcr.io/youling/opencode-foreman@sha256:fa92f37752ff6132b161ed4c2563897c94b014ab70d650846dcb09f354f55261"
+# Config descriptor in the exact published manifest above. A Docker archive load
+# preserves this content ID but intentionally has no registry RepoDigests entry.
+PINNED_CONFIG = "sha256:6bebd8119a04ba133923d3c5f6f0943f2631d4634e20db3398611fc39627e660"
 
 
 def _volume_kernel():
@@ -358,6 +361,15 @@ try {
         if not executable:
             return {"state": "BLOCKED", "reason": "WSLC_EXECUTABLE_ABSENT"}
         try:
+            # Reuse only the release-bound content ID; a mutable tag is no proof.
+            cached = self._runner([executable, "inspect", PINNED_CONFIG, "--format", "json"],
+                                  capture_output=True, encoding="utf-8", timeout=15)
+            if cached.returncode == 0:
+                body = json.loads(cached.stdout)
+                info = body[0] if isinstance(body, list) and len(body) == 1 else {}
+                if info.get("Id", info.get("ID")) == PINNED_CONFIG:
+                    return {"state": "PASS", "manifest_digest": pinnedref.split("@", 1)[1],
+                            "config_id": PINNED_CONFIG, "verification": "RELEASE_BOUND_CONFIG_ID"}
             result = self._runner([executable, "pull", pinnedref], capture_output=True, timeout=300)
             if result.returncode:
                 return {"state": "BLOCKED", "reason": "EXACT_IMAGE_PULL_FAILED"}
@@ -496,6 +508,28 @@ try {
         except (OSError, ValueError, subprocess.TimeoutExpired):
             return {'state': 'BLOCKED', 'reason': 'LOCAL_PROFILE_LAUNCH_FAILED'}
 
+    def reconcile_local_runtime(self, plan: dict, host_path: Path, config_id: str) -> dict:
+        """Recover a lost launch receipt from actual owned runtime evidence."""
+        if not self.can_apply or not self.apply_authorized:
+            return {'state': 'NOT_AUTHORIZED', 'reason': 'WINDOWS_APPLY_AUTHORITY_REQUIRED'}
+        runtime = plan['runtime']
+        try:
+            owner = json.loads((safe_path(runtime['attempt']) / 'owner.json').read_text(encoding='utf-8'))
+            current_hash = hashlib.sha256(host_path.read_bytes()).hexdigest()
+            if owner != {'name': runtime['name'], 'image': config_id, 'host_agent_sha256': current_hash}:
+                return {'state': 'BLOCKED', 'reason': 'OWNED_ATTEMPT_MISMATCH'}
+            proof = self.verify_runtime(runtime['name'], host_path, expected_config_id=config_id,
+                expected_local=True, expected_mount_sources={
+                    '/host-context':str(Path(runtime['attempt'])/'context'),
+                    '/exchange/in':runtime['incoming'], '/exchange/out':runtime['outgoing']})
+            if proof.get('state') != 'PASS' or proof.get('server_authenticated') != 'PASS':
+                return {'state': 'BLOCKED', 'reason': 'LOCAL_RUNTIME_RECONCILIATION_UNVERIFIED'}
+            return {'state':'READY', 'name':runtime['name'], 'config_id':config_id,
+                    'host_agent_sha256':current_hash, 'local_only':True,
+                    'scoped_auth':'CONFIGURED', 'reason':'OWNED_LIVE_RUNTIME_RECONCILED'}
+        except (OSError, ValueError, SetupError):
+            return {'state':'BLOCKED', 'reason':'LOCAL_RUNTIME_RECONCILIATION_UNVERIFIED'}
+
     def start_runtime(self, plan: dict, host_path: Path) -> dict:
         if not self.can_apply or not self.apply_authorized:
             return {"state": "NOT_AUTHORIZED", "reason": "WINDOWS_APPLY_AUTHORITY_REQUIRED"}
@@ -548,8 +582,10 @@ try {
             for mount in mounts:
                 if not isinstance(mount, dict):return False
                 destination = mount.get('Destination')
+                access = [mount[key] for key in ('RW', 'ReadWrite') if key in mount]
                 if (not isinstance(destination, str) or destination not in modes or destination in seen
-                    or mount.get('Type') != 'bind' or mount.get('RW') is not modes[destination]):return False
+                    or mount.get('Type') != 'bind' or not access
+                    or any(value is not modes[destination] for value in access)):return False
                 source, expected = mount.get('Source'), expected_sources[destination]
                 if (not isinstance(source, str) or not isinstance(expected, str)
                     or not Path(source).is_absolute() or not Path(expected).is_absolute()
@@ -589,7 +625,7 @@ try {
                     return {'state': 'BLOCKED', 'reason': 'LOCAL_NETWORK_BOUNDARY_UNVERIFIED'}
                 # Auth is used internally, never exported in stdout or argv.
                 script = """import os,json,base64,urllib.request,urllib.error
-u='http://127.0.0.1:4096/global/health'
+u='http://127.0.0.1:4096/api/info'
 def call(auth=False):
  r=urllib.request.Request(u)
  if auth:r.add_header('Authorization','Basic '+base64.b64encode(('opencode:'+os.environ['OPENCODE_SERVER_PASSWORD']).encode()).decode())

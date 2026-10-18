@@ -510,7 +510,21 @@ class SetupEngine:
         now=self.probe()
         if now.get('platform')!='windows' or not version_ok(now.get('wsl_app_version'),(3,0,0)) or now.get('wslc_capability',{}).get('state')!='PASS':raise SetupError('PREFLIGHT_DRIFT')
         if not now.get('python_verified') or not str(now.get('python_version','')).startswith('3.14.'):raise SetupError('PYTHON_PROVENANCE_DRIFT')
-        if any(now.get('active_workloads',[])):raise SetupError('ACTIVE_WORKLOAD_REVIEW_REQUIRED')
+        if any(now.get('active_workloads',[])):
+            # A retry may encounter precisely the container this plan already
+            # started before its launch receipt was lost. Never exempt strangers.
+            active=now['active_workloads']
+            checkpoint=self._control(plan)/'receipt.json'
+            prior=json.loads(checkpoint.read_text(encoding='utf-8')) if checkpoint.is_file() else {}
+            own_only=(len(active)==1 and isinstance(active[0],dict)
+                and active[0].get('kind')=='WSLC' and active[0].get('count')==1
+                and not plan['github'].get('authorized')
+                and prior.get('fingerprint')==plan['fingerprint']
+                and prior.get('install_binding')==plan['install_binding']
+                and prior.get('image',{}).get('state')=='PASS'
+                and hasattr(self.adapter,'reconcile_local_runtime'))
+            recovered=self.adapter.reconcile_local_runtime(plan,Path(plan['host_agent']),prior['image']['config_id']) if own_only else {}
+            if recovered.get('state')!='READY':raise SetupError('ACTIVE_WORKLOAD_REVIEW_REQUIRED')
         for selected in plan.get('storage_bindings',[plan['storage']]):
             if not any((v.get('free_bytes') or 0)>=8*1024**3 and v.get('device_id')==selected.get('device_id') and v.get('mount')==selected.get('mount') and v.get('fs')==selected.get('fs') for v in now.get('volumes',[])):raise SetupError('STORAGE_PRESSURE_OR_TOPOLOGY_DRIFT')
         root=safe_path(plan['roots']['config']['path'])
@@ -533,8 +547,15 @@ class SetupEngine:
             receipt_path=control/'receipt.json'
             if receipt_path.exists():
                 receipt=json.loads(receipt_path.read_text(encoding='utf-8'))
-                if receipt.get('install_binding')==plan['install_binding'] and receipt.get('status')=='APPLIED':return self.verify(plan)
-                if receipt.get('status')=='APPLIED':raise SetupError('EXISTING_INSTALL_REVIEW_REQUIRED')
+                if receipt.get('status')=='APPLIED':
+                    if receipt.get('install_binding')!=plan['install_binding']:
+                        raise SetupError('EXISTING_INSTALL_REVIEW_REQUIRED')
+                    if not plan['runtime_requested'] or receipt.get('runtime',{}).get('state') in {'READY','PASS'}:
+                        return self.verify(plan)
+                    if receipt.get('fingerprint')!=plan['fingerprint']:
+                        raise SetupError('EXISTING_INSTALL_REVIEW_REQUIRED')
+                    # Retry a failed start only under this exact approved plan.
+                    # Existing attempt directories still require reconciliation.
                 if receipt.get('fingerprint')!=plan['fingerprint']:raise SetupError('CHECKPOINT_PLAN_MISMATCH')
             else:
                 if file_hash(plan['host_agent'])!=plan['expected_host_agent_sha256']:raise SetupError('HOST_AGENT_STALE')
@@ -557,7 +578,13 @@ class SetupEngine:
             config_id=receipt['image'].get('config_id')
             if plan['runtime_requested'] and receipt['image'].get('state')!='PASS':
                 pulled=self.adapter.pull_image(IMAGE)
-                if pulled.get('state')!='PASS' or pulled.get('manifest_digest')!=IMAGE.split('@')[1]:raise SetupError('IMAGE_DIGEST_NOT_VERIFIED')
+                if pulled.get('state')!='PASS' or pulled.get('manifest_digest')!=IMAGE.split('@')[1]:
+                    reason=pulled.get('reason','')
+                    # Preserve fixed adapter diagnostics, never native stderr.
+                    allowed={'EXACT_IMAGE_PULL_FAILED','IMAGE_CONFIG_DIGEST_UNVERIFIED',
+                             'IMAGE_MANIFEST_DIGEST_UNVERIFIED','IMAGE_READBACK_FAILED',
+                             'WSLC_EXECUTABLE_ABSENT','WINDOWS_APPLY_AUTHORITY_REQUIRED'}
+                    raise SetupError(reason if reason in allowed else 'IMAGE_DIGEST_NOT_VERIFIED')
                 config_id=pulled['config_id'];receipt['image']=pulled;atomic_json(receipt_path,receipt)
             target=safe_path(plan['host_agent'])
             if receipt['context_after_sha256'] is None and receipt.get('context_intended_sha256') and file_hash(target)==receipt['context_intended_sha256']:
@@ -584,11 +611,16 @@ class SetupEngine:
                     if receipt['runtime'].get('state') in {'READY','PASS'}:
                         pass # Reconcile the bound prior attempt in verify; never create/start twice.
                     elif hasattr(self.adapter,'start_local_runtime'):
-                        for name in ('incoming','outgoing'):
-                            attempt=safe_path(plan['runtime'][name])
-                            if attempt.exists():raise SetupError('RUNTIME_ATTEMPT_ALREADY_EXISTS_RECONCILE_FIRST')
-                            attempt.mkdir(exist_ok=True)
-                        receipt['runtime']=self.adapter.start_local_runtime(plan,target)
+                        if any(safe_path(plan['runtime'][name]).exists() for name in ('attempt','incoming','outgoing')):
+                            if not hasattr(self.adapter,'reconcile_local_runtime'):
+                                raise SetupError('RUNTIME_ATTEMPT_ALREADY_EXISTS_RECONCILE_FIRST')
+                            receipt['runtime']=self.adapter.reconcile_local_runtime(plan,target,config_id)
+                            if receipt['runtime'].get('state')!='READY':
+                                raise SetupError('RUNTIME_ATTEMPT_ALREADY_EXISTS_RECONCILE_FIRST')
+                        else:
+                            for name in ('incoming','outgoing'):
+                                safe_path(plan['runtime'][name]).mkdir(exist_ok=True)
+                            receipt['runtime']=self.adapter.start_local_runtime(plan,target)
                         atomic_json(receipt_path,receipt)
                     else:receipt['runtime']={'state':'NOT_AUTHORIZED','reason':'Local scoped-auth adapter unavailable; no GitHub/model authority granted'}
                 elif receipt['runtime'].get('state') not in {'READY','PASS'}:
@@ -612,7 +644,7 @@ class SetupEngine:
                     atomic_json(receipt_path,receipt)
                     if plan['durable']['destination']:
                         receipt['durable']=self._optional_writeback(plan,target,receipt['context_after_sha256']);atomic_json(receipt_path,receipt)
-            receipt['status']='APPLIED';atomic_json(receipt_path,receipt)
+            receipt['status']='APPLIED';receipt.pop('failure',None);atomic_json(receipt_path,receipt)
             return self.verify(plan)
         except Exception as error:
             if (control/'receipt.json').exists():

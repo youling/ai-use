@@ -83,12 +83,38 @@ class WindowsProbeTests(unittest.TestCase):
         config = "sha256:" + "a" * 64
         def run(argv, **kwargs):
             calls.append(argv)
+            if len(calls) == 1:
+                return SimpleNamespace(returncode=1, stdout='')
             return SimpleNamespace(returncode=0, stdout=json.dumps([{"Id": config, "RepoDigests": [PINNED_IMAGE]}]))
         with patch("agent_setup.windows.sys.platform", "win32"), patch("agent_setup.windows.shutil.which", return_value="wslc.exe"):
             result = WindowsAdapter(apply_authorized=True, runner=run).pull_image(PINNED_IMAGE)
         self.assertEqual(result["state"], "PASS")
         self.assertEqual(result["config_id"], config)
-        self.assertEqual(calls[0], ["wslc.exe", "pull", PINNED_IMAGE])
+        self.assertEqual(calls[1], ["wslc.exe", "pull", PINNED_IMAGE])
+
+    def test_loaded_exact_release_config_needs_no_registry_connection(self):
+        from agent_setup.windows import PINNED_CONFIG
+        calls = []
+        def run(argv, **kwargs):
+            calls.append(argv)
+            self.assertEqual(argv[1:3], ['inspect', PINNED_CONFIG])
+            return SimpleNamespace(returncode=0, stdout=json.dumps([{'Id': PINNED_CONFIG, 'RepoDigests': []}]))
+        with patch('agent_setup.windows.sys.platform', 'win32'), patch('agent_setup.windows.shutil.which', return_value='wslc.exe'):
+            result = WindowsAdapter(apply_authorized=True, runner=run).pull_image(PINNED_IMAGE)
+        self.assertEqual(result['state'], 'PASS')
+        self.assertEqual(result['config_id'], PINNED_CONFIG)
+        self.assertEqual(len(calls), 1)
+
+    def test_other_loaded_config_cannot_replace_the_release(self):
+        calls = []
+        def run(argv, **kwargs):
+            calls.append(argv)
+            return SimpleNamespace(returncode=0 if argv[1] == 'inspect' else 1,
+                                   stdout=json.dumps([{'Id': 'sha256:'+'b'*64, 'RepoDigests': []}]))
+        with patch('agent_setup.windows.sys.platform', 'win32'), patch('agent_setup.windows.shutil.which', return_value='wslc.exe'):
+            result = WindowsAdapter(apply_authorized=True, runner=run).pull_image(PINNED_IMAGE)
+        self.assertEqual(result, {'state': 'BLOCKED', 'reason': 'EXACT_IMAGE_PULL_FAILED'})
+        self.assertEqual(len(calls), 2)
 
     def test_wrong_manifest_and_native_error_fail_closed(self):
         for returncode, body in [(0, [{"Id": "sha256:" + "a" * 64, "RepoDigests": []}]),

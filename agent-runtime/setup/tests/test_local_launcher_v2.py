@@ -30,6 +30,36 @@ def mount_evidence(args, attempt):
     return sources,[{'Destination':name,'Type':'bind','Source':source,'RW':name=='/exchange/out'}
                     for name,source in sources.items()]
 
+
+@pytest.mark.parametrize('kind',['wslc','both','conflict','missing','nonbool'])
+def test_native_wslc_mount_access_schema(tmp_path,kind):
+    _,args,attempt=fixture(tmp_path)
+    sources,mounts=mount_evidence(args,attempt)
+    for mount in mounts:
+        value=mount.pop('RW')
+        if kind!='missing':mount['ReadWrite']=value if kind!='nonbool' else int(value)
+        if kind in {'both','conflict'}:mount['RW']=value if kind=='both' else not value
+    assert WindowsAdapter._local_mounts_verified(mounts,sources) is (kind in {'wslc','both'})
+
+
+def test_reconcile_cannot_adopt_another_attempt_or_an_unauthenticated_server(tmp_path):
+    host,args,attempt=fixture(tmp_path)
+    attempt.mkdir()
+    import hashlib
+    owner={'name':'setup-fixture','image':CONFIG,'host_agent_sha256':hashlib.sha256(host.read_bytes()).hexdigest()}
+    (attempt/'owner.json').write_text(json.dumps(owner),encoding='utf-8')
+    plan={'runtime':{'name':'setup-fixture','attempt':str(attempt),
+        'incoming':args[args.index('--input')+1],'outgoing':args[args.index('--output')+1]}}
+    adapter=WindowsAdapter(apply_authorized=True)
+    with patch.object(adapter,'verify_runtime',return_value={'state':'PASS','server_authenticated':'NOT_VERIFIED'}):
+        assert adapter.reconcile_local_runtime(plan,host,CONFIG)['state']=='BLOCKED'
+    with patch.object(adapter,'verify_runtime',return_value={'state':'PASS','server_authenticated':'PASS'}):
+        assert adapter.reconcile_local_runtime(plan,host,CONFIG)['state']=='READY'
+    owner['name']='foreign-attempt'
+    (attempt/'owner.json').write_text(json.dumps(owner),encoding='utf-8')
+    with patch.object(adapter,'verify_runtime',side_effect=AssertionError('Must not adopt foreign owner')):
+        assert adapter.reconcile_local_runtime(plan,host,CONFIG)['state']=='BLOCKED'
+
 def test_local_profile_uses_existing_launcher_no_external_mount_or_host_publish(tmp_path,capsys):
     host,args,attempt=fixture(tmp_path);calls=[]
     def run(argv,**kwargs):
