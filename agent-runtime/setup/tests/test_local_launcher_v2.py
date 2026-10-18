@@ -50,7 +50,8 @@ def test_reconcile_cannot_adopt_another_attempt_or_an_unauthenticated_server(tmp
     (attempt/'owner.json').write_text(json.dumps(owner),encoding='utf-8')
     plan={'runtime':{'name':'setup-fixture','attempt':str(attempt),
         'incoming':args[args.index('--input')+1],'outgoing':args[args.index('--output')+1]}}
-    adapter=WindowsAdapter(apply_authorized=True)
+    with patch('agent_setup.windows.sys.platform','win32'):
+        adapter=WindowsAdapter(apply_authorized=True)
     with patch.object(adapter,'verify_runtime',return_value={'state':'PASS','server_authenticated':'NOT_VERIFIED'}):
         assert adapter.reconcile_local_runtime(plan,host,CONFIG)['state']=='BLOCKED'
     with patch.object(adapter,'verify_runtime',return_value={'state':'PASS','server_authenticated':'PASS'}):
