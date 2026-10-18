@@ -62,17 +62,24 @@ def local_server_auth(root):
         script=r"""$ErrorActionPreference='Stop';
 [Console]::InputEncoding=[System.Text.UTF8Encoding]::new($false);
 [Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false);
+# A Python child inherits pwsh's PSModulePath verbatim. Windows PowerShell 5.1
+# must resolve its own built-in Security module, not a PowerShell 7 module.
+$env:PSModulePath=Join-Path $PSHOME 'Modules';
 try {
  $p=([Console]::In.ReadToEnd()|ConvertFrom-Json).path;
  $sid=[System.Security.Principal.WindowsIdentity]::GetCurrent().User;
  $system=[System.Security.Principal.SecurityIdentifier]::new('S-1-5-18');
  $acl=[System.Security.AccessControl.DirectorySecurity]::new();
- $acl.SetAccessRuleProtection($true,$false); $acl.SetOwner($sid);
+ $before=Get-Acl -LiteralPath $p;
+ if($before.GetOwner([System.Security.Principal.SecurityIdentifier]).Value -ne $sid.Value) {throw 'Owner mismatch'};
+ $acl.SetAccessRuleProtection($true,$false);
  foreach($identity in @($sid,$system)) {
   $rule=[System.Security.AccessControl.FileSystemAccessRule]::new($identity,'FullControl','ContainerInherit,ObjectInherit','None','Allow');
   $acl.AddAccessRule($rule);
  }
- Set-Acl -LiteralPath $p -AclObject $acl;
+ # Change only the DACL. Set-Acl/SetOwner may request SACL/owner privileges
+ # unavailable to an ordinary, non-elevated owner of this fresh directory.
+ [System.IO.Directory]::SetAccessControl($p,$acl);
  $got=Get-Acl -LiteralPath $p;
  $rules=@($got.GetAccessRules($true,$true,[System.Security.Principal.SecurityIdentifier]));
  $ok=$got.AreAccessRulesProtected -and $got.GetOwner([System.Security.Principal.SecurityIdentifier]).Value -eq $sid.Value -and $rules.Count -eq 2;
@@ -166,7 +173,10 @@ def main():
         checked=subprocess.run([a.wslc,'inspect',image,'--format','json'],capture_output=True,text=True,timeout=15)
         info=json.loads(checked.stdout)[0] if checked.returncode==0 else {}
         released='ghcr.io/youling/opencode-foreman@sha256:fa92f37752ff6132b161ed4c2563897c94b014ab70d650846dcb09f354f55261'
-        if info.get('Id',info.get('ID'))!=image or released not in info.get('RepoDigests',[]):
+        # Exact config descriptor from that immutable registry manifest; load
+        # retains the content ID even though Docker archives lack RepoDigests.
+        released_config='sha256:6bebd8119a04ba133923d3c5f6f0943f2631d4634e20db3398611fc39627e660'
+        if info.get('Id',info.get('ID'))!=image or (released not in info.get('RepoDigests',[]) and image!=released_config):
             raise ValueError('RELEASED_LOCAL_IMAGE_READBACK_REQUIRED')
     # Only declared context file is projected; never the Documents/catalog parent.
     context=root/'context'
