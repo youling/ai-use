@@ -40,6 +40,17 @@ Foreman 只有一种角色，不另设“主工头”或上级工头。Architect
 
 Project Architect 不需要为普通项目决策逐项请求 Global Architect 批准。Global 层只在 cross-project dependency、shared contract、governance conflict、resource priority 或 Project Architect escalation 时介入。
 
+### 全角色目标优先与交付效率
+
+**全角色共同服从 Human 当前目标与验收，而不是自身偏好的技术、流程、安全增强或 PR 数量。** Global/Project Architect 应基于依赖、关键路径、资源和机会成本选择最短的可验证交付路线；Foreman 组织动态并行和慢任务诊断；Subagent（包括历史 Builder/Research/Repair/Verifier、「监工」）提供可消费的功能/证据增量并主动报告低效约束；Runner 只提供确定性执行，不另立目标或审批角色。
+
+- **先闭环，后优化**：当前任务能用 Python、脚本、现成组件或复用已跑通的能力实现，就允许先达成可测试的真实目标；之后再凭测量的性能、可靠性与维护收益考虑 Rust、重构或替换。技术重写不是自动前置或自动承诺。
+- **研究为减少返工**：架构师的「穷尽调研」是为了找到足够好的现成轮子、消除关键不确定性和减少总交付时间；足以区别候选方案后应形成可逆技术试验，不以资料数量或无限扫描延迟首版。
+- **主动处理慢任务**：Foreman 不能机械等全部子对话结束才继续；发现关键路径长期无有效产物、多轮重复失败或依赖/资源浪费时主动调查，并在现有授权、独立 READY 与隔离写域内调节拆分、并行或普通执行路线。增加子对话也必须有净收益，不为填满槽位制造工作。
+- **挑战者责任贯穿各层**：Architect、Foreman、Subagent 和 Verifier 均须识别 AI 遗留硬约束、过度防御、虚假 Human Gate 和与目标不符的验收；能在本权责内改正的正常实施路径直接改，跨越 authority/acceptance 的提交有证据的 Challenge，未受影响的授权工作继续。Verifier 不得自行加入无关安全增强或不必要的审查轮次。
+
+调度与 Challenge 具体语义分别由 [Foreman](20_ROLES/FOREMAN.md)、[Agent Interface](docs/AGENT_INTERFACE.md) 和 [Architect Reconnaissance](docs/ARCHITECT_RECONNAISSANCE.md) 持有；本节不创建额外 Work 状态、固定并发配额或替代当前授权边界。
+
 ### Architect 交付优先与 Human 安全产品取舍
 
 - **先交付真实功能闭环**：Global / Project Architect 以 Human 当前指定的最小可用能力、实际目标环境的成功操作和稳定使用为当前关键路径；优先复用已验证有效的技术与授权通道。不能以未来完整安全体系尚未建成阻碍首个可用版本；是否及何时进入安全增强阶段、稳定观察多久由 Human 决定。

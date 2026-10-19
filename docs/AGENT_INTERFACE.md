@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** Read when dispatching/executing Agent work, choosing Architect execution mode, advancing an authorized program, or producing/reviewing Human/Agent interface artifacts.
 
-**Protocol Version: 2.11.1**
+**Protocol Version: 2.12.0**
 
 本文是 **execution / dispatch / continuation interface** 的 canonical home。公共 `ai-use` 不绑定特定 owner/repo、私有 control-plane 名称或账号。[Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md) 拥有 recovery、Work Context、正交 context/mode 与 independence/delegation 语义；[CONTEXT_MODE_SEED](../50_TEMPLATES/CONTEXT_MODE_SEED.md) 只给形态。本文保留 continuation、`PREMATURE_YIELD` 与完成边界。
 
@@ -215,7 +215,8 @@ HIGHER_AUTHORITY_STILL_WINS
 - constraint 使 acceptance 实际不可达或制造明显 `PREMATURE_YIELD`；
 - ordinary repair / retry / deterministic work 被错误升级为 Human Gate；
 - newer architecture/runtime/current durable ruling 已 supersede 旧 gate；
-- 流程成本 materially 高于其控制的风险，且不存在 current safety/authority justification。
+- 流程成本 materially 高于其控制的风险，且不存在 current safety/authority justification；
+- 未经 Human 选择的安全增强、无证据语言偏好、无界 Research/Review 或人为 child 同步等待使当前首个可用闭环明显延迟。
 
 这不是对每个偏好或轻微低效发起治理争论。Challenge 只针对 **material constraint defect**。
 
@@ -280,6 +281,24 @@ deployment MAY 配置 pickup / stale thresholds，但 public governance 不冻�
 健康且无可执行 delta 时，Watch 可以静默结束。出现 current authorized next action 时，按 §1.4 continuation 继续；出现真实 Human / higher-authority gate 时才通知 Human。Human 不是例行状态轮询器。
 
 Daily Brief 是同一 durable state 的**派生 Human-facing memory projection**，不是新的 Work truth。其 health class、字段、freshness 与 source discipline 见 [Architect Watch & Daily Brief Guide](../40_GUIDES/ARCHITECT_WATCH_AND_BRIEF.md)。brief 只能帮助重新定向；任何 mutation 前仍需 live revalidate exact Work / PR / head。
+
+### 1.4.4 目标导向的关键路径推进（所有执行与验证上下文）
+
+```text
+Human current goal + acceptance
+ -> critical path / independent READY / resource costs
+ -> smallest sufficient next action
+ -> observable functional or artifact delta
+ -> continue | adapt | challenge | real stop gate
+```
+
+- Architect 在当前 authority 内选择让功能更快闭环的复用、简单语言/脚本、垂直切片和实测驱动的后续优化；研究与技术选型服从交付，不把未来 Rust 重写或完整安全增强当作未经 Human 选择的必需阶段。
+- Foreman 对其 Work 动态利用有益并行：有独立 READY、足够容量且可隔离读写域即可推进，不必等待一个慢 child；多轮缺乏有效变化时主动追查瓶颈/替代路线，判断增派子任务是否能**缩短总关键路径**，而非增加模型开销和冲突。具体组织方法见 [Foreman Role](../20_ROLES/FOREMAN.md) §2.1。
+- Subagent（含 Builder/Research/Repair）及时交付自己的有界可验证增量；发现无依据硬约束、阻碍当前目标的错误路线，应按 §1.4.2 上报有证据 Challenge，同时继续不受影响的合法工作。
+- Verifier / 监工对照当前 Human/Work 原始 acceptance、实际可运行证据与风险比例验收；指出基本自检遗漏、过度防御、虚假安全前置和交付目标偏离，但不能自行新增本次未授权的安全/恢复功能或第二轮审查。Runner/Observer 只报告确定性事实，不产生新的产品要求。
+- 阻断应局限于确有权限、安全、数据归属、不可逆副作用或强制契约冲突的动作；其它已授权 READY 继续。上述目标导向不授予 scope/acceptance 改写、夺 claim、生产部署、密钥访问或取消既有独立审查的权限。
+
+`SLOW`/`SUSPECT` 为任务基线与有效进度支持的派生健康描述，不是新 Work 状态、统一超时阈值或自动 takeover 依据；无外部唤醒/Agent 执行通道时不得声称自己正持续后台编排。
 
 ### 1.5 Global Architect Maintenance Lane
 
@@ -462,6 +481,8 @@ Human Completion Card 仅保留为 Architect / orchestrator 在**非 delegated e
 ---
 
 ## 6. Versioned Definitions
+
+- `2.12.0`：#163 Human 全角色目标导向 addendum；关键路径/净收益并发与慢 child 诊断、够用就收敛的 Research、Python 首版/Rust 实测后决定、Verifier 主动挑战无效门禁。保持当前 Work/authority/independence/安全底线，不设第二个 scheduler 状态机。
 
 - `2.11.1`：Role Model V2.1（Architect Discovery）：明确重要 Prior Art / Landscape、架构路线与 ADR 归 Architect；沿用 Reconnaissance 作为唯一 ARCH-0 owner。Foreman 只消费 applicable current decision，不承担无界战略扫描；普通 repair 不增设 gate。新 dispatch 可携带 decision pointer，旧 Work 不追溯更改。
 

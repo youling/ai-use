@@ -1,6 +1,6 @@
 # 20_ROLES — role ownership
 
-角色层定义谁对什么结果负责，不把每种工具动作都设成长期职位。
+角色层定义谁对什么结果负责，不把每种工具动作都设成长期职位。各角色共同服从 Human 当前可验证目标，而不是自身流程/PR/Agent 数量；原则见 [Constitution §2](../CONSTITUTION.md#2-governance-hierarchy)，推进机制见 [Agent Interface §1.4.4](../docs/AGENT_INTERFACE.md) 和 [Foreman](FOREMAN.md)。
 
 - [Constitution §2](../CONSTITUTION.md#2-governance-hierarchy)：Human、Global Architect、Project Architect、Foreman 的职责与权限边界。
 - [Architect Discovery role boundary](ARCHITECT_DISCOVERY.md)：穷尽调研与路线选择归 Architect，规范细节引用现有 [Architect Reconnaissance](../docs/ARCHITECT_RECONNAISSANCE.md)。

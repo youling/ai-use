@@ -1,4 +1,4 @@
-# ADR-0017 — 产品先交付：可选安全增强与 Human 安全门禁主权
+# ADR-0017 — 全角色目标交付优先、动态编排与 Human 安全增强主权
 
 - **Status:** Proposed; Human direction captured in [#163](https://github.com/youling/ai-use/issues/163); normative materialization requires exact-head PR Review/merge
 - **Decision level:** L2 material normative governance
@@ -21,6 +21,17 @@
 5. **内部组织连接器允许宽 scope**：Human 可选择覆盖管理、ACL、DNS 等多项能力的组织级 OAuth client。单项操作需要 `auth_keys` 不等于 client 只能持有 `auth_keys`；权限存在不等于已授权执行所有外部动作。不得从一个操作需求推导全局 scope 上限。
 6. **成果指标**：验收以 Human 能在真实目标上完成明确功能操作及持续稳定表现为准；CI、PR、Review 是手段，不是代替功能投用的里程碑。作者先做确定性测试，审查遵循已有按风险分级规则。
 
+## Human 补充裁决：运筹学式交付和挑战者原则
+
+Human 进一步要求全角色一致：最优先的是在当前权限范围内尽快完成真实业务目标；技术栈、Research、CI、审查、子对话都是为减少完成时间和错误决策服务的工具。来源为 [#163 Human addendum](https://github.com/youling/ai-use/issues/163#issuecomment-6274574182)。
+
+- Architect 结合关键路径、依赖、资源、机会成本和可逆性选择最快够用路线；允许 Python/脚本/成熟轮子快速实现首个闭环，Rust 等后续由性能和维护实测决定，不强制按语言排阶段。
+- “穷尽调研”以区分关键方案、发现可复用成果、减少重复工程为停止条件；不以全文献检索或写报告数量衡量成功。
+- Foreman 不必等所有 child 完成才继续独立 READY；遇到关键 child 反复无有效进展，应检查真实 blocker、技术路线和资源，再在本 Work 授权的一层 delegation 下选择拆分、有限并行、修复或 Challenge，算上模型费用/写域/验证拥堵的净收益。活动心跳不等于进度，长耗时也不自动意味着丧失 ownership。
+- Research/Builder/Verifier（包含历史「监工」称呼）对目标和原始 acceptance 负责，有义务报告并质疑误设门禁；不自行扩展安全验收或增加强制验证轮次。Runner 不拥有产品策略权。
+
+该裁决不新增监工层级、第二套 Work 状态、后台运行承诺、固定并发上限或不受约束的权限。角色级规范由 Constitution §2 拥有；执行与 Challenge 由 Agent Interface 拥有；调度由 Foreman 合同拥有；研究触发/停止由 Architect Reconnaissance 拥有。
+
 ## Alternatives considered
 
 - **每个产品开工即安全完备（security-first as a universal gate）：拒绝。** 混淆 Human 需求与 AI 风险建议，增加额外依赖和无效返工，阻滞已有能力投用。
@@ -33,6 +44,13 @@
 
 收益是减少安全过度设计和无目的审查，形成从「真实可用→稳定观察→Human 决定增强」的交付顺序。代价是 Human 需知晓已延期的风险；Architect 必须把风险作为可定位的债/备选说明，并对不可隔离的真实危险动作保持单点阻断。
 
+## 目标导向反例
+
+- **Python 已可交付**：没有瓶颈数据，却要求先改 Rust 才能完成 MVP，属于过早优化；有证据后可以另行推动重写。
+- **A 慢、B/C 独立**：A 多轮无有效进度时应追因；B/C READY、资源与写域允许则并行推进，不能机械等待所有孩子完成；若 B/C 写域相撞则先隔离/串行。
+- **心跳但无成果**：只见运行信号不得推断完成，也不得按计时器夺取在途 claim；须识别真实增量、错误路线或缺失资源。
+- **Verifier 擅增验收**：原已授权闭环满足，监工不得追加未来 OAuth/JIT 等安全完整性作为新门禁；真实既有授权或危险入口仍按原边界处理。
+
 ## Counterexamples
 
 - **GhostFleet / ThinkPad：** 已有身份和 DCR 能力，仅需持久连通读/控。Architect 不得将新 OAuth 最小 scope、Courier、JIT 或全部高级恢复能力升级为这个既有目标的前置。若某一具体远控动作确实缺少授权，则仅拦住该动作，不停掉身份/目录/只读测试。
@@ -42,4 +60,4 @@
 
 ## Review boundary
 
-本 ADR 与 Constitution §2 是唯一一次小范围 L2 materialization；当前 Human 原话与本 ADR 的解释边界必须在 [#163](https://github.com/youling/ai-use/issues/163) 及 exact-head semantic Review 可追溯。L0、Change Lifecycle、Foreman 状态机和各项目/Host 事实不在此次修改范围内。
+本 ADR 是同一 #163 / PR164 的 L2 长期依据；原始 Human 裁决与目标导向补充要在 Issue / exact-head Review 中分别可追溯。规范归属：Constitution §2（全角色目标与安全产品取舍）、Agent Interface（执行与 Challenge）、Foreman（任务动态协调）、Architect Reconnaissance（研究路线）、角色指针。L0、Change Lifecycle、既有 Work 状态机、项目/Host 事实及原有效 claim 均不改。
