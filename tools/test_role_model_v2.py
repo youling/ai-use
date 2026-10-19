@@ -63,7 +63,9 @@ class ForemanContractTests(unittest.TestCase):
         self.assertIn("Architect Challenge", role)
         self.assertIn("Architecture Discovery", foreman)
         self.assertIn("architecture_decision", source("50_TEMPLATES/DISPATCH_PAIR.md"))
-        self.assertIn("ordinary bugfix", role)
+        # A narrow ordinary repair should not trigger a new architecture sweep.
+        self.assertIn("Ordinary repair", role)
+        self.assertIn("不重新触发全域调研", role)
         self.assertIn("新 delegated Work", interface)
 
         diagram = json.loads(source("docs/diagrams/project.architecture.json"))
@@ -79,8 +81,10 @@ class ForemanContractTests(unittest.TestCase):
         role = source("20_ROLES/FOREMAN.md")
         guidance = source("40_GUIDES/ASYNC_FOREMEN.md")
         self.assertIn("ORCHESTRATION_FIRST", role)
-        self.assertIn("不为一个慢 child 阻塞所有独立进展", role)
-        self.assertIn("不强制补满并发", role)
+        # Keep the scheduling invariant; do not bind tests to old prose.
+        self.assertIn("独立 READY", role)
+        self.assertIn("机会性并行", role)
+        self.assertIn("不为占满并发编造新任务", role)
         self.assertIn("小范围状态检查", role)
         self.assertIn("child terminal", guidance)
         self.assertIn("关键路径", guidance)

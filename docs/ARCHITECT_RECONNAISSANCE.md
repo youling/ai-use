@@ -88,9 +88,7 @@ Targeted 回答：
 
 快速变化事实不得仅凭模型记忆判定 current。外部来源只是 evidence，不是 authority。
 
-**穷尽调研是为决策和交付减时，而非无限阅读**：先确定哪些外部证据会改变当前路线；足以区别关键候选并能构造可逆试验时停止广泛搜索，形成试验/接口/采用决策。优先复用 current 且适用的既有证据，比较调研、集成、测试和长期运维的总成本；普通 repair 或已证实的现有能力不机械重开行业调研。
-
-**调研目标不是最大化依赖数量。** Greenfield 可以广泛寻找可复用 artifact；成熟项目调研外部代码时，默认也要把它当 `prior art / reference implementation` 阅读，提取 problem framing、状态机、算法、retry/fencing、failure handling、protocol、测试策略等知识，而不是自动升级为 dependency candidate。
+**调研以形成可执行决策为终点。** 先问缺少哪条外部证据会改变方案；已能识别主要候选并支持可逆实验，就复用当前证据进入实现，不反复检索同一问题。
 
 ### 3.1 Targeted GitHub platform pass
 
@@ -173,7 +171,7 @@ PRODUCTION_CORE
 => LEARN_EXTERNAL -> MAP_TO_LOCAL_ARCHITECTURE -> NATIVE_IMPLEMENT
 ```
 
-**语言与优化分阶段**：Python、脚本、现有库可在满足当前验收且无已证实瓶颈时先形成真实闭环；Rust 或其它重写应根据性能/维护/迁移成本测量单独决定。不能把「先 Python 后 Rust」又变成一条新的必然重写流程。
+**技术选型按项目阶段与长期成本判断**：不预设语言或版本。原型/建模期应主动检查最新正式版、RC 乃至 Beta 的新能力，因为将来换底层可能代价更高；但要核对**所选精确版本真正已实现的功能**，区分 roadmap/早期 Beta/RC/GA，测试真实负载、依赖兼容与替换路径。候选版适合有界实验，并不自动等于生产可用；生产选择服从现行授权与具体风险证据。既不因新而拒绝，也不因新而采纳。
 
 进入 `MATURE / PRODUCTION_CORE` 后，新发现的同类 OSS/framework 默认先视为 **prior art / reference implementation**。默认复用 idea、algorithm、protocol、pattern、failure model、testing strategy、implementation technique；与本项目核心语义/控制平面强耦合的能力，默认在现有 seam 内 native implement。
 
