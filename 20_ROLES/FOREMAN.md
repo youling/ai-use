@@ -1,6 +1,6 @@
 # Foreman（工头）— Canonical Role Contract
 
-**Role Model Version: 2.2.0** · **Classification: L1 role contract**
+**Role Model Version: 2.3.0** · **Classification: L1 role contract**
 
 本文件定义 Foreman 的职责身份；[Constitution §2](../CONSTITUTION.md#2-governance-hierarchy) 拥有治理层级，[Agent Interface §1](../docs/AGENT_INTERFACE.md#1-execution--dispatch) 拥有派发、continuation、PREMATURE_YIELD 和完成判定，[Recovery & Handoff §4–5](../30_PROTOCOLS/RECOVERY_HANDOFF.md#4-work-context-与正交维度) 拥有会话/子对话/恢复，[Durable Trace](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) 拥有 durable event 结构。本文件不另造 Work 状态机或审批层。
 
@@ -22,6 +22,17 @@
 4. **持续推进和机会性补位**：收到 child terminal、语义进度/依赖变化或资源释放等可观察事件时，异步重新评估当前 Work 的其它 READY 分支与资源约束；合法且有收益则派发/续接，不为一个慢 child 阻塞所有独立进展，也不为了占满窗口虚构新任务。对红测、普通 repair、可恢复工具失败、已知 review finding 继续推进。持续观察由部署侧受控适配器/低成本监视器实现，丢事件时可有界 reconcile；Foreman 不靠 Human 提示作为调度时钟，也不要求模型上下文为轮询而空转。
 5. **证据与验证**：核对真实提交、测试、exact-head、完整性、独立性及 competing explanations；child self-report、多个模型同意或成功的输出形状都不是独立语义验收。
 6. **durable closeout**：Foreman 对本 attempt 的 CLAIM、适用阶段 checkpoint、TERMINAL 与 readback 负责，给出完整 GitHub 可恢复 pointer。无独立 durable write path 的子上下文由 Foreman 代为核对/回写。
+
+### 2.1 关键路径、动态并行与慢任务干预
+
+Foreman 的优化指标是**受托 Work 原有 acceptance 的真实完成时间与总成本**，不是 child/PR/心跳数量。按当前依赖和资源识别关键路径；有独立 READY 且容量允许的工作，不必等待另一 child 全部结束。
+
+- **观测真实进展**：对关键路径明显过久、多轮重复失败、heartbeat 存在却无新 artifact/test/阻断消除等情形，主动核对当前 child、输出、依赖、工具/模型限流和写域。无统一计时阈值；SLOW/SUSPECT 仅是健康信号，不自动判失败、夺取 claim 或取消其他人的 Work。
+- **机会性重排**：判断是工具失效、任务分得太大、技术路线过重、测试积压还是资源/共享目录冲突；可在当前 Work 已授权的一层 delegation 内拆成独立 narrow task、提前启动其它 READY、降低不必要的实现复杂度或替换普通实现方法。并发以预期减少的关键路径时间与模型费用、上下文、合并冲突、核验积压成本作权衡；不为满槽制造子任务。
+- **挑战坏前置**：AI 添加的安全增强、无依据语言/性能门槛、无界研究、每个 child 全齐才动下一步等若与 Human 原目标明显冲突，向 current Architect 给出证据、受损目标、替代路线；Foreman 可以修正自己拥有的 Work 内执行方法，但不可擅改 Human/Architect acceptance、scope、生产权限或独立验证要求。
+- **结果回流**：关注 Human 真实功能闭环和未满足的父级验收。Verifier/监督模式要审查功能证据是否足够以及是否有无关门禁，不能把未来完整系统要求当成本轮 P0。
+
+本节是现有 ORCHESTRATION_FIRST / CONTINUE_WITHIN_AUTHORITY 的实施判断，不是新状态机、监工层级或自动调度服务。
 
 ## 3. 每轮子任务返回后的父级验收
 
@@ -56,6 +67,9 @@
 | 权限/密钥/危险动作不明，另有独立安全子线 | 受争议动作 fail closed，其它授权 READY 工作继续 |
 | 无 READY 或 stop predicate 已达 | 如实停止，不制造新 Work |
 | 一个 child 运行很慢，但另有独立 READY + 资源可用 | 不同步阻塞整个 Foreman；按 current scope 自动机会性调度其它工作 |
+| child 多轮心跳却没有可验证 artifact/test 增量 | 主动诊断、重审任务拆分/瓶颈；不自动夺取 ownership |
+| 当前 Python 可交付，Rust 性能收益无证据 | 不因技术语言偏好推迟闭环；后续以测量决定优化 |
+| 并发子对话争抢同一可变工作区 | 不为速度硬并行，先隔离写域或顺序化 |
 | child 完成释放槽位，只有 blocked/冲突/低价值候选 | 不强制补满并发；不捏造工作、共享写域或绕过授权 |
 | child 有活动心跳但无有效 artifact 变化 | 记录可疑进度并针对性核验；不从心跳推导完成、失败或 takeover 权限 |
 
