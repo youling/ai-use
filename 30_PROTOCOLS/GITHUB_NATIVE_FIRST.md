@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.**
 
-**Protocol Version: 1.2.0**
+**Protocol Version: 1.2.1**
 
 语义 owner：[工作项 #67](https://github.com/youling/ai-use/issues/67)；长期裁决：[ADR-0005](../90_HISTORY/ADR-0005_OWNER_NATIVE_DERIVATION.md)。本协议是 architecture decision method，不是平台配置指令或 Capability Lab schema。
 
@@ -127,6 +127,10 @@ Release/Package 是 distribution/checkpoint envelope：版本化甚至 immutable
 | Labels / Issues Saved Views | 对下一步的可搜索投影；建议互斥 `状态:待派发`（准备好、尚缺实际 dispatch）、`状态:待认领`（当前 dispatch 有效、没有有效 claim）、`状态:执行中`（已有有效 claim）、`状态:待审计`（独立验证待办）、`状态:待裁决`（当前 Architect/Human 决策）、`状态:阻塞`（可指明真实阻断） |
 | 正交标签 | `优先级:P0/P1/P2`、`类型:研究/实施/验证/运维`、可选 `周期:长程`；优先级、任务规模、长期性和执行状态不是一回事 |
 | 私有用户 Project | 只收录需要跨仓库排程的现有 Issue；用 Status / Priority / Kind / Effort(S/M/L) / Execution(网页、云端、本地、本地+设备) / Next actor 配合 Table、Board、Roadmap；Project 不是执行 authority |
+
+**颜色是行动信号，不是装饰**：为 repo-local Label 定义配置可辨别的 `color` 与说明。建议 **状态** 用辨识度高的色系（待派发灰、待认领绿、执行中蓝、待审计紫、待裁决橙、阻塞红）；**优先级** 特别强调 P0，P1 次之、P2 中性；**类型/长程/收录** 用浅色，避免视觉拥挤。依然以标签文字承载含义，不只凭颜色判断。给 Issue 添加新标签可能只生成默认灰色定义：`ISSUE_LABEL_APPLIED` **不等于** `LABEL_DEFINITION_COLOR_CONFIGURED`。一仓的颜色也不会自动同步到其它仓；只在有真实 Label 管理能力时才声明配置完成。
+
+**Milestone 用于「这个仓库哪一批任务共同形成一项可验收成果」**，不表示待认领/执行中、P0/长程、模型额度或任务估时。Milestone 属于**单个仓库**，可有目标交付、范围与真实期限（没有可靠期限就不填日期）。优先把能在该阶段结束的原子 Issue 关联到一个 Milestone；跨多个阶段的长程父 Issue 不必强行指定一个。PR 如与同一 Issue 重复代表同一交付，避免都计入而夸大进度。其完成百分比只反映 GitHub 项目项关闭情况，不自动证明真实产品验收。多个仓库的总体路线由**私有用户 Project** 的 Target/Iteration/Roadmap 展示，不复制多个仓库的 Milestone 作为第二套状态真值。GitHub 具体管理入口：[Labels](https://docs.github.com/en/issues/using-labels-and-milestones-to-track-work/managing-labels) · [Milestones](https://docs.github.com/en/issues/using-labels-and-milestones-to-track-work/about-milestones)。
 
 **状态必须以当前可行动的真实阶段为准**：旧 `PARTIAL` 已裁决且没有新派发时不得显示 `待认领`；旧 `PARTIAL` 后有新有效 `AGENT_CLAIMED` 时应更新为 `执行中`。多个独立子 Work 同时处于不同阶段时，不强求一个父 Issue 标签假装覆盖全部；需要时在原子 Work/子 Issue 层展示。证据不足可保持未分类或 `UNKNOWN`，不猜测。
 
