@@ -55,6 +55,19 @@ Private overlay 只有同时满足以下条件才可作为当前 consumer artifa
 
 Private ACL 和 ordinary private data 首先是访问边界；“放在私仓”本身不定义一种永久 secret 分类。能行使 signing、access、decryption、recovery 能力的材料按功能属于 secret；Human 也可明确指定额外 scoped content 的保护要求。
 
+### 私有仓库原文保真：Human 2026-10-21 明确裁决
+
+在 **source owner 授权的 private repo / 原件档案 / durable business store** 内，普通业务身份和经营事实原则上按原始内容、原始类型保真。**不得仅因为是个人信息、账户标识或交易数据就擅自脱敏、截断、替换、散列或转成浮点数**；这样会损害跨来源主键、历史委托、税务对账、去重以及独立回查。若项目需要派生的脱敏展示视图，须与可回溯原件分开，不覆盖唯一原始证据。
+
+| 判断对象 | 私域持久化规则 |
+| --- | --- |
+| 普通业务标识及原始证据 | 客户/员工/商户姓名、联系方式、经营地址、支付宝 UID/PartnerId、平台账号 ID、订单号、原始交易/账务流水号、来源路径和source locator等，属于业务事实/关联键；在获授权 private owner 存储内按原值保留，长ID保持TEXT/精度，不因字段看似敏感自动打码。 |
+| 真正的 secret value | 可用密码、Cookie、会话/访问 Token、OTP、私钥、PIN/CVV、可用签名下载URL及可直接赋予登录/访问/签名/解密/恢复权的材料，进入owner指定的凭据/短时运行安全平面，不写一般 repo 正文、Issue、日志或prompt。 |
+| 外部/公开消费 | 从 private repo 转向公开仓、无权消费方、第三方API/模型或外部发布是新的数据使用动作，必须另核当前用途和来源权；private repo允许原文不自动等于对外授权。 |
+| 存储位置 | “允许私域原文保真”不等于强制把全部客户账单、媒体字节、全量数据库塞进 Git；大体量正式业务记录仍由owner的durable business store/CAS负责，Git可保留必要原值、索引、证据、contract及可恢复引用。 |
+
+边界模糊时只核查**具体字段是否能直接行使受限能力**及其来源用途，暂缓可疑的 secret 传播，不把整个业务证据包一律改成 `***`。本规则是现有 private ACL 与 secret 区分的落实，不改变 owner、原数据准入、retention、删除或 Human 许可。依据：[Human ruling #171](https://github.com/youling/ai-use/issues/171)。
+
 `secret value != secret reference`。reference 的 schema、locator 与可见范围由 owner-local contract 决定；reference 也可能携带敏感 locator，若其自身足以授予能力则按 secret value 处理。公共协议不规定 vault 产品、SecretReference schema、具体存储平面或私有路径。
 
 `runtime secret delivery != recoverable secret custody`：能向运行进程注入 secret，只证明 delivery 可用，不证明安全托管、轮换、撤销或灾难恢复成立。后者须有 owner-local custody/recovery contract 与适当 evidence，不靠公开保存 secret 来证明。
