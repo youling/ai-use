@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.**
 
-**Protocol Version: 1.1.0**
+**Protocol Version: 1.2.0**
 
 语义 owner：[工作项 #67](https://github.com/youling/ai-use/issues/67)；长期裁决：[ADR-0005](../90_HISTORY/ADR-0005_OWNER_NATIVE_DERIVATION.md)。本协议是 architecture decision method，不是平台配置指令或 Capability Lab schema。
 
@@ -116,6 +116,25 @@ event / webhook = hint
 search/API 结果必须核对 pagination、可见范围、权限与截断。incomplete/truncated enumeration 不能证明全集或空集；forbidden/unknown 不能包装成“没有记录”。derived result 的 freshness 与 source drill-down 按 [Durable Data Doctrine](../docs/DURABLE_DATA_DOCTRINE.md)；多个派生面的含义一致性按 [Diagram-as-Code](DIAGRAM_AS_CODE.md#41-共享派生解释边界)。
 
 Release/Package 是 distribution/checkpoint envelope：版本化甚至 immutable 的包装也不证明其中内容 current、canonical 或已获 production acceptance。分发 cadence 可独立于每次 commit，但消费者必须知道对应 source revision 和使用边界。private/source handling constraints 同样适用于 Projects、Releases、Pages、导出与 cache。
+
+### 4.1 任务自助发现：Issue → Labels / Saved Views / Projects
+
+**目标：让 Human、Architect、Foreman 和独立验证者不用等待逐人询问，即可通过 GitHub 判断「现在有什么事可做、优先级如何、下一步由谁行动、证据在哪里」。** 这是一种以任务透明促进主动领取的协作方式，不是新的派工权限或 Work 状态机。采用它的项目按既有 Work/dispatch/claim/terminal/裁决 live evidence 填写；旧 Issue 标题、Open 状态、GitHub assignee 和单条过期评论均不足以证明可领取。
+
+| 可见面 | 最小共用语义 |
+| --- | --- |
+| Issue / 原生依赖、PR、current durable 回执 | 真实目标、当前 Work/claim、障碍、验收、下一步和证据的 owner source |
+| Labels / Issues Saved Views | 对下一步的可搜索投影；建议互斥 `状态:待派发`（准备好、尚缺实际 dispatch）、`状态:待认领`（当前 dispatch 有效、没有有效 claim）、`状态:执行中`（已有有效 claim）、`状态:待审计`（独立验证待办）、`状态:待裁决`（当前 Architect/Human 决策）、`状态:阻塞`（可指明真实阻断） |
+| 正交标签 | `优先级:P0/P1/P2`、`类型:研究/实施/验证/运维`、可选 `周期:长程`；优先级、任务规模、长期性和执行状态不是一回事 |
+| 私有用户 Project | 只收录需要跨仓库排程的现有 Issue；用 Status / Priority / Kind / Effort(S/M/L) / Execution(网页、云端、本地、本地+设备) / Next actor 配合 Table、Board、Roadmap；Project 不是执行 authority |
+
+**状态必须以当前可行动的真实阶段为准**：旧 `PARTIAL` 已裁决且没有新派发时不得显示 `待认领`；旧 `PARTIAL` 后有新有效 `AGENT_CLAIMED` 时应更新为 `执行中`。多个独立子 Work 同时处于不同阶段时，不强求一个父 Issue 标签假装覆盖全部；需要时在原子 Work/子 Issue 层展示。证据不足可保持未分类或 `UNKNOWN`，不猜测。
+
+执行者发现合格的可领取工作后，仍通过当前 authorized dispatch、真实 host claim 和已有 Work ownership 执行；看板拖动、贴标签、选择 Provider、查看模型额度，都不自动授予 claim/merge/deploy/destructive 权限。Human 调整的优先级作为调度裁决由项目 owner 核对回写；派生状态必须可从 source 恢复，不能覆盖 Human-owned 字段。
+
+**采用次序**：项目 Architect 先盘点 OPEN Work，定向读最新有效 attempt 和裁决，补齐“可执行下一步 / Next actor / 依赖 / 粗略工作量 / 执行环境 / evidence pointer”；先试点少量真实工单并在 repo 内建立缺少的 labels，Human 可创建跨仓库 Saved Views。个人账号的 Project 先采用私有、手动收录，避免默认将私仓事实发到公共容器；自动加项目不会追溯回填旧 Issue。只有确认维护成本值得自动化后才增加单向、幂等、可重建的 `source -> labels/Project` reconciliation，不新造调度器、第二套数据库或无依据的固定轮询。
+
+具体项目交接/盘点词见 [Work Visibility Handoff](../50_TEMPLATES/GITHUB_WORK_VISIBILITY_HANDOFF.md)；原计划与验收在 [ai-use #167](https://github.com/youling/ai-use/issues/167)。公共规则不保存具体私有项目现状。
 
 ## 5. Capability evidence 与 admin / Human gates
 

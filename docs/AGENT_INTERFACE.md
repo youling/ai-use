@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** Read when dispatching/executing Agent work, choosing Architect execution mode, advancing an authorized program, or producing/reviewing Human/Agent interface artifacts.
 
-**Protocol Version: 2.12.1**
+**Protocol Version: 2.12.2**
 
 本文是 **execution / dispatch / continuation interface** 的 canonical home。公共 `ai-use` 不绑定特定 owner/repo、私有 control-plane 名称或账号。[Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md) 拥有 recovery、Work Context、正交 context/mode 与 independence/delegation 语义；[CONTEXT_MODE_SEED](../50_TEMPLATES/CONTEXT_MODE_SEED.md) 只给形态。本文保留 continuation、`PREMATURE_YIELD` 与完成边界。
 
@@ -278,6 +278,7 @@ Daily Brief 是同一 durable state 的**派生 Human-facing memory projection**
 - **Foreman**：在受托范围内按关键路径、独立 READY 与实际资源动态推进；慢 child 要诊断，适用时有限并行（方法在 [Foreman](../20_ROLES/FOREMAN.md) §2.1）。
 - **Subagent、Verifier/监工**：交付各自的有界证据；对照现行验收指出实质缺陷或无效门禁，不重新定义产品需求。
 - **Runner/Observer**：提供可核验状态，不将心跳、模型在线或耗时等同成功/失败，也不由此授予接管或调度权限。
+- **任务自助发现**：Architect 使当前 owner Work 的可执行下一步、等待对象与原始证据容易查找；Human/Agent 可从 GitHub 标签、Saved Views 和 Projects 选择适合当前资源的工作。可见状态由当前 Work evidence 派生；详细归属在 [GitHub Native First §4.1](../30_PROTOCOLS/GITHUB_NATIVE_FIRST.md#41-任务自助发现issue--labels--saved-views--projects)，UI 操作不自动派发或认领。
 
 不新增 Work 状态机、监工等级、定时后台执行能力或行动授权。
 
@@ -462,6 +463,8 @@ Human Completion Card 仅保留为 Architect / orchestrator 在**非 delegated e
 ---
 
 ## 6. Versioned Definitions
+
+- `2.12.2`：#167 原生 GitHub 工作自助发现。Human/Agent 从可回源的 Issue 标签和 Projects 查看当前可行动任务；可见状态仅为 derived projection，不新增 Work claim/dispatch/permission，也不复制 Native First 的字段语义。
 
 - `2.12.1`：#165 提炼目标导向并删除重复禁令；技术语言/发布阶段中立，支持前沿版本的当前特性验证与长期迁移判断。2.12.0 的 Python/Rust 仅为历史例子，绝非优先次序、必选语言或预设重写生命周期。
 
