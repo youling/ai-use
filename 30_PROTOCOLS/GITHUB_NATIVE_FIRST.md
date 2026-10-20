@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.**
 
-**Protocol Version: 1.2.1**
+**Protocol Version: 1.2.2**
 
 语义 owner：[工作项 #67](https://github.com/youling/ai-use/issues/67)；长期裁决：[ADR-0005](../90_HISTORY/ADR-0005_OWNER_NATIVE_DERIVATION.md)。本协议是 architecture decision method，不是平台配置指令或 Capability Lab schema。
 
@@ -86,9 +86,13 @@ public synthetic canary != private owner production proof
 
 Generic GitHub uncertainty 应尽量“公共 Lab 测一次，下游私仓只测 unresolved local delta”。
 
+**仓库内一次性管理任务也可以用 Actions**：当外部 GitHub 连接器缺少 label-definition / Milestone 等 API、宿主 `gh` 未登录时，Architect 应检查**已有权限范围内的仓库 Actions + `GITHUB_TOKEN`**，而不是直接认定只能等 Human 手动登录。GitHub-hosted `ubuntu-latest` 预装 `gh`，可在限时单次 workflow 中设置 `GH_TOKEN: ${{ github.token }}`，依具体调用授予 `contents:read`、`issues:write`（普通 Issue/Label/Milestone）；操作 PR 必要时另核 `pull-requests:write`。按目标仓库限定执行、先 GET 查重/冲突，再幂等变更、逐项 GET 回读；执行后按需移除临时 workflow，保留 Actions 运行及 GitHub 原生对象作为证据。无需常驻 Runner 或另发长期 PAT。**可用性取决于当前仓库 Actions、Job 权限和私仓预算；这不是绕过授权，也不能用 repo token 管理用户级 Saved Views/跨仓个人 Project。**
+
 官方 current billing/runner 条件入口：
 - [GitHub Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions)
 - [GitHub-hosted runners reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
+- [GitHub CLI in workflows](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-github-cli)
+- [Automatic GITHUB_TOKEN](https://docs.github.com/en/actions/concepts/security/github_token)
 
 ## 4. Projection、event 与 currentness
 
