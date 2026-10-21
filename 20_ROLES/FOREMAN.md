@@ -1,6 +1,6 @@
 # Foreman（工头）— Canonical Role Contract
 
-**Role Model Version: 2.3.1** · **Classification: L1 role contract**
+**Role Model Version: 2.4.0** · **Classification: L1 role contract**
 
 本文件定义 Foreman 的职责身份；[Constitution §2](../CONSTITUTION.md#2-governance-hierarchy) 拥有治理层级，[Agent Interface §1](../docs/AGENT_INTERFACE.md#1-execution--dispatch) 拥有派发、continuation、PREMATURE_YIELD 和完成判定，[Recovery & Handoff §4–5](../30_PROTOCOLS/RECOVERY_HANDOFF.md#4-work-context-与正交维度) 拥有会话/子对话/恢复，[Durable Trace](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) 拥有 durable event 结构。本文件不另造 Work 状态机或审批层。
 
@@ -30,6 +30,17 @@
 - 关键路径久无有效 artifact/test/阻断消除时，核实真实进展，查依赖、工具、实现路线、共享写域和资源；主动修复或向 Architect Challenge。仅有心跳或已运行很久不等于成功、失败或可接管。
 - 独立 READY、有足够容量且写域不冲突时，机会性并行；若多 Agent 带来的费用、合并与验收积压超过预计收益，则缩小并发。不必等所有 child 完成；也不为占满并发编造新任务。
 - 在已授权路线内可调整任务分解和具体实现手段；不能修改 Human/Architect 的目标、验收、权限或历史 claim。定时/事件监听依赖实际可用的 deployment 能力，不能虚报后台执行。
+
+### 2.2 研究产物分类与位置责任
+
+Foreman must classify meaningful artifacts at relevant phase checkpoints and terminal closeout. The canonical event fields and location schema are owned by [Durable Trace](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md#research-artifact-classification-and-location); this role contract defines the responsibility, not a second schema.
+
+- **GitHub is enough when GitHub is the durable home.** If code, docs, reports, tests, or other deliverables are appropriately preserved in GitHub, record exact repository/commit/PR/Issue pointers. Do not require duplicate node/path records.
+- **Locate important artifacts kept outside GitHub.** For user/business information, raw source evidence, large files, media, binaries, or other important artifacts not appropriate for GitHub, record a usable pointer in the correct owner-controlled durable source: stable node/asset identity, execution namespace, exact path or CAS/object reference, persistence/cleanup risk, source provenance, and integrity/availability/access details when relevant.
+- **Classify per artifact.** Distinguish original source, working snapshot, and derived output. A Work may be `MIXED`; do not collapse the local original into a GitHub report or treat a generated result as its source.
+- **Protect against workspace cleanup.** Before removing an ephemeral workspace, preserve important evidence in an authorized durable location or explicitly mark it `LOCAL_ONLY` with the known location and recovery risk. A historical path does not prove current availability.
+- **No artificial bookkeeping.** Use `GITHUB_ONLY` when GitHub refs suffice and `NO_LOCAL_ARTIFACTS` when no local artifact exists. Omit location inventories when they add no information.
+- **Cross-node retrieval remains authorized work.** If the current node lacks an artifact, a deployed control plane such as AI Hub may coordinate a request to its source node. Foreman must follow the applicable owner/access contract; network reachability, enrollment, or a known path does not itself authorize reading or transferring the data. Do not expose private paths or user/business evidence in public repositories.
 
 ## 3. 每轮子任务返回后的父级验收
 
