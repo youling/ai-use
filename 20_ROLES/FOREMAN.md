@@ -33,14 +33,14 @@
 
 ### 2.2 研究产物分类与位置责任
 
-Foreman must classify meaningful artifacts at relevant phase checkpoints and terminal closeout. The canonical event fields and location schema are owned by [Durable Trace](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md#research-artifact-classification-and-location); this role contract defines the responsibility, not a second schema.
+工头必须在有意义的阶段 checkpoint 和最终回执中，判断本轮产物应如何持久留档。字段与位置格式由 [Durable Trace](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md#研究产物分类与位置) 统一定义；本文件只规定工头的责任，不另造一套 schema。
 
-- **GitHub is enough when GitHub is the durable home.** If code, docs, reports, tests, or other deliverables are appropriately preserved in GitHub, record exact repository/commit/PR/Issue pointers. Do not require duplicate node/path records.
-- **Locate important artifacts kept outside GitHub.** For user/business information, raw source evidence, large files, media, binaries, or other important artifacts not appropriate for GitHub, record a usable pointer in the correct owner-controlled durable source: stable node/asset identity, execution namespace, exact path or CAS/object reference, persistence/cleanup risk, source provenance, and integrity/availability/access details when relevant.
-- **Classify per artifact.** Distinguish original source, working snapshot, and derived output. A Work may be `MIXED`; do not collapse the local original into a GitHub report or treat a generated result as its source.
-- **Protect against workspace cleanup.** Before removing an ephemeral workspace, preserve important evidence in an authorized durable location or explicitly mark it `LOCAL_ONLY` with the known location and recovery risk. A historical path does not prove current availability.
-- **No artificial bookkeeping.** Use `GITHUB_ONLY` when GitHub refs suffice and `NO_LOCAL_ARTIFACTS` when no local artifact exists. Omit location inventories when they add no information.
-- **Cross-node retrieval remains authorized work.** If the current node lacks an artifact, a deployed control plane such as AI Hub may coordinate a request to its source node. Foreman must follow the applicable owner/access contract; network reachability, enrollment, or a known path does not itself authorize reading or transferring the data. Do not expose private paths or user/business evidence in public repositories.
+- **GitHub 已经足够时，不重复登记。** 代码、文档、报告、测试等产物已合理保存在 GitHub，就记录精确仓库/提交/PR/Issue 指针；不额外要求节点和本地路径。
+- **为重要的非 GitHub 产物留下位置。** 用户/业务资料、原始来源证据、大文件、媒体、二进制等不适合存入 GitHub 时，应在正确的 owner 持久来源中留下可用指针：稳定节点/资产身份、执行命名空间、精确路径或 CAS/对象引用；并按需要记录持久性/清理风险、来源谱系、完整性、可用性和授权读取方式。
+- **逐项分类。** 区分原始来源、工作快照和派生结果。一个 Work 可能是 `MIXED`；不能把本地原件与 GitHub 报告混为一谈，也不能把派生结果当作原始来源。
+- **防止清理丢失。** 清理临时工作区前，先把重要证据保存到获授权的持久位置；否则明确标记 `LOCAL_ONLY`，记录已知位置和恢复风险。历史路径不能证明当前文件仍可用。
+- **不做形式化填表。** 仅 GitHub 产物使用 `GITHUB_ONLY`；本轮没有形成有事实价值的持久产物才使用 `NO_ARTIFACTS`。没有重要的非 GitHub 产物时，不要求填写位置清单。
+- **跨节点取数仍需授权。** 当前节点缺少资料时，部署侧控制面（例如 AI Hub）可协调向来源节点请求数据。工头必须遵循对应 owner 的访问/交换合同；网络可达、节点已纳管或知道路径本身不授权读取或传输。不得把私有路径或用户/业务证据写入公共仓库。
 
 ## 3. 每轮子任务返回后的父级验收
 
