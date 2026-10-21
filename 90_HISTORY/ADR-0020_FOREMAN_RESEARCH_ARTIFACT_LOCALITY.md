@@ -1,6 +1,6 @@
 # ADR-0020 — Foreman 研究产物分类与非 GitHub 证据定位
 
-- Status: Proposed; Human direction recorded in [#173](https://github.com/youling/ai-use/issues/173); normative adoption requires exact-head review and merge
+- Status: Human decision frozen in [#173](https://github.com/youling/ai-use/issues/173); normative adoption pending exact-head review and merge
 - Decision level: L2 cross-project durable-evidence / recovery contract
 - Canonical event and location semantics: [Durable Trace — 研究产物分类与位置](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md#研究产物分类与位置)
 - Canonical role responsibility: [Foreman §2.2](../20_ROLES/FOREMAN.md#22-研究产物分类与位置责任)
