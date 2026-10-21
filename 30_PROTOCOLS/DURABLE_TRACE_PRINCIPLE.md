@@ -61,7 +61,7 @@ claim: <exact AGENT_CLAIMED pointer>
 result: SUCCESS | NEGATIVE_RESULT | PARTIAL | BLOCKED | HUMAN_REQUIRED | FAILED | CANCELLED
 remote_head: <sha | none>
 durable_refs: <PR / commit / report / artifact pointers, or none>
-artifact_disposition: GITHUB_ONLY | NON_GITHUB_ARTIFACTS | MIXED | NO_LOCAL_ARTIFACTS
+artifact_disposition: GITHUB_ONLY | NON_GITHUB_ARTIFACTS | MIXED | NO_ARTIFACTS
 artifact_locations: <only for important non-GitHub artifacts; otherwise omit>
 verification: <summary>
 remaining: <none | exact remaining>
@@ -105,7 +105,7 @@ phase: <semantic phase>
 recoverability: REMOTE | LOCAL_ONLY
 completed: <facts / conclusions completed>
 durable_refs: <PR / branch / commit / exact head / report pointer, when available>
-artifact_disposition: GITHUB_ONLY | NON_GITHUB_ARTIFACTS | MIXED | NO_LOCAL_ARTIFACTS (when artifacts have been produced)
+artifact_disposition: GITHUB_ONLY | NON_GITHUB_ARTIFACTS | MIXED | NO_ARTIFACTS (when artifacts have been produced)
 artifact_locations: <only for important non-GitHub artifacts; otherwise omit>
 verification: <done / pending / not-run + evidence>
 remaining: <what is still not done>
@@ -116,42 +116,42 @@ next: <single concrete next action>
 字段可以按任务缩短，但必须足以让 fresh/resume Agent 判断“做到哪、证据在哪、下一步是什么”。
 不要把 chain-of-thought、逐命令日志或大段临时探索塞进 checkpoint。
 
-### Research artifact classification and location
+### 研究产物分类与位置
 
-Foreman classifies **each meaningful artifact**, not just the Work as a whole. This classification is part of durable closeout; at a checkpoint, include it when a meaningful artifact is produced or its recoverability changes.
+工头应按**每一项有事实价值的产物**分类，而不是只给整个 Work 贴一个标签。在阶段 checkpoint 中，只有产物新生成或其可恢复性发生变化时才需要补充；terminal 必须明确本轮产物归类。
 
-- `GITHUB_ONLY`: code, documentation, reports, tests, or other deliverables are appropriately preserved in GitHub. Exact GitHub refs in `durable_refs` are sufficient; do not add duplicate node/path metadata.
-- `NON_GITHUB_ARTIFACTS`: important raw/source evidence, user/business data, large files, media, binaries, or other artifacts are not appropriate for GitHub and are preserved elsewhere.
-- `MIXED`: both GitHub deliverables and important non-GitHub artifacts exist; classify and locate the latter individually.
-- `NO_LOCAL_ARTIFACTS`: the task produced no local artifact. No empty path inventory or artificial metadata is required.
+- `GITHUB_ONLY`：代码、文档、报告、测试等已合理保存在 GitHub。`durable_refs` 中的精确仓库/提交/PR/Issue 指针足够，不重复登记节点和路径。
+- `NON_GITHUB_ARTIFACTS`：重要原始来源、用户/业务资料、大文件、媒体、二进制或其他不适合存入 GitHub 的产物，保存在其他位置。
+- `MIXED`：同时有 GitHub 交付物和重要的非 GitHub 产物；逐项定位后者。
+- `NO_ARTIFACTS`：本次没有形成有事实价值的持久产物。不要为满足格式要求虚构空目录或路径清单。只有 GitHub 产物时应使用 `GITHUB_ONLY`，不能归入 `NO_ARTIFACTS`。
 
-For important non-GitHub artifacts, record a pointer in the appropriate owner-controlled durable source. Include only the fields needed to locate, interpret, and verify the item:
+对重要的非 GitHub 产物，在对应 owner 控制的持久来源中记录可用指针。只填写定位、理解和核验该产物所需的字段：
 
 ```yaml
 artifact_locations:
-  - artifact: <logical label; do not embed private payload>
+  - artifact: <逻辑名称；不嵌入私有数据内容>
     kind: ORIGINAL_SOURCE | WORKING_SNAPSHOT | DERIVED_OUTPUT | OTHER
-    node: <stable Fleet UID or durable asset/host identity, when node-local>
+    node: <稳定 Fleet UID 或持久资产/主机标识；仅节点本地文件需要>
     namespace: <host | WSL distro | container | volume | external object/CAS>
-    locator: <exact path or durable object/CAS reference>
+    locator: <精确路径或持久对象/CAS 引用>
     persistence: OWNER_DURABLE | NODE_LOCAL_PERSISTENT | EPHEMERAL | EXTERNAL_OBJECT | UNKNOWN
-    provenance: <source pointer and relation to source/snapshot/derived output>
-    integrity: <hash/manifest pointer when appropriate, otherwise N/A>
+    provenance: <来源指针，以及与原件/快照/派生结果的关系>
+    integrity: <适用时的哈希/manifest 指针；否则 N/A>
     availability: PRESENT_AT_CHECKPOINT | LAST_VERIFIED | UNKNOWN
-    verified_at: <timestamp or evidence pointer, when relevant>
-    access: <owner-authorized retrieval/transfer pointer, when needed>
+    verified_at: <核验时间或证据指针，适用时填写>
+    access: <必要时填写 owner 授权的读取/传输指针>
 ```
 
-Rules:
+规则：
 
-1. Keep original source, working snapshot, and derived output distinct. A path is a locator, not proof that the bytes are still present or unchanged.
-2. Before an ephemeral workspace is cleaned, preserve important evidence in an authorized durable location, or explicitly record `recoverability: LOCAL_ONLY`, the exact surviving location if known, and the recovery risk. Do not claim durable recovery when only a transient path remains.
-3. Record private paths, customer/user data pointers, and source-specific details only in the appropriate authorized owner source. The public `ai-use` repository contains the reusable contract, not private runtime evidence.
-4. If current availability cannot be verified, say `LAST_VERIFIED` or `UNKNOWN`; do not infer present availability from an old receipt.
-5. A deployed control plane (for example, AI Hub) may coordinate an authorized cross-node retrieval when the current node lacks an artifact. Network reachability, node enrollment, or knowledge of a path does not grant read, disclosure, or transfer authority.
-6. If the task has not produced a meaningful artifact yet, omit the classification at that checkpoint. At terminal closeout, choose the applicable disposition so the next Agent knows whether to follow GitHub refs, a non-GitHub location, or no local artifact.
+1. 原始来源、工作快照和派生结果必须区分。路径只是定位符，不证明文件当前仍存在或字节未变化。
+2. 清理临时工作区前，必须把重要证据保存到获授权的持久位置；若做不到，应明确记录 `recoverability: LOCAL_ONLY`、已知位置和恢复风险。仅剩临时路径时，不得宣称已经持久化。
+3. 私有路径、客户/用户资料指针及来源细节只写入相应的授权 owner 来源。公共 `ai-use` 只保存可复用规则，不保存私有运行态证据。
+4. 无法确认当前可用性时，标记 `LAST_VERIFIED` 或 `UNKNOWN`；不能从旧回执推断文件现在仍可访问。
+5. 部署侧控制面（例如 AI Hub）可在获得授权后协调跨节点取回数据。网络可达、节点已纳管或知道文件路径，都不等于获得读取、披露或传输权限。
+6. 阶段尚未产生产物时，可省略分类。terminal 应明确选择适用类别，让后续 Agent 知道该追踪 GitHub 指针、非 GitHub 位置，还是本轮没有持久产物。
 
-These fields extend the existing event shape conditionally; they do not create a new Work state machine, artifact database, or storage service.
+这些字段是对现有事件结构的条件式扩展，不新建 Work 状态机、产物数据库或通用存储服务。
 
 ### Remote recoverability
 
