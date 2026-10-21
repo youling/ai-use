@@ -1,6 +1,6 @@
 # Durable Trace Principle
 
-**Classification: L2 Targeted Reference.**
+**Protocol Version: 1.1.0** · **Classification: L2 Targeted Reference.**
 
 ## 目的
 
@@ -61,6 +61,8 @@ claim: <exact AGENT_CLAIMED pointer>
 result: SUCCESS | NEGATIVE_RESULT | PARTIAL | BLOCKED | HUMAN_REQUIRED | FAILED | CANCELLED
 remote_head: <sha | none>
 durable_refs: <PR / commit / report / artifact pointers, or none>
+artifact_disposition: GITHUB_ONLY | NON_GITHUB_ARTIFACTS | MIXED | NO_LOCAL_ARTIFACTS
+artifact_locations: <only for important non-GitHub artifacts; otherwise omit>
 verification: <summary>
 remaining: <none | exact remaining>
 blockers: <none | exact blocker>
@@ -103,6 +105,8 @@ phase: <semantic phase>
 recoverability: REMOTE | LOCAL_ONLY
 completed: <facts / conclusions completed>
 durable_refs: <PR / branch / commit / exact head / report pointer, when available>
+artifact_disposition: GITHUB_ONLY | NON_GITHUB_ARTIFACTS | MIXED | NO_LOCAL_ARTIFACTS (when artifacts have been produced)
+artifact_locations: <only for important non-GitHub artifacts; otherwise omit>
 verification: <done / pending / not-run + evidence>
 remaining: <what is still not done>
 blockers: <none or current blocker/risk>
@@ -111,6 +115,43 @@ next: <single concrete next action>
 
 字段可以按任务缩短，但必须足以让 fresh/resume Agent 判断“做到哪、证据在哪、下一步是什么”。
 不要把 chain-of-thought、逐命令日志或大段临时探索塞进 checkpoint。
+
+### Research artifact classification and location
+
+Foreman classifies **each meaningful artifact**, not just the Work as a whole. This classification is part of durable closeout; at a checkpoint, include it when a meaningful artifact is produced or its recoverability changes.
+
+- `GITHUB_ONLY`: code, documentation, reports, tests, or other deliverables are appropriately preserved in GitHub. Exact GitHub refs in `durable_refs` are sufficient; do not add duplicate node/path metadata.
+- `NON_GITHUB_ARTIFACTS`: important raw/source evidence, user/business data, large files, media, binaries, or other artifacts are not appropriate for GitHub and are preserved elsewhere.
+- `MIXED`: both GitHub deliverables and important non-GitHub artifacts exist; classify and locate the latter individually.
+- `NO_LOCAL_ARTIFACTS`: the task produced no local artifact. No empty path inventory or artificial metadata is required.
+
+For important non-GitHub artifacts, record a pointer in the appropriate owner-controlled durable source. Include only the fields needed to locate, interpret, and verify the item:
+
+```yaml
+artifact_locations:
+  - artifact: <logical label; do not embed private payload>
+    kind: ORIGINAL_SOURCE | WORKING_SNAPSHOT | DERIVED_OUTPUT | OTHER
+    node: <stable Fleet UID or durable asset/host identity, when node-local>
+    namespace: <host | WSL distro | container | volume | external object/CAS>
+    locator: <exact path or durable object/CAS reference>
+    persistence: OWNER_DURABLE | NODE_LOCAL_PERSISTENT | EPHEMERAL | EXTERNAL_OBJECT | UNKNOWN
+    provenance: <source pointer and relation to source/snapshot/derived output>
+    integrity: <hash/manifest pointer when appropriate, otherwise N/A>
+    availability: PRESENT_AT_CHECKPOINT | LAST_VERIFIED | UNKNOWN
+    verified_at: <timestamp or evidence pointer, when relevant>
+    access: <owner-authorized retrieval/transfer pointer, when needed>
+```
+
+Rules:
+
+1. Keep original source, working snapshot, and derived output distinct. A path is a locator, not proof that the bytes are still present or unchanged.
+2. Before an ephemeral workspace is cleaned, preserve important evidence in an authorized durable location, or explicitly record `recoverability: LOCAL_ONLY`, the exact surviving location if known, and the recovery risk. Do not claim durable recovery when only a transient path remains.
+3. Record private paths, customer/user data pointers, and source-specific details only in the appropriate authorized owner source. The public `ai-use` repository contains the reusable contract, not private runtime evidence.
+4. If current availability cannot be verified, say `LAST_VERIFIED` or `UNKNOWN`; do not infer present availability from an old receipt.
+5. A deployed control plane (for example, AI Hub) may coordinate an authorized cross-node retrieval when the current node lacks an artifact. Network reachability, node enrollment, or knowledge of a path does not grant read, disclosure, or transfer authority.
+6. If the task has not produced a meaningful artifact yet, omit the classification at that checkpoint. At terminal closeout, choose the applicable disposition so the next Agent knows whether to follow GitHub refs, a non-GitHub location, or no local artifact.
+
+These fields extend the existing event shape conditionally; they do not create a new Work state machine, artifact database, or storage service.
 
 ### Remote recoverability
 
