@@ -17,7 +17,7 @@ Requiring every artifact to carry node/path metadata is also wrong: it duplicate
 2. Exact GitHub repository/commit/PR/Issue pointers suffice when GitHub is the appropriate durable home. No duplicate node/path inventory is required.
 3. Important artifacts retained outside GitHub must be locatable from the appropriate owner-controlled durable source. Record a stable node/asset identity when node-local, the execution namespace, exact path or CAS/object reference, persistence/cleanup risk, provenance, and integrity/availability/access details as applicable.
 4. Original source, working snapshot, and derived output remain distinct. Before ephemeral workspace cleanup, preserve important evidence in an authorized durable location or explicitly state `LOCAL_ONLY` and the recovery risk.
-5. If no local artifact exists, do not create empty inventories. The terminal disposition distinguishes `GITHUB_ONLY`, `NON_GITHUB_ARTIFACTS`, `MIXED`, and `NO_LOCAL_ARTIFACTS`.
+5. If no meaningful durable artifact was produced, do not create empty inventories and use `NO_ARTIFACTS`. If deliverables are preserved only in GitHub, use `GITHUB_ONLY`; the two states are distinct.
 6. Private user/business data and location details stay in the appropriate authorized owner source, not public ai-use. A deployment control plane may coordinate authorized cross-node retrieval, but connectivity or a known path does not grant data-access or transfer authority.
 7. This decision extends the existing Durable Trace and Foreman contracts. It does not create a parallel artifact database, a new Work state machine, a universal storage service, or a requirement to copy data through the control plane.
 
