@@ -285,17 +285,26 @@ class SetupEngine:
             if not selected.is_dir():raise SetupError('ISOLATED_PARENT_DIRECTORY_REQUIRED')
             parents=[selected]
         else:parents=[Path(volume['mount']) for volume in volumes]
+        overlap=False
         for selected in parents:
-            scope=safe_path(selected/('AgentRuntime-Setup-'+uuid.uuid4().hex[:12]))
-            try:
-                candidate=self.plan(observation,overrides={'isolated_scope':str(scope)})
-                if any(gate['state']!='PASS' for gate in candidate['gates'] if gate['code'].startswith('PLACEMENT_')):
-                    raise SetupError('ISOLATED_PARENT_STORAGE_UNSUPPORTED_OR_PRESSURE')
-            except SetupError as error:
-                if str(error)=='ISOLATED_SCOPE_OVERLAP' and parent is None:continue
-                raise
-            return {'isolated_scope':str(scope),'action':'REVIEW_ONLY_NO_HOST_CHANGES'}
-        raise SetupError('ISOLATED_SCOPE_OVERLAP')
+            # Installation paths are human-facing. Prefer a short stable name;
+            # occupied names (including dangling links) are never adopted.
+            for number in range(1,101):
+                raw_scope=selected/('agent' if number==1 else f'agent-{number}')
+                if os.path.lexists(raw_scope):continue
+                scope=safe_path(raw_scope)
+                try:
+                    candidate=self.plan(observation,overrides={'isolated_scope':str(scope)})
+                    if any(gate['state']!='PASS' for gate in candidate['gates'] if gate['code'].startswith('PLACEMENT_')):
+                        raise SetupError('ISOLATED_PARENT_STORAGE_UNSUPPORTED_OR_PRESSURE')
+                except SetupError as error:
+                    if str(error)=='ISOLATED_SCOPE_OVERLAP':
+                        overlap=True
+                        continue
+                    if str(error)=='ISOLATED_SCOPE_ALREADY_EXISTS':continue
+                    raise
+                return {'isolated_scope':str(scope),'action':'REVIEW_ONLY_NO_HOST_CHANGES'}
+        raise SetupError('ISOLATED_SCOPE_OVERLAP' if overlap else 'ISOLATED_SCOPE_NAME_UNAVAILABLE')
 
     def plan(self,observation,overrides=None,github=None,model=None,durable=None):
         overrides=overrides or {};github=github or {};model=model or {};durable=durable or {}
