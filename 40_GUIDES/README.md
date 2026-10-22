@@ -15,3 +15,5 @@ secret/output invariant 见 [AGENTS.md §5](../AGENTS.md#5-evidence-bound-mutati
 按任务阶段调节模型推理强度：见 [Adaptive Reasoning Effort](ADAPTIVE_REASONING_EFFORT.md)。它只提供 provider-agnostic 实践映射；Fresh/takeover 与 steady/escalation 的 normative owner 仍在 Reconnaissance / Agent Interface。
 
 需要周期观察项目、发现待审/疑似失联/真实 Human Gate，或生成每日恢复摘要时，按需读取 [Architect Watch & Daily Brief](ARCHITECT_WATCH_AND_BRIEF.md)。health class 与 brief 都是派生 read model，不是第二 Work state。
+对既有来源/接口做取证、解释一个 0 结果、或准备发布只读回执时，按需读取 [探测与验证作业手册](PROBE_AND_VERIFY_PLAYBOOK.md)：先清点既有来源再采集、零结果五槽位与零捕获正控、三路互证、发布卫生与传输选择。它是实践指南，不建立新权限。
+
