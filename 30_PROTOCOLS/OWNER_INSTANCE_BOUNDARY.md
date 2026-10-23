@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** 仅在 semantic owner、存储/实例拆分、private overlay、pointer/projection 或 secret handling 边界需要判断时读取。
 
-**Protocol Version: 1.0.0**
+**Protocol Version: 1.1.0**
 
 语义 owner：[工作项 #66](https://github.com/youling/ai-use/issues/66)；长期裁决：[ADR-0005](../90_HISTORY/ADR-0005_OWNER_NATIVE_DERIVATION.md)。本协议细化既有 L0，不另立 authority、项目 schema、vault 或全局保密分类制度。
 
@@ -54,6 +54,16 @@ Private overlay 只有同时满足以下条件才可作为当前 consumer artifa
 ## 5. Privacy / access 与 secret 分开判断
 
 Private ACL 和 ordinary private data 首先是访问边界；“放在私仓”本身不定义一种永久 secret 分类。能行使 signing、access、decryption、recovery 能力的材料按功能属于 secret；Human 也可明确指定额外 scoped content 的保护要求。
+
+### 5.1 Explicit Human ruling: ordinary data in owner-controlled private repositories
+
+当 Human/语义 owner 已明确裁决：指定的、由其控制的私有仓库是内部工作区，普通业务、客户、来源原文与逆向证据在该范围内无需常规脱敏时，Agent MUST 遵守这项有界裁决。**不得仅因为数据包含姓名、账号标识、消息正文、业务金额或其他可识别细节，就自行对私仓内部工作产物做遮蔽、替换、合成或删减**；在授权范围内应优先保留足以支持真实性、来源追溯、复现与审计的原始证据。
+
+该裁决只适用于 Human 明确指定的私有仓库、工作项与允许保留的内容，不自动扩展到所有仓库或目的地。跨越私有边界（例如写入公仓、公有 Issue/PR、公开发布、发送给外部模型/服务、复制到未授权主机或无关项目）时，必须重新判断目标可见性、源约束和当前授权；私仓豁免不等于可公开或可任意转交。
+
+**Secret value 仍独立受保护**：密码、访问令牌、Cookie、私钥、解密/签名/恢复密钥等可直接授予能力的值，不因仓库私有或普通数据无需脱敏而自动获准写入提交、普通文档或回执。按 Secret custody 与 Human authorization 规则处理。源自身的访问、保留、删除、合同、法律或合规约束也不会被私仓 ACL 或不脱敏裁决解除。
+
+若 Agent 不确定当前仓库可见性、Human 裁决覆盖范围或源处理约束，应先核实并仅暂停有疑问的跨界传播；**不得把“先把内部证据脱敏”当成默认替代方案**。项目特定的实际裁决应由项目 owner 在对应私有工作文档中留 durable pointer；本公共协议只定义可复用的判定机制，不记录具体私有项目事实。
 
 `secret value != secret reference`。reference 的 schema、locator 与可见范围由 owner-local contract 决定；reference 也可能携带敏感 locator，若其自身足以授予能力则按 secret value 处理。公共协议不规定 vault 产品、SecretReference schema、具体存储平面或私有路径。
 
