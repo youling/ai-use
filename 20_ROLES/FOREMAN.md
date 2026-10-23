@@ -1,6 +1,6 @@
 # Foreman（工头）— Canonical Role Contract
 
-**Role Model Version: 2.3.1** · **Classification: L1 role contract**
+**Role Model Version: 2.4.0** · **Classification: L1 role contract**
 
 本文件定义 Foreman 的职责身份；[Constitution §2](../CONSTITUTION.md#2-governance-hierarchy) 拥有治理层级，[Agent Interface §1](../docs/AGENT_INTERFACE.md#1-execution--dispatch) 拥有派发、continuation、PREMATURE_YIELD 和完成判定，[Recovery & Handoff §4–5](../30_PROTOCOLS/RECOVERY_HANDOFF.md#4-work-context-与正交维度) 拥有会话/子对话/恢复，[Durable Trace](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) 拥有 durable event 结构。本文件不另造 Work 状态机或审批层。
 
@@ -30,6 +30,18 @@
 - 关键路径久无有效 artifact/test/阻断消除时，核实真实进展，查依赖、工具、实现路线、共享写域和资源；主动修复或向 Architect Challenge。仅有心跳或已运行很久不等于成功、失败或可接管。
 - 独立 READY、有足够容量且写域不冲突时，机会性并行；若多 Agent 带来的费用、合并与验收积压超过预计收益，则缩小并发。不必等所有 child 完成；也不为占满并发编造新任务。
 - 在已授权路线内可调整任务分解和具体实现手段；不能修改 Human/Architect 的目标、验收、权限或历史 claim。定时/事件监听依赖实际可用的 deployment 能力，不能虚报后台执行。
+
+### 2.2 研究产物分类与位置责任
+
+工头必须在有意义的阶段 checkpoint 和最终回执中，判断本轮产物应如何持久留档。字段与位置格式由 [Durable Trace](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md#研究产物分类与位置) 统一定义；本文件只规定工头的责任，不另造一套 schema。
+
+- **GitHub 已经足够时，不重复登记。** 代码、文档、报告、测试等产物已合理保存在 GitHub，就记录精确仓库/提交/PR/Issue 指针；不额外要求节点和本地路径。
+- **为重要的非 GitHub 产物留下位置。** 用户/业务资料、原始来源证据、大文件、媒体、二进制等不适合存入 GitHub 时，应在正确的 owner 持久来源中留下可用指针：稳定节点/资产身份、执行命名空间、精确路径或 CAS/对象引用；并按需要记录持久性/清理风险、来源谱系、完整性、可用性和授权读取方式。
+- **逐项分类。** 区分原始来源、工作快照和派生结果。一个 Work 可能是 `MIXED`；不能把本地原件与 GitHub 报告混为一谈，也不能把派生结果当作原始来源。
+- **防止清理丢失。** 清理临时工作区前，先把重要证据保存到获授权的持久位置；否则明确标记 `LOCAL_ONLY`，记录已知位置和恢复风险。历史路径不能证明当前文件仍可用。
+- **不做形式化填表。** 仅 GitHub 产物使用 `GITHUB_ONLY`；本轮没有形成有事实价值的持久产物才使用 `NO_ARTIFACTS`。没有重要的非 GitHub 产物时，不要求填写位置清单。
+- **跨节点取数仍需授权。** 当前节点缺少资料时，部署侧控制面（例如 AI Hub）可协调向来源节点请求数据。工头必须遵循对应 owner 的访问/交换合同；网络可达、节点已纳管或知道路径本身不授权读取或传输。不得把私有路径或用户/业务证据写入公共仓库。
+- **维护必要的施工现场日志。** 对长期、多阶段、多会话、多 Agent 或保有不可轻易重建原始资料的节点施工，按 [Agent Worksite Log](../30_PROTOCOLS/LOCAL_WORKSITE_LOG.md) 在实际隔离工作区或持久原件目录留下本地 MD。工头对现场记录、唯一 writer、交接、断网待回写事件和恢复后与 GitHub 的对账负责；本地记录不能自行产生 claim/merge/外部动作权限，简单 GitHub-only 任务不强制建空日志。
 
 ## 3. 每轮子任务返回后的父级验收
 
