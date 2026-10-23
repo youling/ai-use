@@ -153,6 +153,8 @@ artifact_locations:
 
 这些字段是对现有事件结构的条件式扩展，不新建 Work 状态机、产物数据库或通用存储服务。
 
+**本地断点补充：** 长期、多 Agent、多节点或持有重要非 GitHub 原件的施工，可在实际工作区/原件目录中留下 [Agent Worksite Log](LOCAL_WORKSITE_LOG.md)。它记录尚未写回 GitHub 的完整现场事件与接续线索；工头必须在恢复连接后按 current GitHub authority/refs 对账，不能将本地日志等同远端 CLAIM、terminal 或第二份 Work SSOT。短小的 GitHub-only 任务不因此增加本地日志门槛。
+
 ### Remote recoverability
 
 有代码 / 文档 mutation 时，如果安全、在 scope 内且不会制造错误 authority，应优先在 checkpoint 前形成
