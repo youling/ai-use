@@ -37,3 +37,11 @@ Requiring every artifact to carry node/path metadata is also wrong: it duplicate
 - A task produces no local artifact. It must not invent a directory or generate a path inventory solely to satisfy the contract.
 
 Existing CLAIM / CHECKPOINT / TERMINAL events remain valid. The new classification and location fields are conditional extensions; historical receipts are not retroactively invalidated or rewritten. Current availability must be live-verified when a later Work attempts retrieval.
+
+## Human extension — Local worksite log (2026-10-24)
+
+Human also requested an actual Markdown engineering log beside the node-local worksite or large/private evidence directory, so different providers and models can recover interrupted work even when the preceding Agent did not reach a GitHub checkpoint. See [#173 extension](https://github.com/youling/ai-use/issues/173#issuecomment-6369593272).
+
+Decision: define the on-node [Agent Worksite Log](../30_PROTOCOLS/LOCAL_WORKSITE_LOG.md) as a bounded **local recovery journal**, with a copyable [template](../50_TEMPLATES/WORKSITE_LOG.md). It has a per-worksite identity, event-sequenced observed actions/evidence, derived quick resume snapshot, GitHub last-ack pointer and authorized sync path. It can contain non-GitHub raw-evidence locators and accurate LOCAL_ONLY/UNKNOWN states, but cannot create ownership/CLAIM, override current GitHub state, or make a node-local copy into off-node backup by assertion. One writer per isolated worksite prevents competing cross-agent edits. Small GitHub-only tasks remain exempt from ceremonial duplication.
+
+Rejected alternatives: a second global task database; one shared Markdown actively edited by multiple Agents; treating old local notes as current work authority; silently rewriting an append-only worksite history during correction. The worksite-log mechanics belong only to the new targeted protocol; this ADR records rationale and boundary, not duplicate schemas.
