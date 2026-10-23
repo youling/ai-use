@@ -20,7 +20,7 @@ snapshot_as_of_event: "E0000"
 
 > 本文件是现场恢复证据，不是 GitHub 的 Work authority / CLAIM / Review / terminal。  
 > 先读 current ai-use L0，再核验精确派单、现行 GitHub Work 与 owner；不可仅凭本文件接管或扩权。  
-> 具体字段和同步规则见 ai-use [Local Worksite Log](../30_PROTOCOLS/LOCAL_WORKSITE_LOG.md)。
+> 具体字段和同步规则见 current ai-use `30_PROTOCOLS/LOCAL_WORKSITE_LOG.md`；本文件复制到节点后不依赖相对文档链接。
 
 ## 当前现场摘要（派生，只表示 snapshot_as_of_event）
 
