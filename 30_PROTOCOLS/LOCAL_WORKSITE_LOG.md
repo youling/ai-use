@@ -14,7 +14,7 @@
 
 ## 1. 适用性：有现场才有日志
 
-工头在任务启动/接续时判断是否需要现场日志。以下情况应创建或恢复本地 `WORKSITE_LOG.md`：
+工头在任务启动/接续时判断是否需要现场日志。以下情况应创建或恢复本地 **WORKSITE_LOG.md**：
 
 - 长期、复杂、多阶段、多会话或可能由不同 Agent/runtime 接手的 Work；
 - 在某个真实节点上持续修改代码、环境或现场状态，尚有未推送的唯一证据；
@@ -27,8 +27,8 @@
 
 **每个隔离 Work Context / attempt / 可变写域只有一个现场日志 writer；不同并行工头、子任务和节点不共享一个可写 MD。**
 
-- 默认位置：隔离 worktree/工程目录根下的 `.worksite/WORKSITE_LOG.md`，便于启动器和接班者定点发现。
-- 重要非 GitHub 原件在持久数据目录中时，可优先把 `WORKSITE_LOG.md` 放在该 owner 控制的数据目录根部、与原件/manifest 相邻；工程目录只保存指向它的**只读地址**，不再维护第二份可编辑日志。
+- 默认位置：隔离 worktree/工程目录根下的 **.worksite/WORKSITE_LOG.md**，便于启动器和接班者定点发现。
+- 重要非 GitHub 原件在持久数据目录中时，可优先把 **WORKSITE_LOG.md** 放在该 owner 控制的数据目录根部、与原件/manifest 相邻；工程目录只保存指向它的**只读地址**，不再维护第二份可编辑日志。
 - 若一个 Work 跨节点/不同物理工作区，各自有自己的现场日志，使用相同逻辑 `work`、不同 `worksite_id` 和 `node`；换节点时通过精确指针关联前一现场，不尝试同步编辑一份全网共享 MD。
 - 日志应留在对应 owner 的私有/本地存储范围，**绝不默认提交到 Git**。位于 Git worktree 内时，先确认其目录实际被忽略（如受控本地 exclude）；不能保证不被误提交时，移至 owner 的非 Git 持久目录。不得为了日志而改写别的工头的 `.gitignore` 或占用共享写域。
 - 临时容器文件系统、tmpfs、可自动清理的 worktree 不可充当非 GitHub 唯一原件的持久 home；外部 volume、owner-owned archive 或等价来源由实例 owner 决定。
