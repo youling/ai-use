@@ -34,7 +34,7 @@ snapshot_as_of_event: "E0000"
 
 ## 事件流水（仅追加，完整 BEGIN/END 为一个事件）
 
-<!-- EVENT E0001 BEGIN -->
+<!-- EXAMPLE E0001 BEGIN -->
 
 ### E0001 · START · <RFC3339 timestamp with UTC offset>
 
@@ -47,9 +47,9 @@ snapshot_as_of_event: "E0000"
 - **sync**: PENDING_SYNC
 - **next**: <下一具体动作>
 
-<!-- EVENT E0001 END -->
+<!-- EXAMPLE E0001 END -->
 
-<!-- EVENT E0002 BEGIN -->
+<!-- EXAMPLE E0002 BEGIN -->
 
 ### E0002 · CHECKPOINT_LOCAL · <RFC3339 timestamp with UTC offset>
 
@@ -63,9 +63,9 @@ snapshot_as_of_event: "E0000"
 - **remaining**: <真正未完成的部分和真实 blocker>
 - **next**: <单个可执行下一步>
 
-<!-- EVENT E0002 END -->
+<!-- EXAMPLE E0002 END -->
 
-<!-- EVENT E0003 BEGIN -->
+<!-- EXAMPLE E0003 BEGIN -->
 
 ### E0003 · SYNC_ACK · <RFC3339 timestamp with UTC offset>
 
@@ -77,9 +77,9 @@ snapshot_as_of_event: "E0000"
 - **verification**: <写回回读结果；只有实际确认才填写 PASS>
 - **next**: <交给谁继续；无继续则按当前 Work terminal 合同>
 
-<!-- EVENT E0003 END -->
+<!-- EXAMPLE E0003 END -->
 
-<!-- EVENT E0004 BEGIN -->
+<!-- EXAMPLE E0004 BEGIN -->
 
 ### E0004 · HANDOFF_NOTE · <RFC3339 timestamp with UTC offset>
 
@@ -91,6 +91,6 @@ snapshot_as_of_event: "E0000"
 - **limitations**: <明确 UNKNOWN、LOCAL_ONLY 或其他不能重做/越界的事项>
 - **next**: <新 Agent 先核验 GitHub 现行 authority、CLAIM、HEAD 和 workspace，再读取现场>
 
-<!-- EVENT E0004 END -->
+<!-- EXAMPLE E0004 END -->
 
 > **模板备注（实际使用时删除）**：本文件应在每个隔离 Work Context 或持久证据根部实例化，事件只在真实发生后追加。不得把示例事件、占位符或无回读的 GitHub pointer 当作发生过的证据。多 Agent 不并发编辑同一文件；本地重要事件尽可能刷盘，文件残缺尾部不构成完成证明。
