@@ -17,7 +17,7 @@
 1. **Architect 负责解释系统如何拆分**：以变化原因、内聚/耦合、接口契约、状态 owner 和替换影响为线索，而不是以文件数量、框架习惯或某种流行模式代替设计。Foreman 按已授权边界实施，发现缺陷则挑战。
 2. **重要架构阶段 MUST 图示化总结**：在当前 GitHub Work/PR/checkpoint 中引用阶段图源，采取 `CREATE | UPDATE | REUSE_CURRENT`，描述领域/依赖/数据流、相对上阶段的可核验变化、剩余 UNKNOWN/gate 和下一步。小型窄修复可标 `NOT_APPLICABLE` 加理由。
 3. **图是 DERIVED 推理/导航，不是事实权威**：current canonical code/contracts/Issue/PR 优先；图源必须 Git 可 diff 或有等价机器可读的 owner source，动态信息有 source revision 和核验窗口，不虚构完成比例或将漂亮渲染等同语义通过。
-4. **软件工程方法与画图机制分属唯一 canonical homes**：软件工程方法归 `SOFTWARE_ARCHITECTURE_PRACTICE.md`，图的形态和阶段图归既有 `DIAGRAM_AS_CODE.md`。Agent Interface 和 routing 只给角色入口，不复制下层方法。
+4. **软件工程方法与画图机制分属唯一 canonical homes**：软件工程方法归 `30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md`，图的形态和阶段图归既有 `30_PROTOCOLS/DIAGRAM_AS_CODE.md`。Agent Interface 和 routing 只给角色入口，不复制下层方法。
 5. **风险适配**：保持 Project Architect 自治、不引入额外审批角色；不全项目强制 DDD/六边形/微服务/固定层数、统一语言或 renderer；选用实际需要的 fitness checks。
 6. **推进与纠错**：阶段图应尽早暴露逆向依赖、重复真值与未明确 owner，随后通过 exact code/diff/test/source 验证、修复或明确 UNKNOWN。可以复用当前图加变化说明，不为每次 checkpoint 重复制图。
 
