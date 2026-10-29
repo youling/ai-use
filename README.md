@@ -1,12 +1,37 @@
 # ai-use
 
-一套围绕 **Human governance + 专职 AI Agent + Git/GitHub durable state** 形成的人机协作方法论。
+**让人和不同 AI 像一个可接力的工程团队一样合作：任务有边界、成果有证据、换模型或换人还能继续。**
 
-它的工程出发点很简单：**默认 Human 不可靠、默认 AI 不可靠、默认执行环境不可靠。** 这里的“不可靠”不是价值判断，而是故障模型——Human 会遗忘、分心、离开项目；AI 会丢上下文、漂移、自述失真或突然中断；设备、网络、会话和执行节点会离线、损坏或被替换。ai-use 的目标不是消灭这些故障，而是让系统在这些故障发生后仍然可以从 durable state 恢复、核验并继续。
+这是一个公开的**人机协作工作手册**，提供角色分工、任务派发、阶段留痕、Review、恢复及按需阅读规则。你可以先用一个 AI 试验，不需要先安装舰队或搭建多 Agent 平台。**本仓的方法论不等于一键运行的托管服务。**
 
-> 第一次进入？先读 [`START_HERE.md`](START_HERE.md)。准备执行/接管角色时，第一份 normative rules read 是 current [`AGENTS.md`](AGENTS.md) L0。
+## 第一次来？先做一件小事
 
-[路由总览（派生）](docs/ROUTING_INDEX.md) · [路由目录源](ROUTING_CATALOG.yaml)
+1. **挑一个你自己的项目**（已有 GitHub 仓库更方便），确定本次要解决的一个具体问题。
+2. **把下面的提示词发给你常用的 AI**（例如 ChatGPT、Codex 或 OpenCode），让它先理解现状，不要立即动手。
+3. **检查任务边界和验收是否准确**，再授权一项可验证的执行；让结果回到你自己的 Issue、分支、PR 或持久证据中。
+
+```text
+我想在自己的项目中试用 ai-use 协作方法。
+工作手册：https://github.com/youling/ai-use
+目标项目：<owner>/<project-repo>
+这次的任务：<一个明确、可验证的问题>
+本轮只授权只读分析和方案，不允许直接改代码或执行外部操作。
+
+请先定位当前治理仓；准备执行角色时，首先读取现行 AGENTS.md（L0），
+然后按需读取目标项目规则和当前任务，不要通读整个手册。
+请说明实际读到的资料、任务边界、验收方法与下一步。
+如果无法访问 GitHub，请明确说出，不要冒充已核验或已写回。
+```
+
+**详细教程：** [从零开始使用 ai-use（五分钟试用、长期多 Agent、完整工作空间）](docs/GETTING_STARTED.md)。
+
+**已经在做多 Agent 项目？** 参看 [角色与职责](20_ROLES/README.md)、[派单示例](50_TEMPLATES/DISPATCH_PAIR.md) 与 [执行接口](docs/AGENT_INTERFACE.md)，按项目实际规模使用，不必为简单任务搭一整套治理层级。
+
+**给正在执行/恢复任务的 Agent：** 当前治理仓 [`AGENTS.md`](AGENTS.md) 是第一份规范性读取（BOOT-1 只允许先寻址）；[START_HERE](START_HERE.md) / [Reading Map](READING_MAP.md) 是**规则导航**，不是面向新人的逐步教程。仅加载本次任务需要的规则与项目事实。
+
+[路由总览](docs/ROUTING_INDEX.md) · [规则路由目录源](ROUTING_CATALOG.yaml)
+
+---
 
 ## Architecture at a glance
 
@@ -122,7 +147,8 @@ Human
 
 | 文件 | 给谁看 | 何时读 |
 | --- | --- | --- |
-| [`START_HERE.md`](START_HERE.md) | 全角色（首次进入者） | 第一次进入 ai-use、需要知道从哪开始 / 如何初始化 workspace 时 |
+| [新手使用指南](docs/GETTING_STARTED.md) | **第一次看到仓库的 Human** | 了解 ai-use 是什么，复制提示词试用一项任务，区分单 Agent / 多 Agent / 完整部署 |
+| [`START_HERE.md`](START_HERE.md) | Human / Agent 的**规则导航** | 根据场景定位已有规则（由 Routing Catalog 生成，不是上手教程） |
 | [`CONSTITUTION.md`](CONSTITUTION.md) | 全角色（尤其 Architect） | 治理冲突、重大裁决、理解体系时；普通任务不必通读 |
 | [`READING_MAP.md`](READING_MAP.md) | 全角色（机器/人类导航） | L0 已加载后，需要知道当前角色/场景该 targeted 读什么时 |
 | [`NAMESPACE.md`](NAMESPACE.md) | 全角色（zero-prompt 路由） | L0 后理解 `00→10→20→30→40→50→90` 的默认 next-hop chain；可 `SKIP` / `STOP_*`，不是 mandatory full-read order |
@@ -138,7 +164,7 @@ Human
 | [`30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md`](30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) | 所有执行 Agent | 需要留痕/返回 pointer 时（L2 按需） |
 | [`00_KERNEL/LANGUAGE_POLICY.md`](00_KERNEL/LANGUAGE_POLICY.md) | 所有执行 Agent | 人类可见输出默认简体中文（L2 按需） |
 
-一句话版：**不要通读整个仓库。** `START_HERE` 只做导航；执行/恢复/接管时先加载 `AGENTS.md` L0，随后通过 [Routing Catalog](ROUTING_CATALOG.yaml) 的生成投影选路：`NAMESPACE.md` 展示 zero-prompt 下一跳，`READING_MAP.md` 展示当前层 `NEXT | SKIP | STOP_*` 与 targeted homes。routing / applicability interpretation 归 catalog，投影不另立解释源。普通执行者通常只需要 L0 + 自己的精确任务 + 项目本地上下文。
+一句话版：**人类第一次来先读[新手使用指南](docs/GETTING_STARTED.md)，Agent 执行/恢复/接管时先读当前 `AGENTS.md` L0。** 不要通读整个仓库；随后通过 [Routing Catalog](ROUTING_CATALOG.yaml) 的生成投影选路：`NAMESPACE.md` 展示 zero-prompt 下一跳，`READING_MAP.md` 展示当前层 `NEXT | SKIP | STOP_*` 与 targeted homes。`START_HERE.md` 是生成的规则导航，不是另一份执行规范。普通执行者通常只需要 L0 + 自己的精确任务 + 项目本地上下文。
 
 ---
 
