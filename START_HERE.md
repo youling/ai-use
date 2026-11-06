@@ -27,6 +27,7 @@ ai-use 是可复用的人机协作治理与协议。体系概览见 [README.md](
 | `trace` / L2 | all；事实价值行为 / checkpoint / durable recovery evidence | [30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md](30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) |
 | `owner-instance-boundary` / L2 | all；semantic owner / storage / private instance-overlay / pointer-projection / secret reference-value 边界需要判断；仅按当前任务相关范围读取 | [30_PROTOCOLS/OWNER_INSTANCE_BOUNDARY.md](30_PROTOCOLS/OWNER_INSTANCE_BOUNDARY.md) |
 | `github-native-first` / L2 | Architect；提出自建 GitHub-hosted collaboration/control/work/release/event/read/query/navigation/metadata subsystem，或 material architecture 依赖 GitHub platform behavior；普通 bugfix / Hot Resume / 确定性维护 / 已冻结窄实现不触发 mandatory scan | [30_PROTOCOLS/GITHUB_NATIVE_FIRST.md](30_PROTOCOLS/GITHUB_NATIVE_FIRST.md) |
+| `oci-supply` / L2 | all；需要制作、校验、离线/内网传输或接收 OCI 镜像制品（Agent 或普通业务均适用）；不因普通非容器任务触发 | [capabilities/oci/CONTRACT.md](capabilities/oci/CONTRACT.md) |
 | `cold-start-check` / L2 | all；public cold-start / Kernel ABI / recovery regression 验证 | [40_GUIDES/PUBLIC_COLD_START_CHECKLIST.md](40_GUIDES/PUBLIC_COLD_START_CHECKLIST.md) |
 | `human-collaboration` / L2 | Human collaborator；Human 明确指定二脑协作 / Depositor；project 类型本身不触发 | [human/README.md](human/README.md) |
 

@@ -184,6 +184,13 @@ ai-use **不负责**私有项目实时状态、active project topology、Runner 
 
 ---
 
+## 可复用的工程能力
+
+- **[OCI Artifact Supply](capabilities/oci/README.md)**：面向所有业务/Agent 的 OCI 镜像制作、离线归档验证与跨宿主交付方法；首个公共可执行工具用于校验 OCI tar 与可信期望 digest。**不要求 Fleet、ai-hub 或 GHCR**。构建/传输/接收仍由使用方已有、获授权的运行时执行。具体支持范围见 [能力合同](capabilities/oci/CONTRACT.md)。
+- [Agent Runtime](agent-runtime/README.md)：OpenCode 等 Agent 专用的容器配方、conformance 与受控发布流程；它是上述通用 OCI 能力的一个消费者，不是所有业务镜像的前提。
+
+---
+
 ## License
 
 公共 Agent Runtime 产品线见 [agent-runtime](agent-runtime/README.md)：OpenCode
