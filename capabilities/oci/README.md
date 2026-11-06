@@ -48,9 +48,10 @@ python "$AI_USE_ROOT/capabilities/oci/verify_oci.py" inspect example.oci.tar --r
 将归档通过**当前授权的传输方式**交到另一个主机（SSH/rsync、可移动存储、受限对象存储或其他符合权限要求的机制均可）。接收端使用**制作端已经核准的两个期望值**校验：
 
 ```bash
+: "${AI_USE_ROOT:?}" "${EXPECTED_ARCHIVE_SHA256:?从可信来源填写}" "${EXPECTED_MANIFEST_DIGEST:?从可信来源填写}"
 python "$AI_USE_ROOT/capabilities/oci/verify_oci.py" verify received.oci.tar \
-  --expected-archive-sha256 <制作端确认的64位十六进制SHA256> \
-  --expected-manifest-digest sha256:<制作端确认的64位十六进制digest> \
+  --expected-archive-sha256 "$EXPECTED_ARCHIVE_SHA256" \
+  --expected-manifest-digest "$EXPECTED_MANIFEST_DIGEST" \
   --expected-platform linux/amd64 \
   --report receive.verified.json
 ```
