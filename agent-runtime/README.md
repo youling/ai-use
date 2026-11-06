@@ -5,7 +5,7 @@ Status: public source accepted and merged from PR #124 exact head
 `f8a4a873933e8b0e8e36d2c82cc7ecd480eeecfa` (merge `45de55617f1921055aef660c13310650eb15625a`).
 First OCI/GHCR package publication remains separately gated and has not occurred. [Ownership ADR](../90_HISTORY/ADR-0016_PUBLIC_AGENT_RUNTIME.md).
 
-One Foreman runtime per independent image. [OpenCode](opencode/README.md) is the
+Generic OCI build/archive/transfer verification for **all** projects belongs to [Public OCI Artifact Supply](../capabilities/oci/README.md); the Agent-specific image recipe, compatibility tests and release authority remain here. This is a consumer link, not another canonical packaging contract.\n\nOne Foreman runtime per independent image. [OpenCode](opencode/README.md) is the
 first amd64 reference; DSH and Claude Code remain future siblings, not dependencies.
 The container consumes [context/exchange/credentials](contract/README.md) and reads
 GitHub durable Work directly. Fleet, a broker or a scheduler is not required.
