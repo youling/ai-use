@@ -69,7 +69,7 @@ python capabilities/oci/verify_oci.py verify received.oci.tar \
 | Real container smoke | 在被记录的平台/用户/环境内按实际命令运行 | 另一个宿主或生产凭据/重启已验证 |
 | Receiver import + smoke | 指定接收端达到实际验收范围 | 任意宿主可以部署、业务数据卷能热拷贝 |
 
-特别区分：**OCI manifest digest**、**config digest/image ID**、**压缩 layer digest**、**解压 diffID** 与 **外部 tar/tar.gz 文件 SHA-256** 是不同对象。相同镜像在不同归档打包方式下，外层 tar 哈希可不同。<Link title="OCI Image Spec" url="https://github.com/opencontainers/image-spec/blob/main/spec.md" />
+特别区分：**OCI manifest digest**、**config digest/image ID**、**压缩 layer digest**、**解压 diffID** 与 **外部 tar/tar.gz 文件 SHA-256** 是不同对象。相同镜像在不同归档打包方式下，外层 tar 哈希可不同。[OCI Image Spec](https://github.com/opencontainers/image-spec/blob/main/spec.md)
 
 ## 支持范围与下一阶段
 
