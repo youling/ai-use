@@ -111,7 +111,8 @@ async def frozen_folder_picker_seams(root: Path, output: Path, pipelines: dict) 
     """Only chooser results are injected; native probe/parser/plan remain real."""
     from .tui import SetupApp
     from .read_only_acceptance import assert_fixture_unchanged
-    from textual.widgets import Button, Collapsible, Input
+    from textual import events
+    from textual.widgets import Button, Collapsible, Input, Static
     records = []
     for scenario in ['fresh', 'legacy_v1']:
         pipeline = pipelines[scenario]
@@ -168,6 +169,20 @@ async def frozen_folder_picker_seams(root: Path, output: Path, pipelines: dict) 
         scope_app = SetupApp(pipeline['engine'], folder_picker=lambda **kwargs: next(answers), host_authorized=False)
         scope_app.overrides['isolated_scope'] = initial_scope
         async with scope_app.run_test(size=(120, 40)) as pilot:
+            acceptance_stage('MOUSE_REMOUNT', scenario)
+            await pilot.pause()
+            checks = scope_app.query_one('#checks', Static)
+            point = checks.region.offset
+            if scope_app.screen.get_widget_and_offset_at(point.x + 2, point.y)[0] is not checks:
+                raise SetupError('SELF_TEST_MOUSE_REMOUNT_FAILED')
+            with scope_app.batch_update():
+                await checks.remove()
+                if checks.parent is not None:
+                    raise SetupError('SELF_TEST_MOUSE_REMOUNT_FAILED')
+                for event_type in (events.MouseDown, events.MouseMove, events.MouseUp):
+                    await scope_app.on_event(event_type(None, point.x + 2, point.y, 0, 0, 1, False, False, False))
+            await scope_app.render_step()
+            await pilot.pause()
             scope_app.query_one('#next', Button).focus()
             await pilot.press('enter')
             await pilot.pause(0.3)
@@ -176,18 +191,34 @@ async def frozen_folder_picker_seams(root: Path, output: Path, pipelines: dict) 
             scope_app.query_one('#advanced', Collapsible).collapsed = False
             await pilot.pause()
             scope_app.approved_fingerprint = 'PUBLIC_SYNTHETIC_PRIOR_CONSENT'
-            scope_app.query_one('#browse-workspace', Button).focus()
+            # Keep the engine escape counterexample separate from the usable
+            # scoped UI: its picker selects a parent, never an absent child.
+            try:
+                pipeline['engine'].plan(scope_app.probe_data, overrides={'isolated_scope':initial_scope, 'workspace':str(new_parent)})
+            except SetupError as error:
+                if str(error) != 'ISOLATED_SCOPE_TARGET_ESCAPE':
+                    raise
+            else:
+                raise SetupError('SELF_TEST_FOLDER_PICKER_SCOPE_GUARD_FAILED')
+            scope_app.query_one('#root-workspace', Input).value = str(new_parent)
+            scope_app.query_one('#recompute', Button).focus()
             await pilot.press('enter')
             await pilot.pause(0.3)
-            if ('ISOLATED_SCOPE_TARGET_ESCAPE' not in scope_app.status_text
+            if ('输入尚未采用' not in scope_app.status_text
                 or scope_app.overrides.get('isolated_scope') != initial_scope
                 or scope_app.approved_fingerprint is not None):
                 raise SetupError('SELF_TEST_FOLDER_PICKER_SCOPE_GUARD_FAILED')
+            scope_app.query_one('#root-workspace', Input).value = ''
+            answers = iter([str(new_parent), None])
+            acceptance_stage('FOLDER_PICKER_PARENT', scenario)
             scope_app.query_one('#browse-isolated-parent', Button).focus()
             await pilot.press('enter')
             await pilot.pause(0.4)
             proposed = Path(scope_app.overrides['isolated_scope'])
             if (proposed.parent != new_parent or proposed == new_parent or proposed.exists()
+                or proposed.name != 'agent' or scope_app.placement_mode != 'custom'
+                or scope_app.query_one('#placement-custom', Button).variant != 'primary'
+                or scope_app.query_one('#placement-auto', Button).variant != 'default'
                 or Path(initial_scope).exists()
                 or any(role in scope_app.overrides for role in ['workspace', 'config', 'cache', 'temp'])
                 or any(not Path(scope_app.plan_data['roots'][role]['path']).is_relative_to(proposed)
@@ -199,25 +230,56 @@ async def frozen_folder_picker_seams(root: Path, output: Path, pipelines: dict) 
             await pilot.press('enter')
             await pilot.pause()
             scope_app.query_one('#placement-auto', Button).focus()
+            acceptance_stage('FOLDER_PICKER_AUTO', scenario)
             await pilot.press('enter')
             await pilot.pause(0.3)
             if (scope_app.placement_mode != 'auto' or scope_app.overrides['isolated_scope'] != str(proposed)
                 or any(scope_app.query_one('#root-' + role, Input).value for role in ['workspace', 'config', 'cache', 'temp'])):
                 raise SetupError('SELF_TEST_FOLDER_PICKER_AUTO_CUSTOM_FAILED')
+            custom_names = {'workspace':'MyWorkspaces', 'config':'MyConfiguration', 'cache':'MyCache', 'temp':'MyTemporaryFiles'}
+            acceptance_stage('FOLDER_PICKER_CUSTOM', scenario)
+            for role, name in custom_names.items():
+                scope_app.query_one('#root-' + role, Input).value = name
+            scope_app.query_one('#recompute', Button).focus()
+            await pilot.press('enter')
+            await pilot.pause(0.3)
+            if (scope_app.plan_data.get('status') != 'READY'
+                or any(Path(scope_app.plan_data['roots'][role]['path']) != proposed / name for role, name in custom_names.items())
+                or proposed.exists()):
+                raise SetupError('SELF_TEST_FOLDER_PICKER_AUTO_CUSTOM_FAILED')
             (output / f'actual-exe-folder-parent-{scenario}-120x40.svg').write_text(
                 scope_app.export_screenshot(title=f'ACTUAL EXE / NATIVE PIPELINE / {scenario} / CHOOSER SEAM / NEW PARENT REVIEW'),
                 encoding='utf-8')
             before = copy.deepcopy((scope_app.overrides, scope_app.plan_data))
+            acceptance_stage('FOLDER_PICKER_CANCEL', scenario)
             scope_app.query_one('#browse-isolated-parent', Button).focus()
             await pilot.press('enter')
             await pilot.pause(0.2)
             if before != (scope_app.overrides, scope_app.plan_data):
                 raise SetupError('SELF_TEST_FOLDER_PICKER_CANCEL_CHANGED_STATE')
+            # Exercise the shipping preview navigation, never an Apply seam.
+            acceptance_stage('PREVIEW_COMPLETION', scenario)
+            for selector in ('#next', '#skip-github', '#skip-model', '#next'):
+                scope_app.query_one(selector, Button).focus()
+                await pilot.press('enter')
+                await pilot.pause(0.2)
+            if (scope_app.step != 3 or scope_app.query('#apply') or scope_app.query('#approve')
+                or str(scope_app.query_one('#next', Button).label) != '结束预览'):
+                raise SetupError('SELF_TEST_PREVIEW_NAVIGATION_FAILED')
+            scope_app.query_one('#next', Button).focus()
+            await pilot.press('enter')
+            await pilot.pause(0.2)
+            if (scope_app.step != 4 or scope_app.result or scope_app.query('#results')
+                or scope_app.query('#verify') or scope_app.query('#repair') or proposed.exists()):
+                raise SetupError('SELF_TEST_PREVIEW_NAVIGATION_FAILED')
+            (output / f'actual-exe-preview-complete-{scenario}-120x40.svg').write_text(
+                scope_app.export_screenshot(title='ACTUAL EXE / PREVIEW COMPLETE / NO INSTALLATION'), encoding='utf-8')
         assert_fixture_unchanged(pipeline)
         records.append({'scenario': scenario, 'chooser_boundary': 'INJECTED_OWNED_DIRECTORY_OR_CANCEL',
                         'native_dialog': 'NOT_EXERCISED_BY_SEAM', 'keyboard_browse': 'PASS', 'cancel': 'UNCHANGED',
                         'scope_escape': 'BLOCKED', 'parent_scope': 'FRESH_DESCENDANT_NOT_CREATED',
-                        'auto_custom': 'PASS', 'prior_consent': 'INVALIDATED_ON_SELECTION',
+                        'auto_custom': 'PASS', 'custom_new_children': 'PASS', 'prior_consent': 'INVALIDATED_ON_SELECTION',
+                        'mouse_remount': 'PASS_APP_EVENT_REAL_STALE_COMPOSITOR',
                         'existing_files': 'UNCHANGED', 'host_apply': 'DENIED'})
     return records
 

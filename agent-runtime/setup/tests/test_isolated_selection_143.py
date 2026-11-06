@@ -29,7 +29,7 @@ def test_explicit_parent_same_and_cross_volume_scopes_are_fresh(machine,volume_i
     original=engine.plan(observation)
     proposal=engine.propose_isolated_roots(observation,parent=parent)
     scope=Path(proposal['isolated_scope'])
-    assert scope.parent==parent and scope.name.startswith('AgentRuntime-Setup-') and not scope.exists()
+    assert scope.parent==parent and scope.name=='agent' and not scope.exists()
     plan=engine.plan(observation,overrides={'isolated_scope':str(scope)})
     assert plan['status']=='READY' and not plan['host_authorized'] and plan['placement']=='NO_MOVE'
     assert plan['storage']['device_id']==adapter.data['volumes'][volume_index]['device_id']
@@ -86,6 +86,63 @@ def test_readonly_home_parent_never_grants_home_as_install_target(machine,monkey
     scope=Path(proposal['isolated_scope'])
     assert scope.parent==parent and not scope.exists()
     with pytest.raises(SetupError,match='UNSAFE_PATH'):engine.propose_isolated_roots(engine.probe(),parent='relative-parent')
+
+
+def test_short_scope_skips_existing_directory_and_file_without_adopting_them(machine):
+    engine,adapter,tmp=machine
+    parent=Path(adapter.data['volumes'][0]['mount'])
+    old=parent/'agent';old.mkdir()
+    unique=old/'unique.db';unique.write_bytes(b'public-unique-state')
+    occupied=parent/'agent-2';occupied.write_bytes(b'public-foreign-file')
+    proposal=engine.propose_isolated_roots(engine.probe(),parent=parent)
+    assert Path(proposal['isolated_scope'])==parent/'agent-3'
+    assert not Path(proposal['isolated_scope']).exists()
+    assert unique.read_bytes()==b'public-unique-state' and occupied.read_bytes()==b'public-foreign-file'
+    assert sorted(path.name for path in parent.iterdir())==['agent','agent-2']
+
+
+def test_short_scope_is_stable_until_occupied_and_late_collision_is_rejected(machine):
+    engine,adapter,tmp=machine
+    parent=Path(adapter.data['volumes'][0]['mount']);observation=engine.probe()
+    proposal=engine.propose_isolated_roots(observation,parent=parent)
+    assert proposal==engine.propose_isolated_roots(observation,parent=parent)
+    scope=Path(proposal['isolated_scope']);scope.mkdir()
+    with pytest.raises(SetupError,match='ISOLATED_SCOPE_ALREADY_EXISTS'):
+        engine.plan(observation,overrides=proposal)
+    assert Path(engine.propose_isolated_roots(observation,parent=parent)['isolated_scope'])==parent/'agent-2'
+    assert list(scope.iterdir())==[]
+
+
+def test_short_scope_skips_reserved_metadata_even_when_target_is_absent(machine):
+    engine,adapter,tmp=machine
+    parent=Path(adapter.data['volumes'][0]['mount'])
+    adapter.data['existing_roots']['workspace']={'path':str(parent/'agent'/'old-workspace'),'owner':'UNKNOWN','relocatable':False}
+    proposal=engine.propose_isolated_roots(engine.probe(),parent=parent)
+    assert Path(proposal['isolated_scope'])==parent/'agent-2'
+    assert list(parent.iterdir())==[]
+
+
+def test_short_scope_name_exhaustion_fails_closed_without_writes(machine):
+    engine,adapter,tmp=machine
+    parent=Path(adapter.data['volumes'][0]['mount'])
+    for number in range(1,101):(parent/('agent' if number==1 else f'agent-{number}')).mkdir()
+    before=sorted(path.name for path in parent.iterdir())
+    with pytest.raises(SetupError,match='ISOLATED_SCOPE_NAME_UNAVAILABLE'):
+        engine.propose_isolated_roots(engine.probe(),parent=parent)
+    assert sorted(path.name for path in parent.iterdir())==before
+
+
+@pytest.mark.skipif(os.name!='nt',reason='Actual Windows junction')
+def test_short_scope_skips_occupied_junction_without_following_it(machine):
+    engine,adapter,tmp=machine
+    parent=Path(adapter.data['volumes'][0]['mount']);target=tmp/'foreign-target';target.mkdir()
+    unique=target/'unique.db';unique.write_bytes(b'public-unique-state')
+    link=parent/'agent'
+    assert subprocess.run(['cmd','/d','/c','mklink','/J',str(link),str(target)],capture_output=True,timeout=10).returncode==0
+    try:
+        assert Path(engine.propose_isolated_roots(engine.probe(),parent=parent)['isolated_scope'])==parent/'agent-2'
+        assert unique.read_bytes()==b'public-unique-state' and not (parent/'agent-2').exists()
+    finally:link.rmdir()
 
 def test_scope_escape_existing_move_and_capacity_drift_still_blocked(machine):
     engine,adapter,tmp=machine
