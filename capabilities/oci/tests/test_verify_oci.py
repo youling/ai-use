@@ -23,7 +23,7 @@ def jbytes(value: dict) -> bytes:
 
 def fixture(root: Path, *, mutate_layer: bool = False, duplicate: bool = False,
             unsafe: bool = False, multi: bool = False, docker_only: bool = False,
-            short_diffid: bool = False) -> tuple[Path, str, str]:
+            short_diffid: bool = False, tamper_same_size: bool = False) -> tuple[Path, str, str]:
     inner = io.BytesIO()
     with tarfile.open(fileobj=inner, mode="w") as layer_tar:
         item = tarfile.TarInfo("hello.txt")
@@ -32,6 +32,7 @@ def fixture(root: Path, *, mutate_layer: bool = False, duplicate: bool = False,
     plain = inner.getvalue()
     layer = gzip.compress(plain, mtime=0)
     layer_hex = sha(layer)
+    changed_layer = (layer[:-1] + bytes([layer[-1] ^ 1])) if tamper_same_size else layer
     config = {
         "architecture": "amd64", "os": "linux",
         "config": {"User": "1000:1000", "WorkingDir": "/workspace"},
@@ -58,7 +59,7 @@ def fixture(root: Path, *, mutate_layer: bool = False, duplicate: bool = False,
         "index.json": jbytes(index),
         "blobs/sha256/" + sha(cfg): cfg,
         "blobs/sha256/" + sha(mb): mb,
-        "blobs/sha256/" + layer_hex: (layer + b"corrupt") if mutate_layer else layer,
+        "blobs/sha256/" + layer_hex: (layer + b"corrupt") if mutate_layer else changed_layer,
     }
     if docker_only:
         files = {"manifest.json": b"[]"}
@@ -127,6 +128,24 @@ class OCIArchiveTests(unittest.TestCase):
         archive, _, _ = fixture(self.root, mutate_layer=True)
         with self.assertRaisesRegex(OCIError, "descriptor size mismatch"):
             inspect_archive(archive)
+
+    def test_tamper_same_size_fails_digest_check(self):
+        archive, _, _ = fixture(self.root, tamper_same_size=True)
+        with self.assertRaisesRegex(OCIError, "descriptor digest/size mismatch"):
+            inspect_archive(archive)
+
+    def test_compressed_oci_tar_gzip(self):
+        archive, _, manifest = fixture(self.root)
+        zipped = self.root / "fixture.tar.gz"
+        zipped.write_bytes(gzip.compress(archive.read_bytes(), mtime=0))
+        actual = sha(zipped.read_bytes())
+        report = inspect_archive(
+            zipped, expected_archive_sha256=actual,
+            expected_manifest_digest=manifest,
+            expected_platform="linux/amd64",
+        )
+        self.assertEqual(report["archive"]["sha256"], actual)
+        self.assertEqual(report["image"]["manifest_digest"], manifest)
 
     def test_unsafe_tar_member_fails(self):
         archive, _, _ = fixture(self.root, unsafe=True)
