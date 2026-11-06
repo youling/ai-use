@@ -36,10 +36,11 @@ nerdctl --address "$OCI_CONTAINERD_SOCKET" --namespace "$OCI_NAMESPACE" save \
   -o example.oci.tar example:reviewed
 ```
 
-**制作端**先运行只读检查，记录生成的归档和镜像 identity：
+**制作端**先运行只读检查。制作端与接收端都需要获取 ai-use **经过核对的 Git 检出**（无需控制面或 Fleet），并用本机绝对目录定位其中的只读验证器。示例在 WSL/Linux Shell 下使用：
 
 ```bash
-python capabilities/oci/verify_oci.py inspect example.oci.tar --report example.inspect.json
+: "${AI_USE_ROOT:?请先设置 ai-use 仓库检出的绝对目录}"
+python "$AI_USE_ROOT/capabilities/oci/verify_oci.py" inspect example.oci.tar --report example.inspect.json
 ```
 
 `inspect` 只验证**拿到的这份数据内部自洽**，并给出归档摘要与 manifest digest；它不验证制品来自可信发布者，也不证明容器已经运行。用 owner 控制的仓库/签名清单持久登记确认过的归档 SHA-256、OCI manifest digest、源提交、平台与对应测试证据。
@@ -47,12 +48,14 @@ python capabilities/oci/verify_oci.py inspect example.oci.tar --report example.i
 将归档通过**当前授权的传输方式**交到另一个主机（SSH/rsync、可移动存储、受限对象存储或其他符合权限要求的机制均可）。接收端使用**制作端已经核准的两个期望值**校验：
 
 ```bash
-python capabilities/oci/verify_oci.py verify received.oci.tar \
+python "$AI_USE_ROOT/capabilities/oci/verify_oci.py" verify received.oci.tar \
   --expected-archive-sha256 <制作端确认的64位十六进制SHA256> \
   --expected-manifest-digest sha256:<制作端确认的64位十六进制digest> \
   --expected-platform linux/amd64 \
   --report receive.verified.json
 ```
+
+Windows 原生 Python 也可以直接运行同一脚本：使用 `py -3 <ai-use检出路径>\\capabilities\\oci\\verify_oci.py` 并传入归档和期望摘要，命令与算法不依赖 WSL；**真实 Linux 容器构建仍需已验证的相应构建环境**。
 
 验证通过后，再用目标机现有**被授权**的 `nerdctl --address ... --namespace ... load -i received.oci.tar` 或兼容 OCI importer 导入。之后按项目的独立运行验收逐项确认：镜像是否存在、是否解包、是否以预期 UID/namespace 运行、实际挂载父目录权限、工作目录、网络/资源限额、重启恢复（需要时）。**导入超时**应先只读核对 digest/content/snapshot/lease，避免盲目清理或重复执行未知副作用。
 
