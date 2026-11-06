@@ -40,6 +40,7 @@
 | `owner-instance-boundary` / L2 | all；semantic owner / storage / private instance-overlay / pointer-projection / secret reference-value 边界需要判断；仅按当前任务相关范围读取 | [30_PROTOCOLS/OWNER_INSTANCE_BOUNDARY.md](30_PROTOCOLS/OWNER_INSTANCE_BOUNDARY.md) |
 | `github-native-first` / L2 | Architect；提出自建 GitHub-hosted collaboration/control/work/release/event/read/query/navigation/metadata subsystem，或 material architecture 依赖 GitHub platform behavior；普通 bugfix / Hot Resume / 确定性维护 / 已冻结窄实现不触发 mandatory scan | [30_PROTOCOLS/GITHUB_NATIVE_FIRST.md](30_PROTOCOLS/GITHUB_NATIVE_FIRST.md) |
 | `diagram` / L2 | Architect/Builder/Research/Repair；复杂 topology / workflow / sequence / lifecycle / diagram drift；Builder/Research/Repair 仅派单要求 diagram 时 | [30_PROTOCOLS/DIAGRAM_AS_CODE.md](30_PROTOCOLS/DIAGRAM_AS_CODE.md) |
+| `oci-supply` / L2 | all；需要制作、校验、离线/内网传输或接收 OCI 镜像制品（Agent 或普通业务均适用）；不因普通非容器任务触发 | [capabilities/oci/CONTRACT.md](capabilities/oci/CONTRACT.md) |
 | `data` / L2 | all；durable business data / data model / schema migration | [docs/DURABLE_DATA_DOCTRINE.md](docs/DURABLE_DATA_DOCTRINE.md) |
 | `reproducibility` / L2 | all；恢复项目所需 setup / runtime / fixture / reproducibility contract | [30_PROTOCOLS/RECOVERY_HANDOFF.md](30_PROTOCOLS/RECOVERY_HANDOFF.md) §7 |
 | `reconnaissance` / L2 | Architect；Fresh/takeover material architecture、new domain / major pivot；成熟项目拟引入 external runtime/framework/subsystem；普通 hot resume / 小 bug / 确定性维护不机械重做 ARCH-0 | [docs/ARCHITECT_RECONNAISSANCE.md](docs/ARCHITECT_RECONNAISSANCE.md) |
