@@ -12,7 +12,7 @@
 
 它回答：authority、L0、routing、roles、Architect Discovery / ARCH-0、Foreman execution/recovery、durable truth、Human Host、Diagram-as-Code、owner boundary、guides/templates/history、**Fresh/takeover 冷启动后的定向 Issue 主题收敛**，以及 Agent Runtime 公共参考源码如何分工。研究入口仍为 L3，不将 Antigravity 合成试跑、Magpie 提案或其它 Draft 当成当前生产节点。
 
-首次接手的 Architect 使用图中“Architect 冷启动与执行闭环”视图定位下一跳；BOOT 完成后可按“已生效的冷启动 Issue 收敛”视图定向核查，不要求全仓扫描；role 节点 `sources[]` 指向 ARCH-0 与 Foreman 等当前 owner 的规范，而不是要求逐页通读所有文件。Material architecture 决策应下钻 `20_ROLES/ARCHITECT_DISCOVERY.md` → `docs/ARCHITECT_RECONNAISSANCE.md`；普通 Work 可按当前 Bootstrap/Work 继续，不因总图存在额外 mandatory hop。
+首次接手的 Architect 使用图中“Architect 冷启动与执行闭环”视图定位下一跳；BOOT 完成后可按“Architect 冷启动、Issue 收敛与执行”视图定向核查，不要求全仓扫描；role 节点 `sources[]` 指向 ARCH-0 与 Foreman 等当前 owner 的规范，而不是要求逐页通读所有文件。Material architecture 决策应下钻 `20_ROLES/ARCHITECT_DISCOVERY.md` → `docs/ARCHITECT_RECONNAISSANCE.md`；普通 Work 可按当前 Bootstrap/Work 继续，不因总图存在额外 mandatory hop。
 
 ## 本轮图示对齐（2026-11-08 源快照）
 
