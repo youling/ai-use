@@ -596,7 +596,8 @@
       "id": "recovery-interface",
       "from": "recovery",
       "to": "agentInterface",
-      "label": "resume"
+      "label": "resume",
+      "labelDx": -45
     },
     {
       "id": "interface-change",
