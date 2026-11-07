@@ -26,10 +26,9 @@
           "bootstrap",
           "agentInterface",
           "durable",
-          "recovery",
-          "issueConvergence"
+          "recovery"
         ],
-        "note": "先做 BOOT-1/2/3；其后定向收敛当前 Work 的重复 Issue（不是新 gate）。Architect 决策/审阅，Foreman 协调执行，子上下文做有界施工。"
+        "note": "先按 L0/BOOT-1/2/3 恢复当前 Work；之后才定向收敛相关 Issues（不是新 gate）。Architect 决策/审阅，Foreman 编排。"
       },
       {
         "id": "hostPath",
@@ -39,9 +38,9 @@
           "humanHost",
           "agentInterface",
           "durable",
-          "agentRuntime"
+          "support"
         ],
-        "note": "Human Host 是执行底座；Agent Runtime 参考源码已合并，首次 OCI/GHCR 发布尚待单独验收。"
+        "note": "Host 是执行基座。可选 OpenCode 公共参考源码已合并；首次 OCI/GHCR 发布尚未验收。"
       },
       {
         "id": "changePath",
@@ -51,11 +50,9 @@
           "kernel",
           "roles",
           "changeLifecycle",
-          "durable",
-          "issueConvergence",
-          "proposals"
+          "durable"
         ],
-        "note": "治理变更走 Issue/ADR/PR/Review；PR #185 已合并。PR #174/#178/#182/#184 仍是候选，不代表现行规范。"
+        "note": "变更走 Issue/ADR/PR/Review；PR #185 已合并。尚未合并的 PR 是候选，不是现行规范。"
       },
       {
         "id": "navigationPath",
@@ -66,12 +63,9 @@
           "ownerBoundary",
           "githubNative",
           "support",
-          "history",
-          "issueConvergence",
-          "proposals",
-          "changeAware"
+          "history"
         ],
-        "note": "用 source[] 读取最小必要规范；研究、提案、图示皆为派生导航，候选 PR 状态需回 GitHub 当前确认。"
+        "note": "用 source[] 最小下钻；L2 指南、L3 研究和在审提案分清证据等级。图是源版本快照，候选 PR 必须 live-read。"
       },
       {
         "id": "ownerPath",
@@ -81,10 +75,9 @@
           "projectTruth",
           "agentInterface",
           "durable",
-          "agentRuntime",
-          "changeAware"
+          "support"
         ],
-        "note": "ai-use 管公共治理/Agent Runtime 源码，项目实例持有真实 Work/Runner/业务数据；Change-aware Work Graph 自动影响传播未实现。"
+        "note": "项目真实 Work Graph/Runner、业务与设备状态归原 owner。Change-aware 下游影响传播仍未实现；见 ADR-0023。"
       }
     ]
   },
@@ -361,8 +354,8 @@
       "id": "githubNative",
       "type": "cloud",
       "label": "GitHub Native / Work",
-      "sublabel": "Issues/PR/依赖关系 · 自助发现 · 主题收敛",
-      "tag": "SOURCE-BOUND",
+      "sublabel": "GitHub Work / PR / 依赖 · 已生效的 Issue 收敛",
+      "tag": "ACCEPTED · §4.2",
       "row": 3,
       "col": 0,
       "size": [
@@ -372,16 +365,20 @@
       "sources": [
         {
           "path": "30_PROTOCOLS/GITHUB_NATIVE_FIRST.md",
-          "label": "GitHub Native First"
+          "label": "Native Work + Issue convergence §4.2"
+        },
+        {
+          "path": "90_HISTORY/ADR-0023_POST_BOOTSTRAP_ISSUE_CONVERGENCE.md",
+          "label": "Accepted post-BOOT decision"
         }
       ]
     },
     {
       "id": "support",
       "type": "frontend",
-      "label": "Guides & Templates",
-      "sublabel": "仅在 artifact/scene 命中时读取，不进入默认 Kernel",
-      "tag": "L2 SUPPORT",
+      "label": "Agent Runtime / Guides",
+      "sublabel": "OpenCode 公共源码 · 首次 OCI 发布待验 · 按需指南",
+      "tag": "OPTIONAL / PUBLIC SOURCE",
       "row": 3,
       "col": 1,
       "size": [
@@ -390,12 +387,16 @@
       ],
       "sources": [
         {
-          "path": "READING_MAP.md",
-          "label": "Targeted shapes"
+          "path": "agent-runtime/README.md",
+          "label": "Public reference runtime"
         },
         {
-          "path": "50_TEMPLATES/DIAGRAM_AS_CODE.md",
-          "label": "Diagram template"
+          "path": "agent-runtime/release/README.md",
+          "label": "First OCI publication still gated"
+        },
+        {
+          "path": "READING_MAP.md",
+          "label": "Optional guides and templates"
         }
       ]
     },
@@ -442,98 +443,6 @@
         {
           "path": "30_PROTOCOLS/OWNER_INSTANCE_BOUNDARY.md",
           "label": "Owner semantics"
-        }
-      ]
-    },
-    {
-      "id": "issueConvergence",
-      "type": "backend",
-      "label": "Post-BOOT Issue Convergence",
-      "sublabel": "定向去重/主题入口 · 保留独立 Work/Claim/PR",
-      "tag": "ACCEPTED · PR #185",
-      "row": 4,
-      "col": 0,
-      "size": [
-        252,
-        72
-      ],
-      "sources": [
-        {
-          "path": "30_PROTOCOLS/GITHUB_NATIVE_FIRST.md",
-          "label": "Accepted §4.2 Issue convergence"
-        },
-        {
-          "path": "90_HISTORY/ADR-0023_POST_BOOTSTRAP_ISSUE_CONVERGENCE.md",
-          "label": "Decision and compatibility"
-        }
-      ]
-    },
-    {
-      "id": "agentRuntime",
-      "type": "cloud",
-      "label": "Agent Runtime (public source)",
-      "sublabel": "OpenCode 参考镜像代码 · 首次 OCI/GHCR 未发布",
-      "tag": "SOURCE MERGED / RELEASE GATED",
-      "row": 4,
-      "col": 1,
-      "size": [
-        252,
-        72
-      ],
-      "sources": [
-        {
-          "path": "agent-runtime/README.md",
-          "label": "Public Agent Runtime source"
-        },
-        {
-          "path": "agent-runtime/release/README.md",
-          "label": "Publishing gate and acceptance"
-        }
-      ]
-    },
-    {
-      "id": "proposals",
-      "type": "frontend",
-      "label": "Proposals / review candidates",
-      "sublabel": "OCI #182 · Worksite #174 · Engineering #178 · Research #184",
-      "tag": "OPEN PR != MAIN",
-      "row": 4,
-      "col": 2,
-      "size": [
-        252,
-        72
-      ],
-      "sources": [
-        {
-          "path": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
-          "label": "Candidate -> Review -> accepted"
-        },
-        {
-          "path": "docs/research/README.md",
-          "label": "Accepted L3 research index only"
-        }
-      ]
-    },
-    {
-      "id": "changeAware",
-      "type": "external",
-      "label": "Change-aware Work Graph",
-      "sublabel": "下游变更影响传播 / 旧验收失效仍未落地",
-      "tag": "GAP · CONTROL-PLANE OWNER",
-      "row": 4,
-      "col": 3,
-      "size": [
-        252,
-        72
-      ],
-      "sources": [
-        {
-          "path": "90_HISTORY/ADR-0023_POST_BOOTSTRAP_ISSUE_CONVERGENCE.md",
-          "label": "Explicit unsolved capability boundary"
-        },
-        {
-          "path": "30_PROTOCOLS/DIAGRAM_AS_CODE.md",
-          "label": "Project / Work / Delivery drilldown"
         }
       ]
     }
@@ -668,7 +577,7 @@
       "id": "routing-support",
       "from": "routing",
       "to": "support",
-      "label": "artifact shape",
+      "label": "optional tools",
       "variant": "dashed"
     },
     {
@@ -676,33 +585,6 @@
       "from": "routing",
       "to": "history",
       "label": "L3 on demand",
-      "variant": "dashed"
-    },
-    {
-      "id": "native-topic",
-      "from": "githubNative",
-      "to": "issueConvergence",
-      "label": "post-BOOT §4.2"
-    },
-    {
-      "id": "support-runtime",
-      "from": "support",
-      "to": "agentRuntime",
-      "label": "optional source",
-      "variant": "dashed"
-    },
-    {
-      "id": "research-proposals",
-      "from": "history",
-      "to": "proposals",
-      "label": "status != authority",
-      "variant": "dashed"
-    },
-    {
-      "id": "project-change-aware",
-      "from": "projectTruth",
-      "to": "changeAware",
-      "label": "not implemented",
       "variant": "dashed"
     }
   ],
