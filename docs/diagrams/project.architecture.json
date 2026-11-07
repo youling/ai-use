@@ -3,7 +3,7 @@
   "diagram_type": "architecture",
   "meta": {
     "title": "ai-use Project Map",
-    "subtitle": "Human governance · targeted routing · execution/recovery · durable truth",
+    "subtitle": "Human governance · post-BOOT Issue convergence · public runtime · research boundaries",
     "locale": "zh-CN",
     "output": "ai-use-project.architecture.html",
     "quality_profile": "showcase",
@@ -12,12 +12,12 @@
       "url": "https://github.com/youling/ai-use",
       "provider": "github",
       "link_mode": "web",
-      "revision": "4278d659fa254e73dd6c90ceb274bd7e33a65596"
+      "revision": "8ac796fc6488f2a6f9a0923321b44409318cb5e1"
     },
     "views": [
       {
         "id": "executionPath",
-        "label": "Architect 冷启动与执行闭环",
+        "label": "Architect 冷启动、Issue 收敛与执行",
         "focus": [
           "human",
           "kernel",
@@ -28,22 +28,23 @@
           "durable",
           "recovery"
         ],
-        "note": "首读 L0 → Bootstrap/targeted routing；Material 新领域进入 Architect ARCH-0/Decision，之后 Foreman Work；点击 role 节点来源继续阅读。"
+        "note": "先按 L0/BOOT-1/2/3 恢复当前 Work；之后才定向收敛相关 Issues（不是新 gate）。Architect 决策/审阅，Foreman 编排。"
       },
       {
         "id": "hostPath",
-        "label": "Human Host",
+        "label": "Human Host 与公共运行时",
         "focus": [
           "routing",
           "humanHost",
           "agentInterface",
-          "durable"
+          "durable",
+          "support"
         ],
-        "note": "Host 只提供 resolved execution substrate，不获得项目 truth authority。"
+        "note": "Host 是执行基座。可选 OpenCode 公共参考源码已合并；首次 OCI/GHCR 发布尚未验收。"
       },
       {
         "id": "changePath",
-        "label": "治理变更",
+        "label": "治理变更与候选",
         "focus": [
           "human",
           "kernel",
@@ -51,11 +52,11 @@
           "changeLifecycle",
           "durable"
         ],
-        "note": "架构/治理 mutation 走 docs-as-code lifecycle，不靠聊天自述完成。"
+        "note": "变更走 Issue/ADR/PR/Review；PR #185 已合并。尚未合并的 PR 是候选，不是现行规范。"
       },
       {
         "id": "navigationPath",
-        "label": "导航与图示",
+        "label": "图示、研究与成熟度",
         "focus": [
           "routing",
           "diagram",
@@ -64,18 +65,19 @@
           "support",
           "history"
         ],
-        "note": "冷启动按 L0/routing、角色/任务精确下钻；重大新领域由 Architect 参考 L3 research 并形成自身决策；Antigravity/Magpie 资料不是 provider/runtime authority。"
+        "note": "用 source[] 最小下钻；L2 指南、L3 研究和在审提案分清证据等级。图是源版本快照，候选 PR 必须 live-read。"
       },
       {
         "id": "ownerPath",
-        "label": "Owner 边界",
+        "label": "Owner 与 Change-aware 边界",
         "focus": [
           "ownerBoundary",
           "projectTruth",
           "agentInterface",
-          "durable"
+          "durable",
+          "support"
         ],
-        "note": "ai-use 管方法与治理；项目实时事实继续留在项目 owner。"
+        "note": "项目真实 Work Graph/Runner、业务与设备状态归原 owner。Change-aware 下游影响传播仍未实现；见 ADR-0023。"
       }
     ]
   },
@@ -161,7 +163,7 @@
       "id": "roles",
       "type": "backend",
       "label": "Role & Authority",
-      "sublabel": "Architect Discovery/ADR · Foreman Work · Subagents",
+      "sublabel": "Architect 管方向/验收 · Foreman 编排 · Subagent 施工",
       "tag": "RESPONSIBILITY",
       "row": 0,
       "col": 3,
@@ -188,7 +190,7 @@
       "id": "bootstrap",
       "type": "backend",
       "label": "Bootstrap",
-      "sublabel": "authority · access · live state · execution readiness",
+      "sublabel": "BOOT-1/2/3 · role/currentness · 收敛在启动后",
       "tag": "BOOT",
       "row": 1,
       "col": 0,
@@ -253,7 +255,7 @@
       "id": "durable",
       "type": "database",
       "label": "Git / GitHub Durable State",
-      "sublabel": "Work · exact head · review · evidence · current facts",
+      "sublabel": "Issues · refs · exact HEAD · Review · durable evidence",
       "tag": "DURABLE TRUTH",
       "row": 1,
       "col": 3,
@@ -295,7 +297,7 @@
       "id": "humanHost",
       "type": "cloud",
       "label": "Human Host Environment",
-      "sublabel": "semantic domains + smart probe + HOST_AGENT projection",
+      "sublabel": "Host 运行环境与就绪检查 · 不产生治理权限",
       "tag": "EXECUTION SUBSTRATE",
       "row": 2,
       "col": 1,
@@ -314,7 +316,7 @@
       "id": "diagram",
       "type": "frontend",
       "label": "Diagram-as-Code",
-      "sublabel": "总图入口 · 细图贴 owner · typed derived navigation",
+      "sublabel": "Owner 图源 · 精确版本 · 派生导航 / freshness",
       "tag": "NAVIGATION",
       "row": 2,
       "col": 2,
@@ -351,9 +353,9 @@
     {
       "id": "githubNative",
       "type": "cloud",
-      "label": "GitHub Native First",
-      "sublabel": "优先复用 native work/review/metadata capabilities",
-      "tag": "PLATFORM REUSE",
+      "label": "GitHub Native / Work",
+      "sublabel": "GitHub Work / PR / 依赖 · 已生效的 Issue 收敛",
+      "tag": "ACCEPTED · §4.2",
       "row": 3,
       "col": 0,
       "size": [
@@ -363,16 +365,20 @@
       "sources": [
         {
           "path": "30_PROTOCOLS/GITHUB_NATIVE_FIRST.md",
-          "label": "GitHub Native First"
+          "label": "Native Work + Issue convergence §4.2"
+        },
+        {
+          "path": "90_HISTORY/ADR-0023_POST_BOOTSTRAP_ISSUE_CONVERGENCE.md",
+          "label": "Accepted post-BOOT decision"
         }
       ]
     },
     {
       "id": "support",
       "type": "frontend",
-      "label": "Guides & Templates",
-      "sublabel": "仅在 artifact/scene 命中时读取，不进入默认 Kernel",
-      "tag": "L2 SUPPORT",
+      "label": "Agent Runtime / Guides",
+      "sublabel": "OpenCode 公共源码 · 首次 OCI 发布待验 · 按需指南",
+      "tag": "OPTIONAL / PUBLIC SOURCE",
       "row": 3,
       "col": 1,
       "size": [
@@ -381,12 +387,16 @@
       ],
       "sources": [
         {
-          "path": "READING_MAP.md",
-          "label": "Targeted shapes"
+          "path": "agent-runtime/README.md",
+          "label": "Public reference runtime"
         },
         {
-          "path": "50_TEMPLATES/DIAGRAM_AS_CODE.md",
-          "label": "Diagram template"
+          "path": "agent-runtime/release/README.md",
+          "label": "First OCI publication still gated"
+        },
+        {
+          "path": "READING_MAP.md",
+          "label": "Optional guides and templates"
         }
       ]
     },
@@ -394,7 +404,7 @@
       "id": "history",
       "type": "database",
       "label": "Research / History / ADR",
-      "sublabel": "L3 prior art · 经验账本 · 历史裁决（non-normative）",
+      "sublabel": "L3 资料与历史 · 在审候选不等于现行规范",
       "tag": "L3 DEFAULT SKIP",
       "row": 3,
       "col": 2,
@@ -417,7 +427,7 @@
       "id": "projectTruth",
       "type": "external",
       "label": "Project-local Truth",
-      "sublabel": "业务/runtime/current project facts stay with project owner",
+      "sublabel": "项目 Work/Runner、业务状态与真实节点归各 owner",
       "tag": "NOT OWNED BY AI-USE",
       "row": 3,
       "col": 3,
@@ -494,8 +504,7 @@
     {
       "id": "recovery-interface",
       "from": "recovery",
-      "to": "agentInterface",
-      "label": "resume"
+      "to": "agentInterface"
     },
     {
       "id": "interface-change",
@@ -568,7 +577,7 @@
       "id": "routing-support",
       "from": "routing",
       "to": "support",
-      "label": "artifact shape",
+      "label": "optional tools",
       "variant": "dashed"
     },
     {
@@ -615,6 +624,16 @@
         "ai-use 拥有可复用治理/协议，不拥有部署实例的项目实时状态、节点 runtime 或业务事实。",
         "Human Host / Diagram / GitHub Native 都是 targeted protocol，不自动提升为 Kernel。",
         "本图为 DERIVED；任何冲突都回 canonical source 修图，不反向修改 truth 来迁就图。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "2026-11-08 capability & evidence status (snapshot)",
+      "items": [
+        "MERGED: Issue 主题收敛规范 PR #185；Fresh Architect 完成 BOOT 后做定向整理，不是第四个启动 gate。",
+        "MERGED SOURCE ONLY: agent-runtime OpenCode 参考源码；首次 OCI/GHCR package 仍未正式发布。",
+        "OPEN / NOT MAIN: 公共 OCI Supply PR #182、Worksite Log PR #174、软件架构/图示门禁 PR #178；跨执行器案例 PR #184 仍为 Draft；以 GitHub live PR 为准。",
+        "GAP / EXTERNAL OWNER: Change-aware Work Graph 的契约变更影响传播尚未实装；不得把 Issue 依赖筛选或 Archify 展示误称自动重规划。"
       ]
     }
   ]

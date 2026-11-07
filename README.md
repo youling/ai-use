@@ -39,21 +39,28 @@
 flowchart LR
   H["Human\n目标 / 主权 / 风险"] --> G["ai-use Governance\nL0 + targeted L2"]
   G --> A["Global / Project Architect\n架构 / 授权 / Review"]
-  A --> F["Foreman\nWork execution owner"]
-  A -. "material architecture discovery" .-> R["ARCH-0 / Prior Art\nArchitect 决策（非新角色）"]
-  R -. "current decision pointer" .-> F
+  G --> B["Bootstrap\nBOOT-1 / 2 / 3"]
+  B -. "完成后定向收敛（非新门禁）" .-> I["Issue Topic Convergence\nGitHub Native §4.2 · 已生效"]
+  A --> F["Foreman\n协调 Work / 子任务"]
+  A -. "重大架构决策" .-> R["ARCH-0 / Prior Art\nArchitect 决策（非新角色）"]
+  R -. "当前决策指针" .-> F
   F --> S["Subagent\nBUILD / INVESTIGATE / REPAIR / VERIFY"]
-  S --> X["Execution Surfaces\nHuman Host / Runner / Node / Container"]
-  X --> D["Git / GitHub\nDurable Work + Evidence"]
+  S --> X["Execution Surfaces\nHost / Runner / Node / Container"]
+  X --> D["Git / GitHub\nWork / PR / Review / Evidence"]
+  I -. "仅索引当前 Work" .-> D
   D --> F
   D --> A
-  G -. "Human Host semantics" .-> HH["HOST_AGENT.md\nresolved local projection"]
-  HH -. "readiness input" .-> X
+  G -. "公共可选参考实现" .-> AR["Agent Runtime\n源码已合并 · 首次 OCI 发布未完成"]
+  AR -. "可选执行环境" .-> X
+  G -. "Human Host 规则" .-> HH["HOST_AGENT.md\n本地实例投影"]
+  HH -. "就绪依据" .-> X
 ```
 
 这张图是 **DERIVED navigation**：authority、角色、执行与 durable truth 的精确定义仍以对应 canonical 文档为准。复杂图/局部图按 [Diagram-as-Code](30_PROTOCOLS/DIAGRAM_AS_CODE.md) 下钻；Human 主控设备环境见 [Human Host Environment](30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md)。
 
 **L1 详情图：** [ai-use Project Detail Map 图源](docs/diagrams/project.architecture.json) · [图示维护契约](docs/diagrams/README.md) · [Research / 工厂经验索引](docs/research/README.md)（L3，按需阅读，非治理规则）。部署侧 Navigator 只消费/渲染这份 owner 图源，不复制第二份 ai-use 架构语义。
+
+**图中状态按源码版本区分：** [冷启动后定向收敛](30_PROTOCOLS/GITHUB_NATIVE_FIRST.md)已随 [PR #185](https://github.com/youling/ai-use/pull/185) 合并；[Agent Runtime](agent-runtime/README.md) 参考源码已合并，OCI/GHCR 首次发行尚未验收。[通用 OCI Supply PR #182](https://github.com/youling/ai-use/pull/182)、[阶段化架构图 PR #178](https://github.com/youling/ai-use/pull/178)等仍是**候选**；[Change-aware Work Graph](https://github.com/youling/ai-hub/issues/131) 的跨任务变更影响传播仍未实现。图是注明来源版本的导航快照，真实 PR/运行状态使用前必须回读当前 owner。
 
 
 ---
