@@ -12,7 +12,7 @@
 
 它回答：authority、L0、routing、roles、Architect Discovery / ARCH-0、Foreman execution/recovery、durable truth、Human Host、Diagram-as-Code、owner boundary、guides/templates/history、**Fresh/takeover 冷启动后的定向 Issue 主题收敛**，以及 Agent Runtime 公共参考源码如何分工。研究入口仍为 L3，不将 Antigravity 合成试跑、Magpie 提案或其它 Draft 当成当前生产节点。
 
-首次接手的 Architect 使用图中“Architect 冷启动与执行闭环”视图定位下一跳；BOOT 完成后可按“Architect 冷启动、Issue 收敛与执行”视图定向核查，不要求全仓扫描；role 节点 `sources[]` 指向 ARCH-0 与 Foreman 等当前 owner 的规范，而不是要求逐页通读所有文件。Material architecture 决策应下钻 `20_ROLES/ARCHITECT_DISCOVERY.md` → `docs/ARCHITECT_RECONNAISSANCE.md`；普通 Work 可按当前 Bootstrap/Work 继续，不因总图存在额外 mandatory hop。
+首次接手的 Architect 使用图中“Architect 冷启动、Issue 收敛与执行”视图定位下一跳；BOOT 完成后，沿 [GitHub Native First §4.2](../../30_PROTOCOLS/GITHUB_NATIVE_FIRST.md#42-冷启动后的-issue-主题收敛少入口不丢原子-work) 定向核查，不要求全仓扫描；role 节点 `sources[]` 指向 ARCH-0 与 Foreman 等当前 owner 的规范，而不是要求逐页通读所有文件。Material architecture 决策应下钻 `20_ROLES/ARCHITECT_DISCOVERY.md` → `docs/ARCHITECT_RECONNAISSANCE.md`；普通 Work 可按当前 Bootstrap/Work 继续，不因总图存在额外 mandatory hop。
 
 ## 本轮图示对齐（2026-11-08 源快照）
 
@@ -24,7 +24,7 @@
 | Worksite Log、阶段化软件工程、跨执行器经验 | [PR #174](https://github.com/youling/ai-use/pull/174)、[PR #178](https://github.com/youling/ai-use/pull/178) 在该基准时仍 OPEN；[PR #184](https://github.com/youling/ai-use/pull/184) 为 Draft | 各 PR 的 current HEAD 与证据；在合并前只视为候选 |
 | Change-aware Work Graph | 下游契约变化的影响传播、重新规划和旧验收失效**未完成通用实现**；独立于已接受的 Issue 收敛 | [ADR-0023 已标注缺口](../../90_HISTORY/ADR-0023_POST_BOOTSTRAP_ISSUE_CONVERGENCE.md)；部署侧 [ai-hub #131](https://github.com/youling/ai-hub/issues/131) |
 
-新增的 **Work convergence / Public runtime / Candidate proposals / Change-aware gap** 是导航节点，不构成与既有 GitHub Issues、项目源码或部署控制面平行的四份状态库。尤其右侧的外部/待实现节点表示**职责及缺口**，不是声称运行中存在完整的变更感知调度服务。
+本图**仍维持 16 节点的可读 L1 总览**：已合并的 Issue 收敛体现在 GitHub Native/Bootstrap 节点，公共 Agent Runtime 源码及发布门禁归入可选工具入口；**候选 PR 和 Change-aware 未实现的缺口**只在本页与图内状态说明中呈现，不冒充已接受的规范节点或第二份 Work 事实库。复杂的候选版本、真实进度与下游依赖，应由相应 owner 的 Issue/PR 下钻，不扩张总图密度。
 
 本图可以供外部使用者和 Agent 使用，但 `meta.repository.revision` 是编译时源快照，不代表 PR 的状态从此不再变化。读到候选/未实施节点时先回各自的 owner GitHub 当前状态，不因为图上有线就从公共治理仓向别人的设备发指令。图中所有 `sources[]` 都应指向该快照已经存在的 canonical 文件；候选 PR 的 URL 只作非规范导航。
 
