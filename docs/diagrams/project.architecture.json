@@ -17,7 +17,7 @@
     "views": [
       {
         "id": "executionPath",
-        "label": "Architect 冷启动与执行闭环",
+        "label": "Architect 冷启动、Issue 收敛与执行",
         "focus": [
           "human",
           "kernel",
@@ -29,11 +29,11 @@
           "recovery",
           "issueConvergence"
         ],
-        "note": "先定位 L0、BOOT-1/2/3 与当下 Work；Fresh/takeover 完成 BOOT 后可定向收敛重复 Issues（不是新增 gate）。ARCH-0 决策归 Architect，Foreman 编排及子执行上下文按有效 Work 执行。"
+        "note": "先做 BOOT-1/2/3；其后定向收敛当前 Work 的重复 Issue（不是新 gate）。Architect 决策/审阅，Foreman 协调执行，子上下文做有界施工。"
       },
       {
         "id": "hostPath",
-        "label": "Human Host",
+        "label": "Human Host 与公共运行时",
         "focus": [
           "routing",
           "humanHost",
@@ -41,11 +41,11 @@
           "durable",
           "agentRuntime"
         ],
-        "note": "Human Host 仅提供有界执行基座；公共 Agent Runtime 参考源码已合并，首个 OCI/GHCR 发布仍有独立门禁，不能由源码存在推断生产已部署。"
+        "note": "Human Host 是执行底座；Agent Runtime 参考源码已合并，首次 OCI/GHCR 发布尚待单独验收。"
       },
       {
         "id": "changePath",
-        "label": "治理变更",
+        "label": "治理变更与候选",
         "focus": [
           "human",
           "kernel",
@@ -55,11 +55,11 @@
           "issueConvergence",
           "proposals"
         ],
-        "note": "治理变更由 Issue/ADR/PR/Review 持久记录；Issue convergence 已合并。正在审查的规范 PR 不能当作 main 合同。"
+        "note": "治理变更走 Issue/ADR/PR/Review；PR #185 已合并。PR #174/#178/#182/#184 仍是候选，不代表现行规范。"
       },
       {
         "id": "navigationPath",
-        "label": "导航与图示",
+        "label": "图示、研究与成熟度",
         "focus": [
           "routing",
           "diagram",
@@ -71,11 +71,11 @@
           "proposals",
           "changeAware"
         ],
-        "note": "选择与当前角色/场景相关的最小 source[] 下钻；Proposal/Research 与已生效规范分开，图源精确版本是快照，PR 当前状态必须 live-read。"
+        "note": "用 source[] 读取最小必要规范；研究、提案、图示皆为派生导航，候选 PR 状态需回 GitHub 当前确认。"
       },
       {
         "id": "ownerPath",
-        "label": "Owner 边界",
+        "label": "Owner 与 Change-aware 边界",
         "focus": [
           "ownerBoundary",
           "projectTruth",
@@ -84,32 +84,7 @@
           "agentRuntime",
           "changeAware"
         ],
-        "note": "ai-use 拥有公共方法、Agent 参考运行时源码；实际项目 Work Graph/Runner/节点/业务真值属于项目或部署实例。Change-aware 下游变更传播仍未实装。"
-      },
-      {
-        "id": "workTopologyPath",
-        "label": "已生效的冷启动 Issue 收敛",
-        "focus": [
-          "bootstrap",
-          "githubNative",
-          "issueConvergence",
-          "durable",
-          "projectTruth"
-        ],
-        "note": "PR #185 已合并；先 Bootstrap，后只在当前 owner 的关联 Work 中核对重复主题、有效 Claim 和 PR，再按权限留痕链接/关闭。不要扫描全仓或自动合并在途工单。"
-      },
-      {
-        "id": "capabilityMaturityPath",
-        "label": "公共能力 / 提案 / 未实现边界",
-        "focus": [
-          "routing",
-          "support",
-          "agentRuntime",
-          "proposals",
-          "changeAware",
-          "ownerBoundary"
-        ],
-        "note": "公共 Agent Runtime 源码已接受但首次 OCI/GHCR package 未发布；通用 OCI Supply #182、Worksite #174、工程图示 #178 和跨模型经验 #184 仍是独立在审候选。Change-aware Work Graph 自动影响传播未实现。"
+        "note": "ai-use 管公共治理/Agent Runtime 源码，项目实例持有真实 Work/Runner/业务数据；Change-aware Work Graph 自动影响传播未实现。"
       }
     ]
   },
