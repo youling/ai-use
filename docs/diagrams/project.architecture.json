@@ -3,7 +3,7 @@
   "diagram_type": "architecture",
   "meta": {
     "title": "ai-use Project Map",
-    "subtitle": "Human governance · targeted routing · execution/recovery · durable truth",
+    "subtitle": "Human governance · post-BOOT Issue convergence · public runtime · research boundaries",
     "locale": "zh-CN",
     "output": "ai-use-project.architecture.html",
     "quality_profile": "showcase",
@@ -12,7 +12,7 @@
       "url": "https://github.com/youling/ai-use",
       "provider": "github",
       "link_mode": "web",
-      "revision": "4278d659fa254e73dd6c90ceb274bd7e33a65596"
+      "revision": "8ac796fc6488f2a6f9a0923321b44409318cb5e1"
     },
     "views": [
       {
@@ -26,9 +26,10 @@
           "bootstrap",
           "agentInterface",
           "durable",
-          "recovery"
+          "recovery",
+          "issueConvergence"
         ],
-        "note": "首读 L0 → Bootstrap/targeted routing；Material 新领域进入 Architect ARCH-0/Decision，之后 Foreman Work；点击 role 节点来源继续阅读。"
+        "note": "先定位 L0、BOOT-1/2/3 与当下 Work；Fresh/takeover 完成 BOOT 后可定向收敛重复 Issues（不是新增 gate）。ARCH-0 决策归 Architect，Foreman 编排及子执行上下文按有效 Work 执行。"
       },
       {
         "id": "hostPath",
@@ -37,9 +38,10 @@
           "routing",
           "humanHost",
           "agentInterface",
-          "durable"
+          "durable",
+          "agentRuntime"
         ],
-        "note": "Host 只提供 resolved execution substrate，不获得项目 truth authority。"
+        "note": "Human Host 仅提供有界执行基座；公共 Agent Runtime 参考源码已合并，首个 OCI/GHCR 发布仍有独立门禁，不能由源码存在推断生产已部署。"
       },
       {
         "id": "changePath",
@@ -49,9 +51,11 @@
           "kernel",
           "roles",
           "changeLifecycle",
-          "durable"
+          "durable",
+          "issueConvergence",
+          "proposals"
         ],
-        "note": "架构/治理 mutation 走 docs-as-code lifecycle，不靠聊天自述完成。"
+        "note": "治理变更由 Issue/ADR/PR/Review 持久记录；Issue convergence 已合并。正在审查的规范 PR 不能当作 main 合同。"
       },
       {
         "id": "navigationPath",
@@ -62,9 +66,12 @@
           "ownerBoundary",
           "githubNative",
           "support",
-          "history"
+          "history",
+          "issueConvergence",
+          "proposals",
+          "changeAware"
         ],
-        "note": "冷启动按 L0/routing、角色/任务精确下钻；重大新领域由 Architect 参考 L3 research 并形成自身决策；Antigravity/Magpie 资料不是 provider/runtime authority。"
+        "note": "选择与当前角色/场景相关的最小 source[] 下钻；Proposal/Research 与已生效规范分开，图源精确版本是快照，PR 当前状态必须 live-read。"
       },
       {
         "id": "ownerPath",
@@ -73,9 +80,36 @@
           "ownerBoundary",
           "projectTruth",
           "agentInterface",
-          "durable"
+          "durable",
+          "agentRuntime",
+          "changeAware"
         ],
-        "note": "ai-use 管方法与治理；项目实时事实继续留在项目 owner。"
+        "note": "ai-use 拥有公共方法、Agent 参考运行时源码；实际项目 Work Graph/Runner/节点/业务真值属于项目或部署实例。Change-aware 下游变更传播仍未实装。"
+      },
+      {
+        "id": "workTopologyPath",
+        "label": "已生效的冷启动 Issue 收敛",
+        "focus": [
+          "bootstrap",
+          "githubNative",
+          "issueConvergence",
+          "durable",
+          "projectTruth"
+        ],
+        "note": "PR #185 已合并；先 Bootstrap，后只在当前 owner 的关联 Work 中核对重复主题、有效 Claim 和 PR，再按权限留痕链接/关闭。不要扫描全仓或自动合并在途工单。"
+      },
+      {
+        "id": "capabilityMaturityPath",
+        "label": "公共能力 / 提案 / 未实现边界",
+        "focus": [
+          "routing",
+          "support",
+          "agentRuntime",
+          "proposals",
+          "changeAware",
+          "ownerBoundary"
+        ],
+        "note": "公共 Agent Runtime 源码已接受但首次 OCI/GHCR package 未发布；通用 OCI Supply #182、Worksite #174、工程图示 #178 和跨模型经验 #184 仍是独立在审候选。Change-aware Work Graph 自动影响传播未实现。"
       }
     ]
   },
@@ -161,7 +195,7 @@
       "id": "roles",
       "type": "backend",
       "label": "Role & Authority",
-      "sublabel": "Architect Discovery/ADR · Foreman Work · Subagents",
+      "sublabel": "Architect 管方向/验收 · Foreman 编排 · Subagent 施工",
       "tag": "RESPONSIBILITY",
       "row": 0,
       "col": 3,
@@ -188,7 +222,7 @@
       "id": "bootstrap",
       "type": "backend",
       "label": "Bootstrap",
-      "sublabel": "authority · access · live state · execution readiness",
+      "sublabel": "BOOT-1/2/3 · role/currentness · 收敛在启动后",
       "tag": "BOOT",
       "row": 1,
       "col": 0,
@@ -253,7 +287,7 @@
       "id": "durable",
       "type": "database",
       "label": "Git / GitHub Durable State",
-      "sublabel": "Work · exact head · review · evidence · current facts",
+      "sublabel": "Issues · refs · exact HEAD · Review · durable evidence",
       "tag": "DURABLE TRUTH",
       "row": 1,
       "col": 3,
@@ -295,7 +329,7 @@
       "id": "humanHost",
       "type": "cloud",
       "label": "Human Host Environment",
-      "sublabel": "semantic domains + smart probe + HOST_AGENT projection",
+      "sublabel": "Host 运行环境与就绪检查 · 不产生治理权限",
       "tag": "EXECUTION SUBSTRATE",
       "row": 2,
       "col": 1,
@@ -314,7 +348,7 @@
       "id": "diagram",
       "type": "frontend",
       "label": "Diagram-as-Code",
-      "sublabel": "总图入口 · 细图贴 owner · typed derived navigation",
+      "sublabel": "Owner 图源 · 精确版本 · 派生导航 / freshness",
       "tag": "NAVIGATION",
       "row": 2,
       "col": 2,
@@ -351,9 +385,9 @@
     {
       "id": "githubNative",
       "type": "cloud",
-      "label": "GitHub Native First",
-      "sublabel": "优先复用 native work/review/metadata capabilities",
-      "tag": "PLATFORM REUSE",
+      "label": "GitHub Native / Work",
+      "sublabel": "Issues/PR/依赖关系 · 自助发现 · 主题收敛",
+      "tag": "SOURCE-BOUND",
       "row": 3,
       "col": 0,
       "size": [
@@ -394,7 +428,7 @@
       "id": "history",
       "type": "database",
       "label": "Research / History / ADR",
-      "sublabel": "L3 prior art · 经验账本 · 历史裁决（non-normative）",
+      "sublabel": "L3 资料与历史 · 在审候选不等于现行规范",
       "tag": "L3 DEFAULT SKIP",
       "row": 3,
       "col": 2,
@@ -417,7 +451,7 @@
       "id": "projectTruth",
       "type": "external",
       "label": "Project-local Truth",
-      "sublabel": "业务/runtime/current project facts stay with project owner",
+      "sublabel": "项目 Work/Runner、业务状态与真实节点归各 owner",
       "tag": "NOT OWNED BY AI-USE",
       "row": 3,
       "col": 3,
@@ -433,6 +467,98 @@
         {
           "path": "30_PROTOCOLS/OWNER_INSTANCE_BOUNDARY.md",
           "label": "Owner semantics"
+        }
+      ]
+    },
+    {
+      "id": "issueConvergence",
+      "type": "backend",
+      "label": "Post-BOOT Issue Convergence",
+      "sublabel": "定向去重/主题入口 · 保留独立 Work/Claim/PR",
+      "tag": "ACCEPTED · PR #185",
+      "row": 4,
+      "col": 0,
+      "size": [
+        252,
+        72
+      ],
+      "sources": [
+        {
+          "path": "30_PROTOCOLS/GITHUB_NATIVE_FIRST.md",
+          "label": "Accepted §4.2 Issue convergence"
+        },
+        {
+          "path": "90_HISTORY/ADR-0023_POST_BOOTSTRAP_ISSUE_CONVERGENCE.md",
+          "label": "Decision and compatibility"
+        }
+      ]
+    },
+    {
+      "id": "agentRuntime",
+      "type": "cloud",
+      "label": "Agent Runtime (public source)",
+      "sublabel": "OpenCode 参考镜像代码 · 首次 OCI/GHCR 未发布",
+      "tag": "SOURCE MERGED / RELEASE GATED",
+      "row": 4,
+      "col": 1,
+      "size": [
+        252,
+        72
+      ],
+      "sources": [
+        {
+          "path": "agent-runtime/README.md",
+          "label": "Public Agent Runtime source"
+        },
+        {
+          "path": "agent-runtime/release/README.md",
+          "label": "Publishing gate and acceptance"
+        }
+      ]
+    },
+    {
+      "id": "proposals",
+      "type": "frontend",
+      "label": "Proposals / review candidates",
+      "sublabel": "OCI #182 · Worksite #174 · Engineering #178 · Research #184",
+      "tag": "OPEN PR != MAIN",
+      "row": 4,
+      "col": 2,
+      "size": [
+        252,
+        72
+      ],
+      "sources": [
+        {
+          "path": "30_PROTOCOLS/CHANGE_LIFECYCLE.md",
+          "label": "Candidate -> Review -> accepted"
+        },
+        {
+          "path": "docs/research/README.md",
+          "label": "Accepted L3 research index only"
+        }
+      ]
+    },
+    {
+      "id": "changeAware",
+      "type": "external",
+      "label": "Change-aware Work Graph",
+      "sublabel": "下游变更影响传播 / 旧验收失效仍未落地",
+      "tag": "GAP · CONTROL-PLANE OWNER",
+      "row": 4,
+      "col": 3,
+      "size": [
+        252,
+        72
+      ],
+      "sources": [
+        {
+          "path": "90_HISTORY/ADR-0023_POST_BOOTSTRAP_ISSUE_CONVERGENCE.md",
+          "label": "Explicit unsolved capability boundary"
+        },
+        {
+          "path": "30_PROTOCOLS/DIAGRAM_AS_CODE.md",
+          "label": "Project / Work / Delivery drilldown"
         }
       ]
     }
@@ -577,6 +703,33 @@
       "to": "history",
       "label": "L3 on demand",
       "variant": "dashed"
+    },
+    {
+      "id": "native-topic",
+      "from": "githubNative",
+      "to": "issueConvergence",
+      "label": "post-BOOT §4.2"
+    },
+    {
+      "id": "support-runtime",
+      "from": "support",
+      "to": "agentRuntime",
+      "label": "optional source",
+      "variant": "dashed"
+    },
+    {
+      "id": "research-proposals",
+      "from": "history",
+      "to": "proposals",
+      "label": "status != authority",
+      "variant": "dashed"
+    },
+    {
+      "id": "project-change-aware",
+      "from": "projectTruth",
+      "to": "changeAware",
+      "label": "not implemented",
+      "variant": "dashed"
     }
   ],
   "cards": [
@@ -615,6 +768,16 @@
         "ai-use 拥有可复用治理/协议，不拥有部署实例的项目实时状态、节点 runtime 或业务事实。",
         "Human Host / Diagram / GitHub Native 都是 targeted protocol，不自动提升为 Kernel。",
         "本图为 DERIVED；任何冲突都回 canonical source 修图，不反向修改 truth 来迁就图。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "2026-11-08 capability & evidence status (snapshot)",
+      "items": [
+        "MERGED: Issue 主题收敛规范 PR #185；Fresh Architect 完成 BOOT 后做定向整理，不是第四个启动 gate。",
+        "MERGED SOURCE ONLY: agent-runtime OpenCode 参考源码；首次 OCI/GHCR package 仍未正式发布。",
+        "OPEN / NOT MAIN: 公共 OCI Supply PR #182、Worksite Log PR #174、软件架构/图示门禁 PR #178；跨执行器案例 PR #184 仍为 Draft；以 GitHub live PR 为准。",
+        "GAP / EXTERNAL OWNER: Change-aware Work Graph 的契约变更影响传播尚未实装；不得把 Issue 依赖筛选或 Archify 展示误称自动重规划。"
       ]
     }
   ]
