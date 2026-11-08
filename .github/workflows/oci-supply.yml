@@ -1,0 +1,30 @@
+name: Public OCI supply verification
+
+on:
+  pull_request:
+    paths:
+      - 'capabilities/oci/**'
+      - '.github/workflows/oci-supply.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'capabilities/oci/**'
+      - '.github/workflows/oci-supply.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-archive-validator:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - name: Checkout reviewed source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Run public synthetic OCI archive tests (no engine, credentials or network)
+        run: python -m unittest discover -s capabilities/oci/tests -v
