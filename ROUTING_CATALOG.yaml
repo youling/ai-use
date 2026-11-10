@@ -233,6 +233,19 @@
       "public": true
     },
     {
+      "id": "software-engineering",
+      "layer": "30",
+      "reading_level": "L2",
+      "roles": [
+        "Architect"
+      ],
+      "when": "material 软件功能/领域与模块划分、依赖/接口设计、复杂重构与架构 Review；普通小修和已冻结窄施工不触发",
+      "home": "30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md",
+      "section": "",
+      "templates": [],
+      "public": true
+    },
+    {
       "id": "diagram",
       "layer": "30",
       "reading_level": "L2",
@@ -242,7 +255,7 @@
         "Research",
         "Repair"
       ],
-      "when": "复杂 topology / workflow / sequence / lifecycle / diagram drift；Builder/Research/Repair 仅派单要求 diagram 时",
+      "when": "复杂 topology / workflow / sequence / lifecycle / diagram drift；Architect 重要架构阶段总结需呈现当前图源与真实进展 delta；Builder/Research/Repair 仅派单要求 diagram 时",
       "home": "30_PROTOCOLS/DIAGRAM_AS_CODE.md",
       "section": "",
       "templates": [

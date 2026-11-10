@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** Read when dispatching/executing Agent work, choosing Architect execution mode, advancing an authorized program, or producing/reviewing Human/Agent interface artifacts.
 
-**Protocol Version: 2.12.2**
+**Protocol Version: 2.12.3**
 
 本文是 **execution / dispatch / continuation interface** 的 canonical home。公共 `ai-use` 不绑定特定 owner/repo、私有 control-plane 名称或账号。[Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md) 拥有 recovery、Work Context、正交 context/mode 与 independence/delegation 语义；[CONTEXT_MODE_SEED](../50_TEMPLATES/CONTEXT_MODE_SEED.md) 只给形态。本文保留 continuation、`PREMATURE_YIELD` 与完成边界。
 
@@ -274,7 +274,7 @@ Daily Brief 是同一 durable state 的**派生 Human-facing memory projection**
 
 [Constitution §2](../CONSTITUTION.md#2-governance-hierarchy) 统一定义目标、技术与产品取舍。本接口仅落实**观察到进展后再决定下一步**：
 
-- **Architect**：按当前验收选择/调整有证据的架构方向；不把语言、版本、额外安全或研究建议自行变成验收门禁。
+- **Architect**：按当前验收选择/调整有证据的架构方向；不把语言、版本、额外安全或研究建议自行变成验收门禁。 对涉及实质领域/模块边界、依赖重构的设计，按 [软件工程实践](../30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md) 解释责任、变化原因与接口；在重要架构阶段总结按 [Diagram-as-Code §3.1](../30_PROTOCOLS/DIAGRAM_AS_CODE.md#31-阶段性进展图示与领域边界复盘) 给出当前可追溯图源及真实 delta，或复用仍 current 的图，不为简单窄任务增加绘图仪式。
 - **Foreman**：在受托范围内按关键路径、独立 READY 与实际资源动态推进；慢 child 要诊断，适用时有限并行（方法在 [Foreman](../20_ROLES/FOREMAN.md) §2.1）。
 - **Subagent、Verifier/监工**：交付各自的有界证据；对照现行验收指出实质缺陷或无效门禁，不重新定义产品需求。
 - **Runner/Observer**：提供可核验状态，不将心跳、模型在线或耗时等同成功/失败，也不由此授予接管或调度权限。
@@ -464,6 +464,7 @@ Human Completion Card 仅保留为 Architect / orchestrator 在**非 delegated e
 
 ## 6. Versioned Definitions
 
+- `2.12.3`：Human 2026-10-24：Architect 对实质软件架构变更使用 targeted 软件工程分解实践，在有意义阶段以当前图示与证据 delta 外显领域/模块边界；具体画图语义仍由 Diagram-as-Code 拥有，执行状态和验收未改变。
 - `2.12.2`：#167 原生 GitHub 工作自助发现。Human/Agent 从可回源的 Issue 标签和 Projects 查看当前可行动任务；可见状态仅为 derived projection，不新增 Work claim/dispatch/permission，也不复制 Native First 的字段语义。
 
 - `2.12.1`：#165 提炼目标导向并删除重复禁令；技术语言/发布阶段中立，支持前沿版本的当前特性验证与长期迁移判断。2.12.0 的 Python/Rust 仅为历史例子，绝非优先次序、必选语言或预设重写生命周期。
