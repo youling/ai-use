@@ -57,6 +57,8 @@ python reproduce.py
 
 ## 经验账本的后续增补
 
+[Windows 多工头观察（2026-10-15）](windows-observations-20261015.md)记录单宿主协调、真实 branch/source 工件、部分派发失败与 single Git writer 恢复的有限实证，保留 PARTIAL、原失败及 UNKNOWN。
+
 每次有语义变化时，保留版本、认证路线、requested/observed model+effort、真实 parent/child、物理写域与共享对象、commit/blob/byte hash、工具/拒绝、宿主回执、结论和 UNKNOWN。实例 ID/path/实时 Work 状态留 owner；公共目录只收去敏可复制方法、合成材料和范围。新结论需要新证据，不覆盖旧失败，不因额度充足推导权限或无限可靠性。
 
 官方资料：[headless](https://antigravity.google/docs/cli/headless/)、[subagents](https://antigravity.google/docs/subagents?tab=cli)、[permissions](https://antigravity.google/docs/permissions/)、[独立配置根议题](https://github.com/google-antigravity/antigravity-cli/issues/155)。这些是上游资料，本文结论以本机 1.3.4 的实际观察为范围。
