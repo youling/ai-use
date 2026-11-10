@@ -1,8 +1,10 @@
 # 跨执行器工头经验补记：移动端工程实例
 
-**2026-11-06 · NON-NORMATIVE / REVIEW CANDIDATE · 非运行器认证**
+**观察日期 2026-11-06 · NON-NORMATIVE / QUALIFIED_RESEARCH_ACCEPTANCE · 非运行器认证**
 
-Work：[ai-use #183](https://github.com/youling/ai-use/issues/183)。Human 要求复盘本次 OpenCode、Antigravity、ZCode 指挥经验，由 Human 提交总架构师审核。本稿是作者基于真实执行轨迹的去敏综合，**尚未经过总架构师独立验收**；不增加角色、权限、状态机、默认模型或免费资源承诺。
+Work：[ai-use #183](https://github.com/youling/ai-use/issues/183)。Human 要求复盘本次 OpenCode、Antigravity、ZCode 指挥经验，并提交总架构师审核。本稿是作者基于真实执行轨迹的去敏综合；[总架构师 Review 5802110535](https://github.com/youling/ai-use/pull/184#pullrequestreview-5802110535) 已有条件接受 L3 案例与操作经验，要求修正 DIRECT 留痕及审查状态。该 Review 只核对 owner 证据记载，没有重跑三执行器或产品现场。
+
+本次修订记录日期为 2026-11-11，依据 [R1 历史纠正与有界修订回执](https://github.com/youling/ai-use/issues/183#issuecomment-6777678884) 补齐 R1/R2。修订的精确 HEAD、delta Review、检查和合并事实统一见 [PR #184](https://github.com/youling/ai-use/pull/184)；文档收录不表示执行能力通过认证或经验晋升规范。各项采纳与待证边界见 [REVIEW.md](REVIEW.md)。
 
 ## 1. 先纠正本次成绩的表述
 
@@ -14,7 +16,7 @@ Work：[ai-use #183](https://github.com/youling/ai-use/issues/183)。Human 要�
 
 本次没有“三家全部成功施工”的证据。ZCode 路线的接入失败不代表软件普遍不可用，亦不能用别的客户端完成的工作冒充它的成果。Human 给出的限时资源窗口到期后，没有据旧授权继续使用。
 
-公共材料不保存账号、机器地址/序列号、会话 ID、完整日志、原始思考、私有拓扑或凭据。实例原件、长度、hash、当地可用性与恢复风险保留于[受控 owner 回执](https://github.com/youling/xzs/issues/14#issuecomment-6687450863)；读者不能访问该回执时，本稿仍只是可供挑战的去敏观察，不升级为其亲自核验。local-only 原件未证明异机备份。
+公共材料不保存账号、机器地址/序列号、会话 ID、完整日志、原始思考、私有拓扑或凭据。来源类别为 **实例 owner 保管的受控执行与证据回执**；原件定位、长度、hash、当地可用性与恢复风险留在 owner 的受控记录，本文不公开私有定位符。需要抽核时，由实例 owner 按现有授权提供具名材料；没有原件访问权限的读者只能将本稿视为可供挑战的去敏观察，不能称自己已核验原件。local-only 原件未证明异机备份。
 
 ## 2. 旧经验哪些正确，哪些需要补足
 
@@ -25,12 +27,13 @@ Work：[ai-use #183](https://github.com/youling/ai-use/issues/183)。Human 要�
 - [Antigravity 原始研究](../antigravity-foreman/README.md)及[恢复笔记](../antigravity-foreman/runtime-recovery-notes.md)：空成功、模型/额度、恢复、累计指标的边界。
 - [OpenCode runtime runbook](../../../agent-runtime/opencode/runbook.md)：具体镜像/Host 的启动与凭据边界；它并非 Windows 所有原生客户端的通用操作手册。
 
-**多数问题是现行原则没有落实到派单和回执，不应再增加一层制度。** 后面的改进是待采纳的操作方法；[审查清单](REVIEW.md)区分保留、补充与待证。
+**多数问题是现行原则没有落实到派单和回执，不应再增加一层制度。** 后面的操作方法按既有总架构师 Review 分别保留、采纳为 L3 经验或继续待证；[审查记录](REVIEW.md)保存逐项裁决，修订验收与收录事实回到 PR 的精确版本记录。
 
 | 旧内容 / 本次不足 | 类型 | 本次修正候选 |
 |---|---|---|
 | 原则要求 Architect/Foreman 编排优先；本次根曾过多代跑调优和 debug，Human 明确纠正 | 执行偏差 | 原执行会话负责调试/构建，根负责边界、证据审阅、协调与图。根可做有界低风险文档/状态核查，不以角色纯度机械派小任务。 |
 | 原则要求 GitHub durable handoff；早期把聊天派单说成完成交接 | 执行偏差 | 区分消息已发送、对方已接单、产物已落档、精确版本已审阅；四者不是同一事实。 |
+| 本次经验复盘采用 DIRECT，却把起草/交付评论写成 AGENT_CLAIMED / AGENT_TERMINAL_RESULT | 本次复盘自身的执行偏差 | DIRECT 不制造 delegated dispatch、CLAIM 或 TERMINAL；以真实 PR、精确 HEAD、检查与 Review 留痕。原评论保留为历史，并已在 #183 追加具名纠正；错误事件名不产生 delegated attempt、owner 或验收。 |
 | 原经验已告诫 SUCCESS/exit0 不等于完成；本次又出现 SUCCESS + 空 response + denied_actions | 已有原则得到新反例支持 | 检查外层退出码、运行器终态、实际工具结果、目标工件与父验收。任何一项缺证，不把状态升级。 |
 | 旧经验讲权限边界，但不足以直接套用每个运行器的匹配语法 | 操作补充 | 先验证本版的读取/写入/命令规则。某次文件 regex 写法被拒，改成窄的明确文件集合后产出；命令的 regex 经验不能直接套给文件工具。精确路径也不保证任意后续读取获准。 |
 | 共享写域原则已有；双端“并行开发”容易变成两人同时写同一 Flutter 核心 | 操作补充 | 共享核心只设一个当前 writer；Android/iOS 平台工作可独立，但 SDK/cache、设备、浏览器和账号同样要列入互斥对象。 |
@@ -115,7 +118,7 @@ AI 研究第一稿曾把未核实的价格/免费期限写成事实，并错误�
 
 作者回读了上述既有手册、实例接入/中断/测试报告和针对性原生事件；私有 owner 回执记录原件长度/hash及 local-only 风险。公共 diff 仅为本研究、审查清单与导航链接；不会重跑模型、ADB、SSH、签名或产品测试以“证明文档”。
 
-发布前做链接/范围/去敏检查并回读精确提交，结果落 #183 和 PR。该机械检查不是独立语义审核；总架构师需决定哪些观察可信、哪些方法可采纳、哪些需补反例。具体候选见 [REVIEW.md](REVIEW.md)。
+原稿发布前做了链接/范围/去敏检查并回读精确提交，结果落 #183 和 PR。该机械检查不是独立语义审核。总架构师随后对原 head `1f733967a617179fa5aa364ec932c7e71d372944` 作出有条件裁决，K01–K10 及证据缺口已录入 [REVIEW.md](REVIEW.md)。本次只修 DIRECT 留痕说明、审查状态和公共定位符；每次修订均以自己的精确 HEAD 回读与 delta Review 为收录依据，不以旧 head 的检查冒充新版本验收。
 
 ## 9. 未解决与不应扩大推论
 
