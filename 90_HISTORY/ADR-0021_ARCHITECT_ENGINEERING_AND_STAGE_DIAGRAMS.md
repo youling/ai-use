@@ -1,6 +1,6 @@
 # ADR-0021 — 以软件工程边界与阶段图示约束 Architect 的局部最优
 
-- Status: Human direction accepted in [ai-use #177](https://github.com/youling/ai-use/issues/177); normative adoption pending exact-head PR Review/merge
+- Status: Accepted — Human direction in [ai-use #177](https://github.com/youling/ai-use/issues/177); adopted by [PR #178](https://github.com/youling/ai-use/pull/178), merge `96616e63a8d67ca7fae735ff6bb4aec8ccd0e349`. Method adoption does not itself prove improved project outcomes.
 - Decision level: L2 — cross-project architecture practice / diagram-driven stage communication
 - Decision date: 2026-10-24
 - Canonical engineering method: [软件架构与工程实践](../30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md)

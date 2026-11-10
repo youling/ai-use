@@ -3,7 +3,7 @@
   "diagram_type": "architecture",
   "meta": {
     "title": "ai-use Project Map",
-    "subtitle": "Human governance · post-BOOT Issue convergence · public runtime · research boundaries",
+    "subtitle": "Human governance · worksite recovery · engineering stage diagrams · candidate runtime",
     "locale": "zh-CN",
     "output": "ai-use-project.architecture.html",
     "quality_profile": "showcase",
@@ -12,7 +12,7 @@
       "url": "https://github.com/youling/ai-use",
       "provider": "github",
       "link_mode": "web",
-      "revision": "8ac796fc6488f2a6f9a0923321b44409318cb5e1"
+      "revision": "87b90e6086a329a5bbff037555e7a6af06bab607"
     },
     "views": [
       {
@@ -28,7 +28,7 @@
           "durable",
           "recovery"
         ],
-        "note": "先按 L0/BOOT-1/2/3 恢复当前 Work；之后才定向收敛相关 Issues（不是新 gate）。Architect 决策/审阅，Foreman 编排。"
+        "note": "先按 L0/BOOT-1/2/3 恢复当前 Work；之后定向收敛相关 Issues。Architect 决策/审阅，Foreman 编排；Worksite Log 只补充现场恢复证据。"
       },
       {
         "id": "hostPath",
@@ -40,7 +40,7 @@
           "durable",
           "support"
         ],
-        "note": "Host 是执行基座。可选 OpenCode 公共参考源码已合并；首次 OCI/GHCR 发布尚未验收。"
+        "note": "Host 是执行基座。OpenCode 公共源码与首次 OCI candidate 已有验收回执；stable、后续发行和实际 Host/model readiness 分别判断。"
       },
       {
         "id": "changePath",
@@ -52,7 +52,7 @@
           "changeLifecycle",
           "durable"
         ],
-        "note": "变更走 Issue/ADR/PR/Review；PR #185 已合并。尚未合并的 PR 是候选，不是现行规范。"
+        "note": "变更走 Issue/ADR/PR/Review；PR #174/#178/#185 已合并。方法合同接受与真实项目实施验收分开记录。"
       },
       {
         "id": "navigationPath",
@@ -65,7 +65,7 @@
           "support",
           "history"
         ],
-        "note": "用 source[] 最小下钻；L2 指南、L3 研究和在审提案分清证据等级。图是源版本快照，候选 PR 必须 live-read。"
+        "note": "图示节点可下钻工程方法与阶段图，恢复节点可下钻Worksite Log及模板；L3 研究与在审提案保留证据等级。"
       },
       {
         "id": "ownerPath",
@@ -232,7 +232,7 @@
       "id": "recovery",
       "type": "backend",
       "label": "Recovery & Durable Trace",
-      "sublabel": "handoff · resume · CLAIM/checkpoint/terminal evidence",
+      "sublabel": "handoff · checkpoint · Worksite Log / 现场对账",
       "tag": "RECOVERY",
       "row": 1,
       "col": 2,
@@ -248,6 +248,10 @@
         {
           "path": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
           "label": "Durable trace"
+        },
+        {
+          "path": "30_PROTOCOLS/LOCAL_WORKSITE_LOG.md",
+          "label": "现场恢复日志；不产生远端权限"
         }
       ]
     },
@@ -316,7 +320,7 @@
       "id": "diagram",
       "type": "frontend",
       "label": "Diagram-as-Code",
-      "sublabel": "Owner 图源 · 精确版本 · 派生导航 / freshness",
+      "sublabel": "Owner 图源 · 阶段 delta · 派生导航 / freshness",
       "tag": "NAVIGATION",
       "row": 2,
       "col": 2,
@@ -328,6 +332,14 @@
         {
           "path": "30_PROTOCOLS/DIAGRAM_AS_CODE.md",
           "label": "Diagram protocol"
+        },
+        {
+          "path": "50_TEMPLATES/DIAGRAM_AS_CODE.md",
+          "label": "阶段图示形态与反例"
+        },
+        {
+          "path": "30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md",
+          "label": "已接受的工程边界与变化影响方法"
         }
       ]
     },
@@ -377,8 +389,8 @@
       "id": "support",
       "type": "frontend",
       "label": "Agent Runtime / Guides",
-      "sublabel": "OpenCode 公共源码 · 首次 OCI 发布待验 · 按需指南",
-      "tag": "OPTIONAL / PUBLIC SOURCE",
+      "sublabel": "公共源码 / 首次 candidate 已接受 · Host 另验",
+      "tag": "OPTIONAL / CANDIDATE",
       "row": 3,
       "col": 1,
       "size": [
@@ -392,7 +404,7 @@
         },
         {
           "path": "agent-runtime/release/README.md",
-          "label": "First OCI publication still gated"
+          "label": "首个 candidate 已验收；后续发行另判"
         },
         {
           "path": "READING_MAP.md",
@@ -612,8 +624,8 @@
       "dot": "violet",
       "title": "Reliability loop",
       "items": [
-        "Git/GitHub 持久化 Work、exact head、review 与 evidence；聊天/本地现场默认只是 working cache。",
-        "Agent Interface 负责施工；Durable Trace 负责恢复证据；Recovery 负责从 current durable state 接续。",
+        "Git/GitHub 持久化 Work、exact head、review 与授权；Worksite Log 保留未回写现场证据，独有原件先保全再清理。",
+        "Agent Interface 负责执行边界；Durable Trace 负责事件/产物定位；Worksite Log 负责本地追加和对账，不能冒充远端CLAIM或离机备份。",
         "evidence > self-report；current live facts > stale snapshot / chat memory。"
       ]
     },
@@ -628,12 +640,12 @@
     },
     {
       "dot": "amber",
-      "title": "2026-11-08 capability & evidence status (snapshot)",
+      "title": "2026-11-11 capability & evidence status (snapshot)",
       "items": [
-        "MERGED: Issue 主题收敛规范 PR #185；Fresh Architect 完成 BOOT 后做定向整理，不是第四个启动 gate。",
-        "MERGED SOURCE ONLY: agent-runtime OpenCode 参考源码；首次 OCI/GHCR package 仍未正式发布。",
-        "OPEN / NOT MAIN: 公共 OCI Supply PR #182、Worksite Log PR #174、软件架构/图示门禁 PR #178；跨执行器案例 PR #184 仍为 Draft；以 GitHub live PR 为准。",
-        "GAP / EXTERNAL OWNER: Change-aware Work Graph 的契约变更影响传播尚未实装；不得把 Issue 依赖筛选或 Archify 展示误称自动重规划。"
+        "MERGED: Issue 收敛 PR #185、产物/施工日志 PR #174、软件工程/阶段图 PR #178；公共方法接受不等于各项目部署完成。",
+        "HISTORICAL CANDIDATE ACCEPTED: #123 首次 OCI 公共制品有发行回执6044487814和关闭裁决6247066989；无stable promotion、后续发行或本轮新pull结论。",
+        "SEPARATE EVIDENCE: 通用 OCI Supply PR #182 仍按自身合同验收；跨执行器 PR #184 已收录 L3 有条件研究，PR #158/#159 历史观察已合并，均不代表运行认证。",
+        "GAP / EXTERNAL OWNER: Change-aware Work Graph 的契约变更影响传播尚未实装；Issue依赖筛选、日志和Archify展示均不等于自动重规划。"
       ]
     }
   ]

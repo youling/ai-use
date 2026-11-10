@@ -36,12 +36,15 @@
 ## Architecture at a glance
 
 ```mermaid
-flowchart LR
+flowchart TD
   H["Human\n目标 / 主权 / 风险"] --> G["ai-use Governance\nL0 + targeted L2"]
   G --> A["Global / Project Architect\n架构 / 授权 / Review"]
   G --> B["Bootstrap\nBOOT-1 / 2 / 3"]
   B -. "完成后定向收敛（非新门禁）" .-> I["Issue Topic Convergence\nGitHub Native §4.2 · 已生效"]
   A --> F["Foreman\n协调 Work / 子任务"]
+  A -. "边界与阶段复盘" .-> E["软件工程 / 阶段图\nL2 方法 · 已接受"]
+  F -. "现场恢复证据" .-> W["Worksite Log\n本地记录 · 不产生权限"]
+  W -. "授权范围内对账回写" .-> D
   A -. "重大架构决策" .-> R["ARCH-0 / Prior Art\nArchitect 决策（非新角色）"]
   R -. "当前决策指针" .-> F
   F --> S["Subagent\nBUILD / INVESTIGATE / REPAIR / VERIFY"]
@@ -50,7 +53,7 @@ flowchart LR
   I -. "仅索引当前 Work" .-> D
   D --> F
   D --> A
-  G -. "公共可选参考实现" .-> AR["Agent Runtime\n源码已合并 · 首次 OCI 发布未完成"]
+  G -. "公共可选参考实现" .-> AR["Agent Runtime\n源码 / 首次 candidate 已接受"]
   AR -. "可选执行环境" .-> X
   G -. "Human Host 规则" .-> HH["HOST_AGENT.md\n本地实例投影"]
   HH -. "就绪依据" .-> X
@@ -60,7 +63,9 @@ flowchart LR
 
 **L1 详情图：** [ai-use Project Detail Map 图源](docs/diagrams/project.architecture.json) · [图示维护契约](docs/diagrams/README.md) · [Research / 工厂经验索引](docs/research/README.md)（L3，按需阅读，非治理规则）。部署侧 Navigator 只消费/渲染这份 owner 图源，不复制第二份 ai-use 架构语义。
 
-**图中状态按源码版本区分：** [冷启动后定向收敛](30_PROTOCOLS/GITHUB_NATIVE_FIRST.md)已随 [PR #185](https://github.com/youling/ai-use/pull/185) 合并；[Agent Runtime](agent-runtime/README.md) 参考源码已合并，OCI/GHCR 首次发行尚未验收。[通用 OCI Supply PR #182](https://github.com/youling/ai-use/pull/182)、[阶段化架构图 PR #178](https://github.com/youling/ai-use/pull/178)等仍是**候选**；[Change-aware Work Graph](https://github.com/youling/ai-hub/issues/131) 的跨任务变更影响传播仍未实现。图是注明来源版本的导航快照，真实 PR/运行状态使用前必须回读当前 owner。
+**治理规范已接受：** [冷启动后定向收敛](30_PROTOCOLS/GITHUB_NATIVE_FIRST.md)（[PR #185](https://github.com/youling/ai-use/pull/185)）、[产物定位与本地施工日志](30_PROTOCOLS/LOCAL_WORKSITE_LOG.md)（[PR #174](https://github.com/youling/ai-use/pull/174)）、[软件工程实践](30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md)与[阶段图示](30_PROTOCOLS/DIAGRAM_AS_CODE.md#31-阶段性进展图示与领域边界复盘)（[PR #178](https://github.com/youling/ai-use/pull/178)）均已合并。方法被采用不证明各项目已部署日志或完成架构改造。
+
+**发行与候选分别看证据：** [Agent Runtime](agent-runtime/README.md) 的公共源码与首次 OCI candidate 已有[发行回执](https://github.com/youling/ai-use/issues/123#issuecomment-6044487814)和[验收关闭记录](https://github.com/youling/ai-use/issues/123#issuecomment-6247066989)；它仍是 candidate，未由此取得 stable、后续发行或 Host 部署验收。[通用 OCI Supply PR #182](https://github.com/youling/ai-use/pull/182)仍待其独立验收；[Change-aware Work Graph](https://github.com/youling/ai-hub/issues/131) 的跨任务变更影响传播仍未实现。图是注明来源版本的导航快照，真实 PR/运行状态使用前必须回读当前 owner。
 
 
 ---
@@ -73,7 +78,7 @@ ai-use 从三个默认故障假设开始：
 - **AI 不可靠**：上下文会丢、模型会漂移、Agent 会自述“完成”却缺少 durable evidence，也可能因为 token、provider、网络或会话中断突然消失。
 - **执行环境不可靠**：电脑、节点、容器、网络、本地 workspace 和 provider runtime 都可能失效；任何单台设备都应当可丢弃、可替换。
 
-因此，系统把 **Git/GitHub durable state** 作为可恢复协作基础，把聊天和本地现场降为 working cache，并用显式 authority、evidence、checkpoint、review 与 fail-closed gate 对抗这些不可靠性。
+因此，系统把 **Git/GitHub durable state** 作为协作授权与远端恢复基础；聊天是 working memory，本地[施工日志](30_PROTOCOLS/LOCAL_WORKSITE_LOG.md)保留尚未回写的现场证据，恢复后按当前权威来源对账。独有原件按 owner 的持久化规则保护，不把临时工作区或同机日志当作离机备份。
 
 AI 很强，但如果只用聊天来驱动它写代码，长期工程会逐渐劣化：
 
@@ -139,7 +144,7 @@ Human
 
 ## Core ideas
 
-- **Git/GitHub durable state** —— 持久事实源是 Git/GitHub；聊天只是 working memory，本地 workspace 默认可丢弃。
+- **Git/GitHub durable state** —— Work/权限与远端交付回到 Git/GitHub；本地现场补充恢复证据，唯一原件与未同步成果须先保全再清理。
 - **evidence > self-report** —— 机器可验证证据（exact-head、tests、Git facts）强于自然语言自评。
 - **minimum sufficient workflow** —— 治理强度与真实风险成比例，不做为治理而治理。
 - **project-local truth** —— 项目事实留在项目仓，公共方法论不复制私有运行态。
@@ -163,6 +168,8 @@ Human
 | [Architect Discovery 边界](20_ROLES/ARCHITECT_DISCOVERY.md) | 新领域/重大架构阶段的 Architect | Architecture Discovery 属于 Architect；按现有 [ARCH-0](docs/ARCHITECT_RECONNAISSANCE.md) 调研并裁决后再授权实施 |
 | [Research & Factory Experience](docs/research/README.md) | Architect 定期更新技术图景或比较外部 Agent/provider 时 | 现有 Antigravity 实证与 2026 人机编排/数学/Magpie 研究索引；全属 L3 evidence，不能代替 runtime/gate 验收 |
 | [Foreman 角色合同](20_ROLES/FOREMAN.md) | 新派单 / 接任 Foreman | 对父级 Work 负责、安排子对话与 durable 回写时 targeted 阅读 |
+| [本地施工日志](30_PROTOCOLS/LOCAL_WORKSITE_LOG.md) | 有长期现场、跨会话或重要非 GitHub 原件的工头 | 保存未回写事实、交接与恢复线索；短 GitHub-only 任务不强制建日志 |
+| [软件工程实践](30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md) / [阶段图示](30_PROTOCOLS/DIAGRAM_AS_CODE.md#31-阶段性进展图示与领域边界复盘) | 处理实质领域/模块/接口变更的 Architect | 解释责任与变化边界，用当前图源和真实 delta 复盘；窄修复不强制绘图 |
 | [`human/README.md`](human/README.md) | 二脑协作者 / Human | 跨 AI 记录 Human、日终提炼、上下文漂移后冷启动或切换协作者时 |
 | [Recovery & Handoff](30_PROTOCOLS/RECOVERY_HANDOFF.md) | 需要恢复、交接或 context 判定的人 | 当前三分支 recovery 与 context contract；[旧 Session 路径](docs/SESSION_LIFECYCLE.md) 只保留兼容转向 |
 | [`10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md`](10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md) | 所有执行 Agent | 启动状态验证（L2 按需） |
