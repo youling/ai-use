@@ -7,4 +7,6 @@
 - [R80 Semantic Regression Studies](R80_SEMANTIC_REGRESSIONS.md)：历史语义回归与证据。
 - [Antigravity CLI 工头/原生子会话与隔离工作区实测](antigravity-foreman/README.md)：已接受的 `NON-NORMATIVE / QUALIFIED_SYNTHETIC_ONLY` 工厂经验；附带冻结合成回归与去敏证据。正式 BOOT、权限对抗、真实业务能力、长期运行及费用仍未认证；[验收 PR #150](https://github.com/youling/ai-use/pull/150) 不等于 runtime certification。
 
+- [2026-11-06 跨执行器工头经验补记](multi-runtime-foreman-20261106/README.md)：OpenCode / Antigravity / ZCode 的实例去敏复盘与旧指南差距；已有总架构师有条件审查，R1/R2 修订及剩余证据边界见审查记录，收录事实见 [PR #184](https://github.com/youling/ai-use/pull/184)；不是新默认执行器或运行认证。
+
 科研成果的验证层级必须明确：供应商声称 / 公开来源 / 形式化/机器检查 / 独立人类复审，不允许从「AI 自报完成」跃迁为「已被证实」。完整治理与 Diagram-as-Code 入口仍按根 [README](../../README.md) 与 [Routing](../../ROUTING_CATALOG.yaml) targeted 读取。

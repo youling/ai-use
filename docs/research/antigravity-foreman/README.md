@@ -70,3 +70,7 @@ python reproduce.py
 ## 模型与额度补记
 
 [模型路线与额度账本](model-quota-observations.md)明确记录 Gemini 与 Opus 的实际调用、旧父 init 与最终错误模型不一致、fresh Opus 两轮启动成功后 child quota 失败、Gemini 恢复不能证明旧 child 迁移，以及截图中额度组/时间窗口/AI credits 的区别。[机器摘要](model-quota-observations.json)保留有限审计范围与 UNKNOWN，不作计费或全账号调用证明。
+
+## 后续有条件审查经验：跨执行器移动端工程
+
+[2026-11-06 经验补记](../multi-runtime-foreman-20261106/README.md)记录 OpenCode 限额接续、Antigravity 实际执行与权限回执、ZCode 未打通的接入探查，以及构建/使用验收分层。总架构师已有条件审查；R1/R2 修订及剩余证据边界见该研究审查记录，收录事实见 [PR #184](https://github.com/youling/ai-use/pull/184)。本研究不改写本页历史失败，不扩大本页 QUALIFIED_SYNTHETIC_ONLY，也不指定默认模型或新权限。
