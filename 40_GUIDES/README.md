@@ -6,7 +6,7 @@
 
 人类可见输出默认简体中文，见 [Language Policy](../00_KERNEL/LANGUAGE_POLICY.md)。
 
-secret/output invariant 见 [AGENTS.md §5](../AGENTS.md#5-evidence-bound-mutation)；public cold-start 回归见 [PUBLIC_COLD_START_CHECKLIST.md](PUBLIC_COLD_START_CHECKLIST.md)。
+secret/output invariant 见 [AGENTS.md](../AGENTS.md) 的共同原则；public cold-start 回归见 [PUBLIC_COLD_START_CHECKLIST.md](PUBLIC_COLD_START_CHECKLIST.md)。
 
 对于面向用户的安装器、容器、Agent 首次使用交付，按需查看 [首次使用真实性验证：证据梯级与用户历史状态矩阵](USER_FIRST_RUN_EVIDENCE_LADDER.md)，将单元/合成/真实二进制/原生只读/用户现场/完整认证分别验收。它是实践指南，不是新的权限来源。
 
@@ -15,5 +15,5 @@ secret/output invariant 见 [AGENTS.md §5](../AGENTS.md#5-evidence-bound-mutati
 按任务阶段调节模型推理强度：见 [Adaptive Reasoning Effort](ADAPTIVE_REASONING_EFFORT.md)。它只提供 provider-agnostic 实践映射；Fresh/takeover 与 steady/escalation 的 normative owner 仍在 Reconnaissance / Agent Interface。
 
 需要周期观察项目、发现待审/疑似失联/真实 Human Gate，或生成每日恢复摘要时，按需读取 [Architect Watch & Daily Brief](ARCHITECT_WATCH_AND_BRIEF.md)。health class 与 brief 都是派生 read model，不是第二 Work state。
-对既有来源/接口做取证、解释一个 0 结果、或准备发布只读回执时，按需读取 [探测与验证作业手册](PROBE_AND_VERIFY_PLAYBOOK.md)：先清点既有来源再采集、零结果五槽位与零捕获正控、三路互证、发布卫生与传输选择。它是实践指南，不建立新权限。
 
+对既有来源或接口取证、解释零结果、比较计数或准备证据回执时，按需读取 [探测与验证作业手册](PROBE_AND_VERIFY_PLAYBOOK.md)：清点来源、检查正控与口径、按风险验证，区分私域原件、公开输出与 secret，并按当前授权选择传输。它是实践指南，不增加统一验证门；工作区隔离与验证政策仍由 Agent Interface / Constitution 负责。
