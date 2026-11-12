@@ -92,7 +92,8 @@ def validate_acceptance_receipt(receipt: dict) -> None:
             or case.get('native_dialog') != 'NOT_EXERCISED_BY_SEAM'
             or case.get('keyboard_browse') != 'PASS' or case.get('cancel') != 'UNCHANGED'
             or case.get('scope_escape') != 'BLOCKED' or case.get('parent_scope') != 'FRESH_DESCENDANT_NOT_CREATED'
-            or case.get('auto_custom') != 'PASS' or case.get('prior_consent') != 'INVALIDATED_ON_SELECTION'
+            or case.get('auto_custom') != 'PASS' or case.get('custom_new_children') != 'PASS' or case.get('prior_consent') != 'INVALIDATED_ON_SELECTION'
+            or case.get('mouse_remount') != 'PASS_APP_EVENT_REAL_STALE_COMPOSITOR'
             or case.get('existing_files') != 'UNCHANGED' or case.get('host_apply') != 'DENIED'):
             raise RuntimeError('FROZEN_FOLDER_PICKER_BOUNDARY_INVALID')
 
@@ -166,8 +167,10 @@ def smoke(exe: Path, output: Path):
                 # whole multi-case acceptance process gets a larger envelope.
                 # Expanded UI matrix adds fresh read-only native scans for each
                 # browse/cancel/replan. Each provider retains its 25s limit;
-                # the whole acceptance job has a finite 900s envelope.
-                timeout = 900 if arguments[0] == '--self-test' else 180
+                # CI 38163512996 exhausted 1200s in the final legacy_v1 preview
+                # completion stage. Retain every assertion and individual limit;
+                # allow the expanded full matrix 1440s inside a 30min CI job.
+                timeout = 1440 if arguments[0] == '--self-test' else 180
                 run = run_owned([str(exe), *arguments], cwd=cwd, env=env, timeout=timeout)
             except subprocess.TimeoutExpired:
                 safe_failure(output, exe, arguments[0], SimpleNamespace(returncode=124,
