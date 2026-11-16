@@ -45,7 +45,9 @@ L0 只保留“不越 scope、不破坏不明确 ownership”的 root invariant�
    - **MIXED**：逐项对照公开的 `intended/claimed` 与当前目标 `observed`，写出一致、冲突、未覆盖的具体边；冲突先核对版本/时间/来源/观测覆盖，再用最小复现裁决。没有当前实验时，公开材料仍只是 `PUBLIC_LEAD / SOURCE_INSPECTED`，不能晋升为当前产品 observed。
 5. **判定与退出**：为关键结论保留来源 URL/commit/发布日期、读取时间、范围/版本/平台、证据级别（`observed | inferred | unknown | rejected`）和反例。形成 `REUSE | ADAPT | BUILD | INVESTIGATE` 决定及剩余未知。若证据已足以选可逆下一步就停止搜索；资料不足保留 UNKNOWN 并继续不受影响的 READY，或按权限升级问题。首次 5–10 分钟快速检索只是可选分诊手段，不是固定时限、完整覆盖承诺或新 stop gate。
 
-末端返回给 Foreman 的是**能改变 Work 路线的简短增量**：`research: SKIP(reason) | DONE(mode,sources,currentness,applicability,decision,limits) | BLOCKED(capability gap)` + 精确 evidence pointer。发现上游更新、已解决问题或相反证据要及时反馈，防止其他 child 继续重复施工。不能访问外部来源时不得声称已检索；可复用已核证据或让有能力的授权执行者补查。Foreman 在父级验收中核对实质假设是否得到支持，不把 child 的“搜过了”当验证结论。只保存会改变方案的线索；不设全网覆盖率或“穷尽调研”宣称。
+**Foreman 派单责任**：在子任务的 durable dispatch 中传递与该范围相关的已有精确来源/版本、已知与 task-local 未知、信息是否易变，以及适用的研究路线或跳过理由。可直接引用仍 current 的父级研究，不重复整份材料；末端执行者仍自行核对本任务差异，不用“父级已调研”替代 preflight。字段与详略按实际未知决定，不制造每个 child 上网或另派研究 Agent 的门槛。
+
+末端返回给 Foreman 的是**能改变 Work 路线的简短增量**：`research: SKIP(reason) | DONE(mode,sources,currentness,applicability,decision,limits) | BLOCKED(capability gap)` + 精确 evidence pointer。发现上游更新、已解决问题或相反证据要及时反馈，防止其他 child 继续重复施工。不能访问外部来源时不得声称已检索；可复用已核证据或让有能力的授权执行者补查。**Foreman 父级验收责任**：核对实质假设是否得到支持，以及 `REUSE | ADAPT | BUILD | INVESTIGATE` 决策的必要来源、反证与局限，不把 child 的“搜过了”当验证结论。只保存会改变方案的线索；不设全网覆盖率或“穷尽调研”宣称。
 
 ### 1.0.2 Execution context — 身份与环境是证据边界
 
