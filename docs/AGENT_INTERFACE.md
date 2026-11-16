@@ -29,6 +29,34 @@
 
 L0 只保留“不越 scope、不破坏不明确 ownership”的 root invariant；上述 mechanics 只在本接口维护。
 
+### 1.0.1 Leaf Research Preflight — 末端执行者的知识分诊与研究路线
+
+本节适用于 DIRECT executor 与所有真正施工的末端上下文（Foreman 自行修复、Subagent 的 BUILD / REPAIR / VERIFY / INVESTIGATE 等），**即使上级已经研究过**。它是成本和证据纪律，不是新 Research 角色、全网搜索义务、审批层或每个 bugfix 的 ARCH-0。Architect 的重大架构调研仍归 [Architect Reconnaissance](ARCHITECT_RECONNAISSANCE.md)；已接受路线不能由 leaf 私自重选。
+
+**先分诊，再高成本施工：**
+
+1. **界定判断对象**：读取 current Work、已接受的架构方向、精确目标版本/平台/依赖、已验收证据与失败路线。写清“哪条未知会改变做法、兼容性、成本或风险”，以及可证伪的竞争解释；不是泛泛“研究某技术”。
+2. **判断是否需要新信息**：若知识稳定、确定、与当前版本及执行环境相符，且已有直接证据/当前 source，可直接 `SKIP`，必要时简记 `KNOWN_CURRENT + pointer/reason`。父级提供的同范围、同版本、仍 current 的研究可复用，仅核实 task-local 差异；父级断言本身不自动构成当前证据。
+3. **选择最小研究路线**：`QUICK_CHECK`（精确错误、接口、版本、官方说明）；`FORWARD`（公开开发意图、演进与 prior art）；`REVERSE`（当前授权对象的实际代码/行为/数据/协议）；`MIXED`（正向意图与逆向行为对照）。只有 material 新架构或路线失效时升级 Architect 的 `ARCH-0 / CHALLENGE`。不是所有任务都必须使用网络或逆向工具。
+4. **具体检索与观测**：
+   - **QUICK_CHECK**：用精确报错、symbol/API、软件版本、平台组合查官方文档/规范、release/changelog、上游维护仓源码及 tests、issue/PR/commit；找到高相关实现后深入读原件，不堆搜索摘要与链接。
+   - **FORWARD（正向研发情报）**：核对项目/维护者真实身份，按日期/版本查官方产品文档、SDK、路线图与迁移说明，再查作者/开发者/维护者的公开 issue、PR、代码评审、博客、公开社交发言、演讲/会议视频、采访/播客和新闻报道。优先原始发言与完整上下文；二手媒体交叉求证，标记发布时间、适用版本、观点/计划/已发布事实。不能以个人发言、招聘信息或媒体推测替代产品实际实现，也不追踪私人生活。
+   - **REVERSE（现物验证）**：在当前授权范围内固定 artifact/sample/version/hash；先检查可复用的现有实现与工具，再选择能最快区分假设的源码/测试/调用链、配置/日志、输入输出、API/协议、存储差分或获授权的静态/动态观察。设计最小正控、负控、捕获窗口和工具副作用记录；不因叫“逆向”就默认允许访问真实账号、密钥或未授权系统。
+   - **MIXED**：逐项对照公开的 `intended/claimed` 与当前目标 `observed`，写出一致、冲突、未覆盖的具体边；冲突先核对版本/时间/来源/观测覆盖，再用最小复现裁决。没有当前实验时，公开材料仍只是 `PUBLIC_LEAD / SOURCE_INSPECTED`，不能晋升为当前产品 observed。
+5. **判定与退出**：为关键结论保留来源 URL/commit/发布日期、读取时间、范围/版本/平台、证据级别（`observed | inferred | unknown | rejected`）和反例。形成 `REUSE | ADAPT | BUILD | INVESTIGATE` 决定及剩余未知。若证据已足以选可逆下一步就停止搜索；资料不足保留 UNKNOWN 并继续不受影响的 READY，或按权限升级问题。首次 5–10 分钟快速检索只是可选分诊手段，不是固定时限、完整覆盖承诺或新 stop gate。
+
+末端返回给 Foreman 的是**能改变 Work 路线的简短增量**：`research: SKIP(reason) | DONE(mode,sources,currentness,applicability,decision,limits) | BLOCKED(capability gap)` + 精确 evidence pointer。发现上游更新、已解决问题或相反证据要及时反馈，防止其他 child 继续重复施工。不能访问外部来源时不得声称已检索；可复用已核证据或让有能力的授权执行者补查。Foreman 在父级验收中核对实质假设是否得到支持，不把 child 的“搜过了”当验证结论。只保存会改变方案的线索；不设全网覆盖率或“穷尽调研”宣称。
+
+### 1.0.2 Execution context — 身份与环境是证据边界
+
+在真正使用本机、远端、VM、WSL、容器、浏览器、设备或 CI 执行时，Executor 应**自行观察并报告**本次相关 Agent 身份与执行环境；不要让 Human 每次手工补写。区分 `agent_identity`（provider/model/harness/session，按可观察信息）、`execution_identity`（实际 OS 用户/UID、运行节点与命名空间）、`capability`、`authority/lease`。同机、同 SSH 登录、已安装工具或可发现目录均不授予 Host mutation/merge/deploy/secret 权限。精确字段与证据绑定、增量复用和安全限制由 [Durable Trace — Execution Context Provenance](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md#execution-context-provenance-执行上下文来源) 拥有；已有 [Worksite Log](../30_PROTOCOLS/LOCAL_WORKSITE_LOG.md) 只补本地未同步事实，不是第二真相。不能观察的关键项写 `UNKNOWN`，缩窄验收声明，不猜环境。
+
+### 1.0.3 Pointer-first communication — 人类简报与 Agent 交接
+
+详细执行报告、可复现步骤、测试结果和重要环境证据写回**当前获授权的 durable source**；在以 Git/GitHub 为 SSOT 的部署中，优先写现有 Issue/PR/commit/checkpoint，非 GitHub 原件按 owner 存储，**不为每条命令新开评论或重复粘贴整份日志**。Agent 间默认交接 `work coordinate + exact durable pointer/HEAD + 一个下一动作或确切 blocker`，接收方按需读取并 live-revalidate；只传 pointer 不证明资料 current，也不授予写权。
+
+进行中与需要 Human 决策的**人类窗口**默认只给简报：本轮实际结果或关键变化、精确证据指针、真实 blocker/风险、需要 Human 的具体选择、下一步（无项不凑数）。这减少重复输入/输出和上下文占用，**不意味着 GitHub 写入或后续读取不花 token**。短任务无需先产生冗长报告。**特殊规则优先：已完成 delegated attempt 的最终 terminal chat return 仍按 §1.8 只返回 exact GitHub terminal pointer**，不能把简报规则改成另附报告。没有认证/授权 GitHub write path 时如实报告 capability gap，由可写的 primary 补全；不得伪称 durable writeback。
+
 ### 1.1 Durable Dispatch
 
 每次 Agent-facing delegated execution **必须**有 current `ARCHITECT_*_DISPATCH`（或等价 current durable dispatch）。Durable Work Order + dispatch 携带任务知识；Minimal Seed / transport payload 只寻址。
