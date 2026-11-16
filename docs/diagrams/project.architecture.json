@@ -3,7 +3,7 @@
   "diagram_type": "architecture",
   "meta": {
     "title": "ai-use Project Map",
-    "subtitle": "Human governance · worksite recovery · engineering stage diagrams · candidate runtime",
+    "subtitle": "Human governance · leaf research · execution provenance · pointer-first recovery",
     "locale": "zh-CN",
     "output": "ai-use-project.architecture.html",
     "quality_profile": "showcase",
@@ -12,7 +12,7 @@
       "url": "https://github.com/youling/ai-use",
       "provider": "github",
       "link_mode": "web",
-      "revision": "87b90e6086a329a5bbff037555e7a6af06bab607"
+      "revision": "2e524b071c1b0864bdcee6fa90592f7a7dd40f9a"
     },
     "views": [
       {
@@ -28,7 +28,7 @@
           "durable",
           "recovery"
         ],
-        "note": "先按 L0/BOOT-1/2/3 恢复当前 Work；之后定向收敛相关 Issues。Architect 决策/审阅，Foreman 编排；Worksite Log 只补充现场恢复证据。"
+        "note": "先按 L0/BOOT-1/2/3 恢复当前 Work，再定向收敛 Issues。Architect 决策/审阅，Foreman 编排；叶子按未知选研究路线，证据绑定执行环境，Agent 以精确指针接续。"
       },
       {
         "id": "hostPath",
@@ -52,7 +52,7 @@
           "changeLifecycle",
           "durable"
         ],
-        "note": "变更走 Issue/ADR/PR/Review；PR #174/#178/#185 已合并。方法合同接受与真实项目实施验收分开记录。"
+        "note": "变更走 Issue/ADR/PR/Review；PR #174/#178/#185/#190 规范与 #182 离线子集已接受，#188 收录为 L3。方法、文档与真实实施验收分别记录。"
       },
       {
         "id": "navigationPath",
@@ -65,7 +65,7 @@
           "support",
           "history"
         ],
-        "note": "图示节点可下钻工程方法与阶段图，恢复节点可下钻Worksite Log及模板；L3 研究与在审提案保留证据等级。"
+        "note": "图示节点下钻工程方法与阶段图，恢复节点下钻环境来源和 Worksite Log；PR #188 已收录 L3，CLI 仍未通过，其他候选按当前 owner 证据判断。"
       },
       {
         "id": "ownerPath",
@@ -213,7 +213,7 @@
       "id": "agentInterface",
       "type": "backend",
       "label": "Agent Interface",
-      "sublabel": "DIRECT / DELEGATE · Work Order · continuation · completion",
+      "sublabel": "知识分诊 · 持续推进 · 精确指针交接",
       "tag": "EXECUTION",
       "row": 1,
       "col": 1,
@@ -224,7 +224,7 @@
       "sources": [
         {
           "path": "docs/AGENT_INTERFACE.md",
-          "label": "Agent Interface"
+          "label": "执行 / Leaf Research / Pointer-first"
         }
       ]
     },
@@ -232,7 +232,7 @@
       "id": "recovery",
       "type": "backend",
       "label": "Recovery & Durable Trace",
-      "sublabel": "handoff · checkpoint · Worksite Log / 现场对账",
+      "sublabel": "checkpoint · 环境来源 · 现场对账",
       "tag": "RECOVERY",
       "row": 1,
       "col": 2,
@@ -247,7 +247,7 @@
         },
         {
           "path": "30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md",
-          "label": "Durable trace"
+          "label": "Durable trace / 执行上下文来源"
         },
         {
           "path": "30_PROTOCOLS/LOCAL_WORKSITE_LOG.md",
@@ -388,9 +388,9 @@
     {
       "id": "support",
       "type": "frontend",
-      "label": "Agent Runtime / Guides",
-      "sublabel": "公共源码 / 首次 candidate 已接受 · Host 另验",
-      "tag": "OPTIONAL / CANDIDATE",
+      "label": "Agent Runtime / OCI",
+      "sublabel": "参考运行时 · OCI 离线验证 · Host 另验",
+      "tag": "OPTIONAL",
       "row": 3,
       "col": 1,
       "size": [
@@ -407,8 +407,8 @@
           "label": "首个 candidate 已验收；后续发行另判"
         },
         {
-          "path": "READING_MAP.md",
-          "label": "Optional guides and templates"
+          "path": "capabilities/oci/CONTRACT.md",
+          "label": "OCI Tranche A / 离线验证合同"
         }
       ]
     },
@@ -625,8 +625,8 @@
       "title": "Reliability loop",
       "items": [
         "Git/GitHub 持久化 Work、exact head、review 与授权；Worksite Log 保留未回写现场证据，独有原件先保全再清理。",
-        "Agent Interface 负责执行边界；Durable Trace 负责事件/产物定位；Worksite Log 负责本地追加和对账，不能冒充远端CLAIM或离机备份。",
-        "evidence > self-report；current live facts > stale snapshot / chat memory。"
+        "Agent Interface 负责执行与精确指针交接；Durable Trace 负责事件、产物和执行上下文来源；Worksite Log 补现场对账，不产生权限。",
+        "结果绑定实际环境与 exact refs；未知不冒充已测。evidence > self-report；current live facts > stale snapshot / chat memory。"
       ]
     },
     {
@@ -640,11 +640,11 @@
     },
     {
       "dot": "amber",
-      "title": "2026-11-11 capability & evidence status (snapshot)",
+      "title": "2026-11-17 accepted & candidate status (snapshot)",
       "items": [
-        "MERGED: Issue 收敛 PR #185、产物/施工日志 PR #174、软件工程/阶段图 PR #178；公共方法接受不等于各项目部署完成。",
+        "ACCEPTED: PR #190 已合并，#189 已关闭；叶子研究、环境来源与 pointer-first 纳入合同。PR #174/#178/#185 既有规范保留。",
         "HISTORICAL CANDIDATE ACCEPTED: #123 首次 OCI 公共制品有发行回执6044487814和关闭裁决6247066989；无stable promotion、后续发行或本轮新pull结论。",
-        "SEPARATE EVIDENCE: 通用 OCI Supply PR #182 仍按自身合同验收；跨执行器 PR #184 已收录 L3 有条件研究，PR #158/#159 历史观察已合并，均不代表运行认证。",
+        "ACCEPTED: #182 公共 OCI 离线子集；#188 L3 记录（CLI 仍未通过）。OPEN: #145 原生验收、#162 堆叠审查；#181 的真实构建/接收仍待后续。",
         "GAP / EXTERNAL OWNER: Change-aware Work Graph 的契约变更影响传播尚未实装；Issue依赖筛选、日志和Archify展示均不等于自动重规划。"
       ]
     }

@@ -41,17 +41,17 @@ flowchart TD
   G --> A["Global / Project Architect\n架构 / 授权 / Review"]
   G --> B["Bootstrap\nBOOT-1 / 2 / 3"]
   B -. "完成后定向收敛（非新门禁）" .-> I["Issue Topic Convergence\nGitHub Native §4.2 · 已生效"]
-  A --> F["Foreman\n协调 Work / 子任务"]
+  A --> F["Foreman\n派单 / 协调 / 验收"]
   A -. "边界与阶段复盘" .-> E["软件工程 / 阶段图\nL2 方法 · 已接受"]
   F -. "现场恢复证据" .-> W["Worksite Log\n本地记录 · 不产生权限"]
   W -. "授权范围内对账回写" .-> D
   A -. "重大架构决策" .-> R["ARCH-0 / Prior Art\nArchitect 决策（非新角色）"]
   R -. "当前决策指针" .-> F
-  F --> S["Subagent\nBUILD / INVESTIGATE / REPAIR / VERIFY"]
-  S --> X["Execution Surfaces\nHost / Runner / Node / Container"]
-  X --> D["Git / GitHub\nWork / PR / Review / Evidence"]
+  F -->|"当前来源 / 未知项"| S["Subagent\nBUILD / INVESTIGATE / REPAIR / VERIFY"]
+  S -->|"核对执行环境"| X["Execution Surfaces\nHost / Runner / Node / Container"]
+  X -->|"结果 / 环境 / exact refs"| D["Git / GitHub\nWork / PR / Review / Evidence"]
   I -. "仅索引当前 Work" .-> D
-  D --> F
+  D -->|"回读与验收"| F
   D --> A
   G -. "公共可选参考实现" .-> AR["Agent Runtime\n源码 / 首次 candidate 已接受"]
   AR -. "可选执行环境" .-> X
@@ -63,7 +63,7 @@ flowchart TD
 
 **L1 详情图：** [ai-use Project Detail Map 图源](docs/diagrams/project.architecture.json) · [图示维护契约](docs/diagrams/README.md) · [Research / 工厂经验索引](docs/research/README.md)（L3，按需阅读，非治理规则）。部署侧 Navigator 只消费/渲染这份 owner 图源，不复制第二份 ai-use 架构语义。
 
-**治理规范已接受：** [冷启动后定向收敛](30_PROTOCOLS/GITHUB_NATIVE_FIRST.md)（[PR #185](https://github.com/youling/ai-use/pull/185)）、[产物定位与本地施工日志](30_PROTOCOLS/LOCAL_WORKSITE_LOG.md)（[PR #174](https://github.com/youling/ai-use/pull/174)）、[软件工程实践](30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md)与[阶段图示](30_PROTOCOLS/DIAGRAM_AS_CODE.md#31-阶段性进展图示与领域边界复盘)（[PR #178](https://github.com/youling/ai-use/pull/178)）均已合并。方法被采用不证明各项目已部署日志或完成架构改造。
+**治理规范已接受：** [冷启动后定向收敛](30_PROTOCOLS/GITHUB_NATIVE_FIRST.md)（[PR #185](https://github.com/youling/ai-use/pull/185)）、[产物定位与本地施工日志](30_PROTOCOLS/LOCAL_WORKSITE_LOG.md)（[PR #174](https://github.com/youling/ai-use/pull/174)）、[软件工程实践](30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md)与[阶段图示](30_PROTOCOLS/DIAGRAM_AS_CODE.md#31-阶段性进展图示与领域边界复盘)（[PR #178](https://github.com/youling/ai-use/pull/178)）均已合并。方法被采用不证明各项目已部署日志或完成架构改造。 [PR #190](https://github.com/youling/ai-use/pull/190) 另已将[末端研究分诊、Foreman 派单/父级验收与精确指针交接](docs/AGENT_INTERFACE.md#101-leaf-research-preflight--末端执行者的知识分诊与研究路线)、[执行上下文来源](30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md#execution-context-provenance--执行上下文来源)纳入原有规范；确定且 current 的任务可以跳过外部检索。
 
 **发行与候选分别看证据：** [Agent Runtime](agent-runtime/README.md) 的公共源码与首次 OCI candidate 已有[发行回执](https://github.com/youling/ai-use/issues/123#issuecomment-6044487814)和[验收关闭记录](https://github.com/youling/ai-use/issues/123#issuecomment-6247066989)；它仍是 candidate，未由此取得 stable、后续发行或 Host 部署验收。[通用 OCI Supply](capabilities/oci/README.md) 当前范围是 Tranche A 离线验证子集；后续构建、传输、接收与真实运行仍沿 [#181](https://github.com/youling/ai-use/issues/181) 分阶段验收；[Change-aware Work Graph](https://github.com/youling/ai-hub/issues/131) 的跨任务变更影响传播仍未实现。图是注明来源版本的导航快照，真实 PR/运行状态使用前必须回读当前 owner。
 
@@ -166,7 +166,7 @@ Human
 | [`NAMESPACE.md`](NAMESPACE.md) | 全角色（zero-prompt 路由） | L0 后理解 `00→10→20→30→40→50→90` 的默认 next-hop chain；可 `SKIP` / `STOP_*`，不是 mandatory full-read order |
 | [`AGENTS.md`](AGENTS.md) | 所有执行 Agent（机器 L0） | 每个执行/恢复/接管角色进入 normative rules 时首先读取 |
 | [Architect Discovery 边界](20_ROLES/ARCHITECT_DISCOVERY.md) | 新领域/重大架构阶段的 Architect | Architecture Discovery 属于 Architect；按现有 [ARCH-0](docs/ARCHITECT_RECONNAISSANCE.md) 调研并裁决后再授权实施 |
-| [Research & Factory Experience](docs/research/README.md) | Architect 定期更新技术图景或比较外部 Agent/provider 时 | 现有 Antigravity 实证与 2026 人机编排/数学/Magpie 研究索引；全属 L3 evidence，不能代替 runtime/gate 验收 |
+| [Research & Factory Experience](docs/research/README.md) | Architect 定期更新技术图景或比较外部 Agent/provider 时 | 2026-11-17 治理/恢复技术综述，以及 Antigravity、ZCode、Magpie 等有限实证；全属 L3 evidence，不能代替 runtime/gate 验收 |
 | [Foreman 角色合同](20_ROLES/FOREMAN.md) | 新派单 / 接任 Foreman | 对父级 Work 负责、安排子对话与 durable 回写时 targeted 阅读 |
 | [本地施工日志](30_PROTOCOLS/LOCAL_WORKSITE_LOG.md) | 有长期现场、跨会话或重要非 GitHub 原件的工头 | 保存未回写事实、交接与恢复线索；短 GitHub-only 任务不强制建日志 |
 | [软件工程实践](30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md) / [阶段图示](30_PROTOCOLS/DIAGRAM_AS_CODE.md#31-阶段性进展图示与领域边界复盘) | 处理实质领域/模块/接口变更的 Architect | 解释责任与变化边界，用当前图源和真实 delta 复盘；窄修复不强制绘图 |
@@ -181,6 +181,8 @@ Human
 一句话版：**人类第一次来先读[新手使用指南](docs/GETTING_STARTED.md)，Agent 执行/恢复/接管时先读当前 `AGENTS.md` L0。** 不要通读整个仓库；随后通过 [Routing Catalog](ROUTING_CATALOG.yaml) 的生成投影选路：`NAMESPACE.md` 展示 zero-prompt 下一跳，`READING_MAP.md` 展示当前层 `NEXT | SKIP | STOP_*` 与 targeted homes。`START_HERE.md` 是生成的规则导航，不是另一份执行规范。普通执行者通常只需要 L0 + 自己的精确任务 + 项目本地上下文。
 
 ---
+
+**跨设备接续：** 架构师与工头先回读当前 Work 的目标、授权、验收、exact refs 和下一步；机器现场与未同步原件沿部署 owner 的[施工日志](30_PROTOCOLS/LOCAL_WORKSITE_LOG.md)恢复，再按 [Recovery & Handoff](30_PROTOCOLS/RECOVERY_HANDOFF.md) 对账。Agent 交接使用 Work 坐标、精确 durable 指针和下一动作，详细证据保留在原 owner 来源；聊天记录不单独承担恢复职责。
 
 ## governance repo vs control-plane role
 
