@@ -6,7 +6,7 @@
 
 # Agent Runtime 开发者入口 — Windows WSLC V1
 
-这是待独立 Architect exact-head review 的 Windows V1 实现。默认只检查或生成计划；运行 Host apply 还需要明确 Host authority、审阅后的计划及批准。不会通过本工单发布新镜像、升级 WSL、重启机器或操作其他 Host。
+Windows V1 基础源码已由 [PR #128](https://github.com/youling/ai-use/pull/128) 审查并合并（`871bff1c82ded7c6db0146dbdad2b1bbed208e6e`）。后续交互修复 [PR #145](https://github.com/youling/ai-use/pull/145)、本地安装恢复 [PR #162](https://github.com/youling/ai-use/pull/162) 及真实 Host 验收仍沿各自合同推进，基础源码合并不解除其未完成验收或 Human gate。默认只检查或生成计划；运行 Host apply 仍需明确 Host authority、审阅后的计划及批准。此状态同步不发布新镜像，也不证明已完成实际安装、凭据适配或模型就绪。
 
 从已审查的 `youling/ai-use` checkout 根目录运行一个命令，建立当前 checkout 专属的依赖环境并打开 Textual 预览向导：
 

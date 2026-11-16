@@ -57,6 +57,8 @@ python reproduce.py
 
 ## 经验账本的后续增补
 
+[Windows 多工头观察（2026-10-15）](windows-observations-20261015.md)记录单宿主协调、真实 branch/source 工件、部分派发失败与 single Git writer 恢复的有限实证，保留 PARTIAL、原失败及 UNKNOWN。
+
 每次有语义变化时，保留版本、认证路线、requested/observed model+effort、真实 parent/child、物理写域与共享对象、commit/blob/byte hash、工具/拒绝、宿主回执、结论和 UNKNOWN。实例 ID/path/实时 Work 状态留 owner；公共目录只收去敏可复制方法、合成材料和范围。新结论需要新证据，不覆盖旧失败，不因额度充足推导权限或无限可靠性。
 
 官方资料：[headless](https://antigravity.google/docs/cli/headless/)、[subagents](https://antigravity.google/docs/subagents?tab=cli)、[permissions](https://antigravity.google/docs/permissions/)、[独立配置根议题](https://github.com/google-antigravity/antigravity-cli/issues/155)。这些是上游资料，本文结论以本机 1.3.4 的实际观察为范围。
@@ -68,3 +70,7 @@ python reproduce.py
 ## 模型与额度补记
 
 [模型路线与额度账本](model-quota-observations.md)明确记录 Gemini 与 Opus 的实际调用、旧父 init 与最终错误模型不一致、fresh Opus 两轮启动成功后 child quota 失败、Gemini 恢复不能证明旧 child 迁移，以及截图中额度组/时间窗口/AI credits 的区别。[机器摘要](model-quota-observations.json)保留有限审计范围与 UNKNOWN，不作计费或全账号调用证明。
+
+## 后续有条件审查经验：跨执行器移动端工程
+
+[2026-11-06 经验补记](../multi-runtime-foreman-20261106/README.md)记录 OpenCode 限额接续、Antigravity 实际执行与权限回执、ZCode 未打通的接入探查，以及构建/使用验收分层。总架构师已有条件审查；R1/R2 修订及剩余证据边界见该研究审查记录，收录事实见 [PR #184](https://github.com/youling/ai-use/pull/184)。本研究不改写本页历史失败，不扩大本页 QUALIFIED_SYNTHETIC_ONLY，也不指定默认模型或新权限。

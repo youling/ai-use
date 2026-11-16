@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.**
 
-**Protocol Version: 1.2.2**
+**Protocol Version: 1.3.0**
 
 语义 owner：[工作项 #67](https://github.com/youling/ai-use/issues/67)；长期裁决：[ADR-0005](../90_HISTORY/ADR-0005_OWNER_NATIVE_DERIVATION.md)。本协议是 architecture decision method，不是平台配置指令或 Capability Lab schema。
 
@@ -143,6 +143,36 @@ Release/Package 是 distribution/checkpoint envelope：版本化甚至 immutable
 **采用次序**：项目 Architect 先盘点 OPEN Work，定向读最新有效 attempt 和裁决，补齐“可执行下一步 / Next actor / 依赖 / 粗略工作量 / 执行环境 / evidence pointer”；先试点少量真实工单并在 repo 内建立缺少的 labels，Human 可创建跨仓库 Saved Views。个人账号的 Project 先采用私有、手动收录，避免默认将私仓事实发到公共容器；自动加项目不会追溯回填旧 Issue。只有确认维护成本值得自动化后才增加单向、幂等、可重建的 `source -> labels/Project` reconciliation，不新造调度器、第二套数据库或无依据的固定轮询。
 
 具体项目交接/盘点词见 [Work Visibility Handoff](../50_TEMPLATES/GITHUB_WORK_VISIBILITY_HANDOFF.md)；原计划与验收在 [ai-use #167](https://github.com/youling/ai-use/issues/167)。公共规则不保存具体私有项目现状。
+
+### 4.2 冷启动后的 Issue 主题收敛：少入口，不丢原子 Work
+
+**Human 裁决：** Fresh / takeover Architect 恢复 target project/program 后，应**顺手对本次相关的 Issue 主题做一次有界去重、归属与接续整理**。一个问题不能因为不同模型、不同日期或多次交接，就永久增长出多个并列的活跃入口。本节是 GitHub-native Issue topology 的唯一操作语义归属；[Bootstrap](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#architect-cold-start-后的-issue-收敛) 只负责在**完成** BOOT-3C 之后触发，不再造一个 Bootstrap/Work 状态机。
+
+这不是冷启动授权或 `ARCHITECT_READY` 的新 gate：先完成合法 Bootstrap 和需要的 ARCH-0，再在**当前 owner、既有工作范围、可用时间与工具**内收敛。普通 Hot/Warm resume、无旁系的窄任务和 Human 明确 `STOP_COLD_START_ONLY` 时，不强制执行写入或全量扫描；相关候选可以只留下只读诊断和精确后续指针。不能为了“工单卫生”延误已有合法 READY 的安全执行。
+
+**仅从本次 target scope 的已知入口逐层展开：**
+
+1. **确定核查窗**：target repo/program 的 current bootstrap 入口、有效 active Work、最新 ruling、原生父子任务和阻塞关系、相关 PR / exact heads；需要时用同义主题关键词/label 搜少量候选。跨 repo 只检查有实际关联、自己有权读取的 source。API 搜索要声明分页、权限与结果是否完整；不把一次搜索的零结果宣称“整个仓库无重复”。
+2. **逐项核对语义**：目标和验收是否相同？主责 owner、有效 dispatch/claim、PR/独立证据、依赖和仍有价值的历史是否不同？不得仅凭相近标题、OPEN、时间较旧或模型切换判断为重复。
+3. **保留一个可理解的主题入口**：同一实质问题已分散时，优先选一个现有 owner/canonical topic Issue 建精简 index，列出 `lane / status(derived) / next actor / dependency / evidence permalink / PR`，明确它只是导航。原子 Work 若存在不同 owner、独立验收、真实依赖或在途执行，仍保留原有 Issue/PR；可用 native parent/sub-issue/blocked-by 关联，能力不可用时用精确链接，不新建第二个工作账本。
+4. **只有确定的重复项才能闭合**：若存在实质完全重叠、没有独立未完成验收、有效 claim、未合并 PR 或 owner/权限冲突，且当前 Project Architect 对该 Issue 有合法修改权限，则给重复 Issue 加 canonical pointer、为何重复/何时取代的回执，并在保留原文/评论/提交指针的前提下关闭为 duplicate 或 superseded。向主题入口保留反向指针；不能批量改历史、转移 Claim、关闭别人尚在施工的 Issue 或把一个父 Issue 的混合子状态压成单一“完成”。
+5. **未知先保留**：存在 active owner、重复判断不充分、跨项目权限不清或 GitHub 原生关系/状态尚未核实时，仅记录 `POTENTIAL_DUPLICATE / NEEDS_OWNER_REVIEW` 的**审计注记**及当前源，不把这些词作为 Work lifecycle 标签或自动取消派单。已发现真正过时的 direction 走 current owner/higher authority 的 supersede/challenge，不能靠改 Issue 标题替代裁决。
+6. **最小可恢复回执**：在**既有 owner topic / Architect Bootstrap follow-up** 留有界结果：`checked_scope`、`canonical_topic`、确实归并/闭合的 exact Issue 指针、仍独立有效的 Work/lane 指针、未解决歧义、`next_actor`。未发生 material delta 时复用现有 current index，不每次重写一张 Issue 表。
+
+```mermaid
+flowchart LR
+    A["Fresh / takeover 已完成 Bootstrap"] --> B["限定当前 project/program 的关联 Issues"]
+    B --> C{"目标与在途事实可核验？"}
+    C -->|否| U["保留 UNKNOWN / owner 复核指针"]
+    C -->|是| D{"同一交付是否真正重复？"}
+    D -->|独立 Work| K["保留原 Issue / 标准依赖链接"]
+    D -->|已证实重复且有权限| M["双向引用 → 原 Issue 留痕关闭"]
+    U --> I["当前主题入口的精简索引"]
+    K --> I
+    M --> I
+```
+
+**验收反例**：同一个主题下两名有效 Foreman 正在不同写域施工，不是重复 Issue，可以保留两个原子 Work；历史已终止但有唯一证据链的 Issue 不得为追求低 OPEN 数量删除；远端搜索权限不完整时不能把未返回的 Work 当作已不存在；没有可复核结果时不得产生自动 close/takeover。已有 [#167 的主题压缩试点](https://github.com/youling/ai-use/issues/167#issuecomment-6309658018) 证明紧凑入口有用，但**没有证明全局多工头共享 topic 并发协议或批量迁移安全性**。本节不扩大该试点的有效性。
 
 ## 5. Capability evidence 与 admin / Human gates
 

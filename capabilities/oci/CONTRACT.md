@@ -1,6 +1,6 @@
 # Public OCI Artifact Supply — 可复用制品合同
 
-**Artifact Version: 0.1.0 (candidate)** · **Classification: L2 generic capability contract**
+**Artifact Version: 0.1.0** · **Classification: L2 generic capability contract**
 
 本合同只定义 **OCI 制品从版本化输入到可核验交付的跨业务公共能力**；适用于 Agent Runtime、普通服务容器及独立 Linux/WSL 工作区。当前通用实现及支持范围见 [README](README.md)。它不是新的 OCI Image Spec、容器引擎、Fleet 管理器、调度器、任务状态数据库或统一凭据系统。
 
@@ -16,6 +16,14 @@
 | 特定企业/模型账号认证、secret value/custody | 真实授权与保管方；镜像中不得携带生产 secret |
 
 Public contract 可以支持 registry 发布、授权 SSH/rsync、离线 tar、本地文件或其它传输工具，但**不强制任何一种**。任务使用者负责自己的目标机器、传输身份与数据保留；通用代码不得把某个组织的节点名、盘符、namespace、HTTP endpoint、Agent 模型写成默认值。
+
+### 1.1 BUILD_HOST、制品与接收端
+
+依据 [#181 的 local-first 消费者裁决](https://github.com/youling/ai-use/issues/181#issuecomment-6726115749)，分别识别 `BUILD_HOST`、`OCI_ARTIFACT` 与 `RECEIVER_RUNTIME`。在当前获授权且已核实工具/目标平台的环境中，按源码与目标距离、能力、时间和资源成本选择构建端；可以是 Windows/WSL、Linux 或其它受支持环境，不设固定中心构建机、强制中转或 registry。
+
+同一 OCI 制品可供多个兼容接收端复用；仅在任务需要不同接收端时传输，接收方自行验证摘要、导入和运行。构建端可用不证明任何接收端可用。每个 Host 的实际账户、引擎、凭据与路径由原 owner 管理。
+
+原生 Windows GUI/EXE 等产品按其本身的目标平台验收；可选 Linux OCI 试验不能成为该原生产品的额外交付门槛。
 
 ## 2. 对象身份不能混淆
 

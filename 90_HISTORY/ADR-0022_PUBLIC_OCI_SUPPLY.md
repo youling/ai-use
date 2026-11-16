@@ -1,8 +1,8 @@
 # ADR-0022 — Domain-neutral OCI Artifact Supply belongs to ai-use
 
-- **Status:** Human decision recorded in [#181](https://github.com/youling/ai-use/issues/181); normative contract/implementation pending exact-head review and merge
+- **Status:** Human decision recorded in [#181](https://github.com/youling/ai-use/issues/181); implementation acceptance and reviewed revision are tracked by [PR #182](https://github.com/youling/ai-use/pull/182). A PR branch remains a candidate until merged.
 - **Decision class:** L2 public cross-domain capability ownership / delivery-contract seam
-- **Current canonical home (candidate):** [capabilities/oci/CONTRACT.md](../capabilities/oci/CONTRACT.md)
+- **Canonical home:** [capabilities/oci/CONTRACT.md](../capabilities/oci/CONTRACT.md)
 - **Prior accepted related ADR:** [ADR-0016 public Agent Runtime](ADR-0016_PUBLIC_AGENT_RUNTIME.md)
 - **Decision date:** 2026-11-06
 
@@ -21,6 +21,10 @@ However, the existing public `agent-runtime/` is already the canonical owner of 
 5. Begin with a public read-only, stdlib single-image OCI archive verification subset and executable Windows/Linux CI. Expand build/export/transfer/import/resume adapters only with separate real non-Fleet canaries and behavior parity; retain donor evidence until review. Public synthetic CI does **not** make another Host production-ready.
 6. Keep Build, real image smoke, export, archive integrity, trusted expected digests, receiver import, unpack, runtime acceptance and production promotion as distinct proofs. Unknown/timed-out side effects require reconciliation, not unconditional replay; image manifest digest differs from archive SHA-256/config ID/layer diffID.
 7. Do not imply real secret custody from image no-secret scans. Private data cannot be copied into public source merely because it inspired the generic capability.
+
+## Consumer clarification — 2026-11-09
+
+The [Human local-first ruling](https://github.com/youling/ai-use/issues/181#issuecomment-6726115749) keeps BUILD_HOST selection with the consumer: choose an authorized and verified environment by source/target proximity, capability and cost. Separate builder, immutable artifact and receiver; no mandatory central builder, relay or registry. Native desktop product acceptance is not blocked by optional Linux OCI experiments. The canonical mechanics live in [CONTRACT §1.1](../capabilities/oci/CONTRACT.md#11-build_host制品与接收端); this addendum preserves the original 2026-11-06 ownership decision.
 
 ## Alternatives rejected
 

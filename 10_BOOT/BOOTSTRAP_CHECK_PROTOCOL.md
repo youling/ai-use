@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** 仅在启动 / 派发 / 恢复场景触发时读取。
 
-**Protocol Version: 1.3.0**
+**Protocol Version: 1.3.1**
 
 恢复/交接先按 [Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md#1-恢复分类) 识别场景；本协议仍是 ordered applicability 与 execution gate 的唯一 owner。
 
@@ -223,6 +223,16 @@ Fresh/takeover Architect 完成 durable Bootstrap 后必须按真实状态分类
 - 其它 Human / authority / security / high-risk / blocker gate -> 精确报告对应 gate。
 
 **没有额外 Human prompt 本身不构成 blocker。** 不得用“先给用户确认再接任/再继续”作为 Fresh/takeover Architect 的通用 stop，也不得为了主动而虚构 READY work。
+
+### Architect cold-start 后的 Issue 收敛
+
+**这是完成冷启动后的一次定向 Work 入口卫生检查，不是 BOOT-1/2/3 的第四步，也不是获得 `EXECUTION_ALLOWED` / `ARCHITECT_READY` 的新条件。**
+
+Fresh / takeover Project/Global Architect 完成当前 Bootstrap durable writeback 后，在同一 target project/program 的已恢复 active graph 内，应按 [GitHub Native First §4.2](../30_PROTOCOLS/GITHUB_NATIVE_FIRST.md#42-冷启动后的-issue-主题收敛少入口不丢原子-work) 判断：是否有同一目标散落在多个活跃主题/Issue、无意义的重复工作入口、已被 newer ruling 取代的旧计划，或历史工单仍错误暗示 current READY。
+
+有实际候选时，在**当前 owner 权责内**尽可能通过双向链接、已有主题入口精简索引以及对确证重复 Issue 的留痕关闭来收敛；在途 Foreman、独立验收、不同 owner、历史唯一证据和权限不明的条目必须保留，必要时仅标注待核。无重复或无足够权限时，可在现有 bootstrap 后续记录中说明检查范围和结果，不新建第二任务清单。不要求扫描所有 OPEN Issue、其它仓库或全 Workspace；不因 UI 整齐而延误有权的 READY 工作。
+
+普通 Hot/Warm resume、明确 `STOP_COLD_START_ONLY` 或没有相关工单群的窄任务，不触发固定批量修改或额外 Human 确认。新 Issue 在现有关联主题下可能成立时，也应先定向查重，优先复用既有 Work Coordinate/Topic Index。
 
 ### `EXECUTION_ALLOWED` 与 `ARCHITECT_READY`
 

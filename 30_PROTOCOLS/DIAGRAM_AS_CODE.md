@@ -1,7 +1,7 @@
 # Diagram-as-Code 与架构拓扑导航
 
 **Classification: L2 Targeted Reference**  
-**Protocol Version: 0.4.0**
+**Protocol Version: 0.5.0**
 
 **Source Issues:** `youling/ai-use#53`, `youling/ai-use#55`, `youling/ai-use#57`, `youling/ai-use#67`
 
@@ -61,6 +61,34 @@ Diagram-as-Code 的目标不是“把文档画漂亮”，而是把复杂结构�
 | 时间演化 /事件 | timeline；不要硬塞成 architecture graph |
 
 总拓扑可以作为导航骨架，但局部视图应使用最适合的信息结构。
+
+### 3.1 阶段性进展图示与领域边界复盘
+
+**Human 裁决：对实质性架构工作，阶段总结应图示化，让架构师不得不说明“这个系统由哪些责任域组成、哪些关系已经成立、阶段之间到底改变了什么”。** 绘图是推理与质量控制，不是装饰性汇报或可替代验收的自动证明。
+
+**触发**：Project/Global Architect 在重要领域/模块划分、跨系统集成、接口/依赖决策、阶段实质交付、架构 Review/接续时，**MUST** 在该阶段现有 GitHub Work / PR / durable checkpoint 中给出可追溯的阶段图示结果。选择 `CREATE | UPDATE | REUSE_CURRENT`：
+
+- `CREATE`：此前没有能表达该阶段问题的有效图源，画最小当前视图；
+- `UPDATE`：已有图源，但本阶段改变了 domain、owner、数据流、依赖或 gate，更新图源并能看出差异；
+- `REUSE_CURRENT`：架构/拓扑仍成立，不为每次总结重复绘图；引用当前仍有效的源图，并用简短、来源支持的 delta / gate 说明本阶段发生了什么、没发生什么。
+
+**注意**：普通单文件 bugfix、简单线性任务、没有材料性架构变化的例行执行不为本条强制新建图。可以 `NOT_APPLICABLE` 加简短理由；不把所有 Foreman 的常规 checkpoint 都变成一份工程架构演示文稿。阶段 summary 仍可按当前 Durable Trace 事件的 `durable_refs` 引用图源/状态摘要，**不增加新事件或审批状态**。
+
+**适用时的最低内容**（可以是同一张图与旁边的几句说明，避免第二份复制文档）：
+
+1. **是什么**：图的阅读任务、所属 owner/domain、canonical source 与实际图源位置；
+2. **怎么分**：责任/领域边界、状态归属、接口，以及方向明确的关键依赖/数据流。关系边应能区分 confirmed、candidate、blocked/unknown；
+3. **进展了什么**：指明相对于上阶段的新增/移除/变更节点与关系、受影响的 Work/PR/exact revision、哪些是真实验证、哪些只是一份方案；
+4. **还差什么**：未验证边界、真实依赖、阻断及下一步最短可执行动作；
+5. **当前吗**：`DERIVED` 状态、`source_pointer`、`verified_at`/窗口及 freshness；过期图不能写成当前成功，未知数据必须标 `UNKNOWN`。
+
+**不是每个问题都用模块拓扑回答。** 领域/依赖选择 architecture 或 dependency view；一次请求链看 sequence；证据和转化链看 dataflow；状态转换看 lifecycle；纯时间推进看 timeline/状态 overlay。复杂阶段可用一个总图入口、多个局部下钻，不把业务模块、运行节点、PR、Issue 混成同一层的“模块”。
+
+**先诊断图暴露的工程问题，再排版：** 如果画不清领域边界、谁写状态、接口在哪、哪个箭头逆向依赖、候选事实何时变成已验收事实，应回到 [软件架构与工程实践](SOFTWARE_ARCHITECTURE_PRACTICE.md) 复核职责划分和变化边界。图能画出来并不保证分解正确；渲染成功也不代表代码、权限或跨域契约已经通过。不能为保持图的整洁隐去冲突、失败、双写或未解决依赖。
+
+当本阶段还没有足够来源可支持完整图时，展示**有边界的局部结构并显式标 `UNKNOWN`**，或引用上一次 current 图并声明本阶段证据缺口；不能因为工具不支持精美绘制就伪造完成，也不能无限制阻塞其他合法施工。低依赖首选 Mermaid/文本 DSL，格式与存放位置沿用本协议 §4–§5。
+
+可复制的图示复盘形态与反例见 [Diagram-as-Code 模板](../50_TEMPLATES/DIAGRAM_AS_CODE.md#阶段性架构复盘图示)。
 
 ---
 

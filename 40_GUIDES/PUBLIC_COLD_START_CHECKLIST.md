@@ -29,8 +29,31 @@
 | 19 | Kernel fault containment | slim L0 current-load 后，stale/conflicting lower layer 不得覆盖 Human sovereignty、authority/truth/scope/fail-closed/continuation/language default；应 isolate/skip/supersede 或 exact `STOP_BLOCKED` |
 | 20 | Kernel ABI residency | L0 不再复制 Bootstrap/ARCH-0/DIRECT/access/checkpoint/verification/language mechanics；scene trigger 必须 route 到唯一 canonical home，且行为结论与 2.6.0 前语义等价 |
 | 21 | Constraint challenge | material bad constraint 不得静默盲从；Architect 只在自身 authority 内 amend，higher-authority constraint 只 challenge 不绕过；newer durable ruling supersede 旧 gate 时不得继续惯性等待 |
+| 22 | Post-bootstrap Issue convergence | Fresh/takeover Architect 在既有 BOOT-3C 完成后，仅定向审视 current project/program 关联 Issue 的 topic/原子 Work 重复及 superseded 信息；不要求扫全仓、不加 Bootstrap gate、不关闭在途 claim/PR/不同 owner；缺权限/搜索不完整须留 UNKNOWN |
 
 ---
+
+## Fixture 0A — Architect cold-start 后的 topic 去重与 scope 负控
+
+在**同一个 target project** 的有效 Work 图中，假设：
+
+- Issue A 是当前长程主题入口，包含精确来源、依赖与原子 Work 指针；
+- Issue B 表面上重复 A，实际具有另一名 Foreman 的有效 claim 和独立可验收 PR；
+- Issue C 与 A 的目标/acceptance 完全重叠，尚无独立在途 claim/未合并 PR/特定 owner，已被新裁决替代；
+- Issue D 属于其它 Project Architect 的独立 scope，仅被 A 的交付引用；
+- 当前查询 API 只拿到第一页结果，后续可能还有 Issue。
+
+**应通过**：
+
+1. BOOT-3C 先照常完成写回；去重属于完成启动后的有界 follow-through，**不得**以先做完仓库全扫作为 `EXECUTION_ALLOWED` 门槛。
+2. 当前 owner 基于真实 source 验证 A/B/C；B 保留独立 Work、Claim 和 PR，不因为同主题而转移/关闭；D 只有 source pointer，不跨权责改写。
+3. C 只有在当前事实及权限核实后，写 canonical + 反向指针，才有资格保留原文地关闭为重复/被替代。未证实时仅记候选、不伪造“已经合并”。
+4. 结果是一个可读主题入口及实质仍活跃的原子工单，而不是人为减少 OPEN 计数；未完全分页时记录 coverage/UNKNOWN，不能宣布“本仓没有其它重复 Issue”。
+5. 如无 material delta，沿用当前 source/topic index 即可，不要求每日重写第二份快照；Human 明确 `STOP_COLD_START_ONLY` 则不因本 fixture 新建 mutation 授权。
+
+**判失败**：按标题相同自动 close B；忽略 C 的旧有效证明；把 D 的 owner 转移给 Global Architect；将 Topic Index 当作状态 SSOT；把旧 Issue 的活跃标签当有效 dispatch；因为尚未做全库盘点就拒绝正常授权任务。
+
+现行规范来源：[GitHub Native First §4.2](../30_PROTOCOLS/GITHUB_NATIVE_FIRST.md#42-冷启动后的-issue-主题收敛少入口不丢原子-work)。原始 pilot 见 [#167](https://github.com/youling/ai-use/issues/167)。
 
 ## Fixture 0 — Zero-Prompt Navigation Chain
 
