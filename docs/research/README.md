@@ -2,6 +2,10 @@
 
 本目录是 **Agent-to-Agent bridge / provider research 的参考资料入口**，保存可复用但 **NON-NORMATIVE** 的外部技术研究、实验记录和证据包。研究发现不自动产生新的治理 authority、默认 provider、执行权限或已接受的 ADR。架构路线由 [Architect Reconnaissance](../ARCHITECT_RECONNAISSANCE.md) 的 owner 综合并 durable 决定；运行态由各项目/实例维护。
 
+- [2026-11-17 Agent 治理与可恢复执行调研](agent-governance-20261117/README.md)：14 组官方主题与[来源登记](agent-governance-20261117/SOURCES.md)，覆盖长程执行、记忆/评估、MCP/A2A、GitHub 原生协作、OpenAI 与 LangGraph 恢复；KEEP / REUSE_KNOWLEDGE_NATIVE_IMPLEMENT，未进行 SDK 或部署实例验收。
+- [2026-11-12 ZCode CLI 与 Desktop 工作流证据](zcode-cli-20261112/README.md)：原失败、两路 Desktop 成功和 standalone CLI 未通过分别保留；附 2026-11-17 官方完整发行路线核对，[PR #188](https://github.com/youling/ai-use/pull/188) 仅接受文档证据。
+- [2026-11-12 Magpie / OpenCode 有限接线](magpie-cli-bridge-20261112/README.md)：本机合成调用、限流与结果核对；远端、长期并发和实际业务施工均未验收。
+
 - [2026-10-13 AI 公司人机协作、前沿数学与 Magpie 模型订阅网关](agent-orchestration-2026-10-13/README.md)：Architect-led 外部 landscape、模型代理/编排分层、可复用评估机制与 Magpie 入厂 PoC 指针（研究，未本地部署）。
 - [GitHub Capability Lab](github-capability-lab/README.md)：GitHub native capability 的局部核验、兼容与边界证据（需按具体 scope 复验）。
 - [R80 Semantic Regression Studies](R80_SEMANTIC_REGRESSIONS.md)：历史语义回归与证据。
