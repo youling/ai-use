@@ -32,7 +32,7 @@
 | ZCode／Magpie 有限研究 | [PR #188](https://github.com/youling/ai-use/pull/188) 修订已合并，**仅接受 L3 记录**；Desktop 工作流、Magpie 本机调用与 standalone CLI 分开，CLI 仍 `NOT_PASSED`，远端能力未知 | [ZCode 研究](../research/zcode-cli-20261112/README.md) / [Magpie 研究](../research/magpie-cli-bridge-20261112/README.md)；去敏与文档 CI 不等于新增运行验收 |
 | Change-aware Work Graph | 下游契约变化的影响传播、重新规划和旧验收失效**未完成通用实现**；独立于已接受的 Issue 收敛 | [ADR-0023 已标注缺口](../../90_HISTORY/ADR-0023_POST_BOOTSTRAP_ISSUE_CONVERGENCE.md)；部署侧 [ai-hub #131](https://github.com/youling/ai-hub/issues/131) |
 
-本图维持 16 个 L1 节点、21 条边及既有布局：Issue 收敛在 GitHub Native/Bootstrap，末端研究与精确指针交接归 Agent Interface，环境来源与 Worksite Log 在 Recovery；工程方法与阶段复盘仍通过 Diagram 的 `sources[]` 下钻，公共 Runtime、OCI 离线子集与后续验收边界归入同一个可选工具入口，后者新增一个指向已接受能力合同的 source。候选 PR、Change-aware 未实现的缺口和真实项目验收各回 owner Issue/PR，不因图中有线而升级状态。Projects 工作总览、领域图下钻与执行/Human Gate 分别消费原有 owner 事实，公开图不复制部署账号、私有拓扑或第二份 Work 账。
+本图维持 16 个 L1 节点、21 条边及既有布局：Issue 收敛在 GitHub Native/Bootstrap，末端研究与精确指针交接归 Agent Interface，环境来源与 Worksite Log 在 Recovery；工程方法与阶段复盘仍通过 Diagram 的 `sources[]` 下钻，公共 Runtime、OCI 离线子集与后续验收边界归入同一个可选工具入口，工具节点用已接受 OCI 合同指针替换重复的通用 Reading Map 指针；通用导航仍由 routing 节点拥有，每个节点保持最多三个来源。候选 PR、Change-aware 未实现的缺口和真实项目验收各回 owner Issue/PR，不因图中有线而升级状态。Projects 工作总览、领域图下钻与执行/Human Gate 分别消费原有 owner 事实，公开图不复制部署账号、私有拓扑或第二份 Work 账。
 
 本图可以供外部使用者和 Agent 使用，但 `meta.repository.revision` 是编译时源快照，不代表 PR 的状态从此不再变化。读到候选/未实施节点时先回各自的 owner GitHub 当前状态，不因为图上有线就从公共治理仓向别人的设备发指令。图中所有 `sources[]` 都应指向该快照已经存在的 canonical 文件；候选 PR 的 URL 只作非规范导航。
 

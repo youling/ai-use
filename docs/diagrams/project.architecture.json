@@ -388,7 +388,7 @@
     {
       "id": "support",
       "type": "frontend",
-      "label": "Runtime / OCI / Guides",
+      "label": "Agent Runtime / OCI",
       "sublabel": "参考运行时 · OCI 离线验证 · Host 另验",
       "tag": "OPTIONAL",
       "row": 3,
@@ -405,10 +405,6 @@
         {
           "path": "agent-runtime/release/README.md",
           "label": "首个 candidate 已验收；后续发行另判"
-        },
-        {
-          "path": "READING_MAP.md",
-          "label": "Optional guides and templates"
         },
         {
           "path": "capabilities/oci/CONTRACT.md",
