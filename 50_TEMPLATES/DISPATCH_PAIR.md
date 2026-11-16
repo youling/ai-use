@@ -1,6 +1,6 @@
 # 双词派单模板
 
-**版本：1.1.0**
+**版本：1.2.0**
 
 Human Card / Seed、运行位置、最小化与 transport fallback 的语义由 [Agent Interface §2–3](../docs/AGENT_INTERFACE.md#2-human-dispatch-card) 定义。复制对应形态并替换占位符；可选行无值即省略。所有坐标是 inert placeholders，不指向实际实例。
 
@@ -75,6 +75,9 @@ Machine 字段形态见 [CONTEXT_MODE_SEED.md](CONTEXT_MODE_SEED.md)，值与语
 主责与写域：<primary owner；隔离工作区；允许写的对象 / branch>
 冲突对象与依赖：<共享账号 / 进程 / 文件 / 浏览器 / 设备；当前 owner / lease；前置>
 来源与当前性：<exact source/ref/hash；完整技术单元或字段范围；投影与未读缺口>
+知识边界与研究（可选）：<KNOWN_CURRENT / task-local uncertainty；复用的 current evidence；QUICK_CHECK / FORWARD / REVERSE / MIXED / SKIP + reason；有界问题和 stop condition>
+执行身份与环境（可选）：<Agent/provider/harness 与实际 node/OS principal/WSL/container/CI 分开；当前环境证据 pointer 或需现场观察的 UNKNOWN；不预填未观测版本>
+通信与回执（可选）：<语义 checkpoint 的 GitHub pointer；非 GitHub 原件的 owner 位置；Human 简报，delegated terminal 只返 exact terminal pointer>
 拆分与交付：<独立方向；原生子返回形状；语义阶段回写；需升级架构师的确切问题>
 ```
 
@@ -93,6 +96,7 @@ durable_refs: <exact PR / head / report / proof pointers>
 verification: <完整性与语义核验；已做 / 未做 / 不适用>
 remaining: <仍未知或未覆盖部分；真实依赖>
 blockers: <none 或确切冲突 / gate>
+execution_context_ref: <当本阶段实测依赖环境时，引用 Durable Trace 的 current context/delta；其它任务省略>
 next: <一个具体动作；本轮已达终点则转 canonical terminal writeback>
 ```
 

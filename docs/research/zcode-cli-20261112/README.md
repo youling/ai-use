@@ -13,7 +13,7 @@
 | 项目 | 观察 |
 |---|---|
 | 环境 | Windows，PowerShell 7.6.9，Node.js v24.15.0 |
-| 入口 | 桌面安装目录中的 `resources/glm/zcode.cjs`，通过 Node 调用 |
+| 入口 | Desktop 内置 Agent CLI bundle（文件名 `zcode.cjs`），本轮通过 Node 调用；不是本仓文件或完整 standalone 发行包 |
 | CLI 版本 | `0.17.1`，与桌面程序版本分别记录 |
 | CLI SHA-256 | `26785f28ab8fb9f8b0f3821f2bf71d294f4d0b8bf28108785292f86c7e14090d` |
 | packaged provider config SHA-256 | `ef3d64656cb5281cce292b77ef12e96b5251582cfb00cdf9eb08e3d4565abb69` |
@@ -36,7 +36,7 @@
 
 普通 prompt 失败路径还出现 `ERA_NEGOTIATION_FAILED`，内容为关闭 transport 时的 `server/discover` probe 错误。本轮不能证明它是未选择模型的根因，也不能据此推断账户无额度、OAuth 失效或供应商拒绝服务。
 
-上述独立 CLI 模型 canary 均未取得可核验回复。没有用其他运行器产物冒充 ZCode 成果；未执行 HT 代码任务。
+上述独立 CLI 模型 canary 均未取得可核验回复。没有用其他运行器产物冒充 ZCode 成果；未执行业务代码任务。
 
 ## 可以复用的排查方法
 
@@ -51,6 +51,35 @@
 9. 接入探针没有通过时，业务可以沿已授权、已验证的其他执行路线推进；不让候选执行器长期占据项目关键路径，也不宣称已经使用其模型。
 
 官方详细说明：[参数](https://github.com/zai-org/ZCode/blob/b95ebaffeab641907b38652f45c1502bd762972d/apps/zcode-cli/docs/usage/02-cli-reference.md)、[配置](https://github.com/zai-org/ZCode/blob/b95ebaffeab641907b38652f45c1502bd762972d/apps/zcode-cli/docs/usage/03-config.md)、[排障](https://github.com/zai-org/ZCode/blob/b95ebaffeab641907b38652f45c1502bd762972d/apps/zcode-cli/docs/usage/12-troubleshooting.md)。以上为查阅当时的固定源码版本；本例二进制构建提交未知，不把两者等同。
+
+## 官方完整发行路线核对（2026-11-17；未重跑 CLI）
+
+本节是后续文档核对，不改写 2026-11-12 的原始测量。固定上游源码为 ZCode `fec975905a2abd4c07e35c40d51fa097a2258ec9`，根版本 `3.18.2`；参见[官方 README](https://github.com/zai-org/ZCode/blob/fec975905a2abd4c07e35c40d51fa097a2258ec9/README.md)、[版本与构建入口](https://github.com/zai-org/ZCode/blob/fec975905a2abd4c07e35c40d51fa097a2258ec9/package.json)及[工具链版本](https://github.com/zai-org/ZCode/blob/fec975905a2abd4c07e35c40d51fa097a2258ec9/mise.toml)。本次只读取公开源码与发行说明，没有下载运行包、构建、安装、登录或重跑模型；旧 Desktop bundle 的构建提交仍未知，不能把新源码版本反推给旧二进制。
+
+### 三类入口分别判断
+
+| 入口或产物 | 官方定位与本次证据 | 不能据此推定 |
+| --- | --- | --- |
+| Desktop 内置 Agent CLI bundle | 原探针的 `zcode.cjs`；入口元数据可读，模型选择与 TUI 仍失败 | Desktop 安装完整不等于其内置 bundle 可单独充当 standalone 发行包 |
+| CLI 源码开发构建 | `pnpm --filter @zcode/cli... build` 构建 Agent CLI 及 workspace 依赖；须保留生成的相邻资源 | 不是包含 Web 分流的统一发行入口，也不等于已安装到 PATH |
+| 统一命令行发行包 | `pnpm build:zcode` 依次构建并组装 TUI、Agent、后端与 Web，收集 TUI 原生库、worker 和运行时依赖 | 产物生成不证明目标平台运行、账户可用、模型成功或 Host 已部署 |
+
+### 先查官方完整发行物，缺失时再固定源码构建
+
+1. **先检查官方发行入口和目标资产。** 核对包版本、来源、目标 OS／CPU、摘要及完整运行资源。本次检查[官方 v3.18.2 Release](https://github.com/zai-org/ZCode/releases/tag/v3.18.2)（发布时间 2026-11-16），资产列出 macOS／Windows Desktop 安装包与 `SHA256SUMS`，未列出 Linux standalone 统一 CLI 包。这个结论仅覆盖该 Release 的资产清单；不证明其他官方渠道没有产物。README 中的下载根地址示例也不是已核实的公共下载服务。
+2. **没有找到匹配的完整官方包，才采用固定官方源码。** 在获授权的隔离构建现场读取同一 commit 的 README、lockfile 和构建脚本，按其初始化要求准备依赖与资源；当前固定 `mise.toml` 为 Node.js `24.14.0`、pnpm `10.33.2`。CLI 开发构建不能替代 `pnpm build:zcode`；`--skip-build` 只复用已有构建结果，不能把未构建或来源不明的目录补成完整包。
+3. **分清打包与安装。** [固定构建脚本](https://github.com/zai-org/ZCode/blob/fec975905a2abd4c07e35c40d51fa097a2258ec9/scripts/build-zcode.mjs)要求设置 `ZCODE_DIST_BASE_URL` 或 `--base-url`，其值由本次测试／分发用途明确指定；占位 URL 不证明远端可下载。默认产物包含版本化 `zcode-<version>.tar.gz`、`sha256.txt`、`latest.json` 与 `install.sh`。构建本身不上传、不安装到 PATH；本地验证可按官方说明解包后运行包内 `bin/zcode.mjs`，无需先发布。若调用 `zcode`，先检查实际命令来源，避免命中旧安装。
+4. **分别验收包与目标运行环境。** 记录固定源码、依赖和构建环境，校验包摘要、内部资源、平台与架构，再在实际目标上检查原生依赖。统一运行包仍依赖符合该固定版本要求的 Node.js；跨平台打包不等于目标平台实测，摘要一致也不单独证明来源可信。交付沿 owner 既有产物／Host 合同，不复制 Desktop 资源凑包，不使用同名但未经核实的 npm 包，也不另建运行器框架。
+
+### 二进制交付与账户／模型上下文分开
+
+依[固定版快速开始](https://github.com/zai-org/ZCode/blob/fec975905a2abd4c07e35c40d51fa097a2258ec9/apps/zcode-cli/docs/usage/01-quickstart.md)和[配置说明](https://github.com/zai-org/ZCode/blob/fec975905a2abd4c07e35c40d51fa097a2258ec9/apps/zcode-cli/docs/usage/03-config.md)，个人 provider／默认模型位于 `~/.zcode/v2/provider_config.json`，运行与扩展设置位于 `~/.zcode/cli/config.json`，登录材料另由凭据存储保管；`ZCODE_DATA_BASE_DIR` 可改变数据基目录。这些是官方通用路径，不是本次用户的实际定位符。
+
+接续时先由原 Desktop owner 核对非敏感账户类别、已启用模型与实际选择，再由目标 CLI owner 核对自己的有效 provider／模型和配置 schema。Host 持有的运行数据基目录与可清理的作业目录分开；原短探针的进程级私有选择配置不等于可恢复的长期账户状态。Desktop 已登录不证明另一 OS／CLI 已认证，也不构成复制登录材料的理由。只有完整 CLI 确认缺少可用绑定时，才按已安装版本支持的 `zcode login` 或 `zcode login --no-browser` 补充真正缺失的授权；浏览器回调可能要求同机，不笼统要求 Human 重新登录。
+
+按层次记录 `--version/--help/doctor`、真实 TUI、有效模型选择、`--mode plan` 下的无工具真实回复及 session/result，最后验证一个有界合成工具产物并独立回读。任何一层失败都保留原错误与未知，不把 Desktop 工作流成功、开发构建完成或文档检查通过升级为 standalone CLI 验收。
+
+**本次文档修正后的执行结论仍为 `STANDALONE_CLI_NOT_PASSED`；远端部署、模型绑定与业务施工均未由此获得验收。**
 
 ## 证据保管与接续
 
@@ -68,7 +97,7 @@ Human 提供了另一会话使用 CreateWorkflow 的截图，并要求独立验�
 
 ### 官方产品入口与实测分开
 
-本机安装包含 `resources/glm/packages/bundled-skills/skills/dynamic-workflows/SKILL.md`，SHA-256：
+当时读取的是已安装 ZCode Desktop **内置的 dynamic-workflows Skill 资源**，并非本仓库的相对文件或独立 CLI 发行物。公共记录只保留资源类别与 SHA-256：
 
 `b4e4292a71a567b5466f5c36f4a4894d93e777564cf4eecf8177d50ec8ed204b`
 
@@ -96,7 +125,7 @@ Human 提供了另一会话使用 CreateWorkflow 的截图，并要求独立验�
 2. 原生 CLI 的“模型未选择”、桌面父请求“系统繁忙”、普通后台 Agent 并发拒绝、工作流运行失败是四种不同状态，须分别保留。
 3. 不宣称“绕过所有限制”或“16 路实测通过”。即使 workflow 启动，仍可能受供应商速率/额度/容量限制。
 4. 后续可在父请求恢复后，重新使用同样两路小样本；先确认只有一个新 run，再核对运行器记录中的两路实际运行重叠、输出和终态。仅有 `Promise.all` 或两个调用计时重叠不足以证明供应商侧同时执行。
-5. CLI 无人值守接入另需解决正式账户/模型会话初始化；桌面工作流成功也不会自动证明 CLI 或机哥远程入口成功。
+5. CLI 无人值守接入另需解决正式账户/模型会话初始化；桌面工作流成功也不会自动证明 CLI 或另一主机远程入口成功。
 
 
 ## 补充复核：原生工作流两路完成（2026-11-12 03:31–03:32 CST）
@@ -139,7 +168,7 @@ Human 交还的报告给出：
 ### 后续采用边界
 
 1. 先以两路纯代码审查、合成样例或独立参考计算做小规模工作流。不同 agent 实例分工明确；有依赖的集成工作串行，不并发写同一工作树。
-2. 本次不是文件修改、代码执行、GitHub 回写或远程工头施工验收，也没有证明独立 CLI、Magpie 或 JG headless 启动成功。CLI 路线仍需正式账户/模型初始化验证。
+2. 本次不是文件修改、代码执行、GitHub 回写或远程工头施工验收，也没有证明独立 CLI、Magpie 或远端 headless 启动成功。CLI 路线仍需正式账户/模型初始化验证。
 3. `budget.webSearch=0` 加 persona 禁止工具不是所有工具的强制封禁。本轮选定子代理日志只看到结果提交工具，不能称为“字面零工具”或完整操作系统审计。
 4. `max_concurrency:2` 的脚本字段不是单独的强制上限证明；本次实际只创建两路、观察到两路。16 路、供应商限流和拒绝路径均未测。
 5. 工作流是产品支持的执行入口，不将成功解释为解除供应商限制。若出现配额/权限拒绝，保留原始错误并停止该被拒动作，不伪造账户或权益，也不切换入口绕过拒绝。

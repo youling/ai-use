@@ -1,6 +1,6 @@
 # Durable Trace Principle
 
-**Protocol Version: 1.1.0** · **Classification: L2 Targeted Reference.**
+**Protocol Version: 1.2.0** · **Classification: L2 Targeted Reference.**
 
 ## 目的
 
@@ -41,6 +41,7 @@ executor: <identity/session class>
 startup_mode: <mode>
 node: <only when materially relevant>
 status: CLAIMED
+execution_context: <observed execution surface or current evidence pointer, when material>
 ```
 
 规则：
@@ -60,6 +61,7 @@ work: <owner/repo#issue@step>
 claim: <exact AGENT_CLAIMED pointer>
 result: SUCCESS | NEGATIVE_RESULT | PARTIAL | BLOCKED | HUMAN_REQUIRED | FAILED | CANCELLED
 remote_head: <sha | none>
+execution_context_ref: <exact evidence for environment-bound execution, when material>
 durable_refs: <PR / commit / report / artifact pointers, or none>
 artifact_disposition: GITHUB_ONLY | NON_GITHUB_ARTIFACTS | MIXED | NO_ARTIFACTS
 artifact_locations: <only for important non-GitHub artifacts; otherwise omit>
@@ -77,6 +79,41 @@ next: <single next action>
 - terminal result 关闭 execution attempt，不自动关闭 Work Order，不替代 Architect Review / merge / deploy gate；
 - terminal 详细事实留在 durable source，不依赖聊天 self-report；
 - 没有 authorized durable write path 的 subagent 不得假装产生 terminal event，由 primary/orchestrator 承担最终 durable writeback。
+
+## Execution Context Provenance — 执行上下文来源
+
+**既有回执已有 `executor`、`node`、`remote_head` 与本地 Worksite Log 的 `actor/namespace/workspace`，但未要求实际执行环境与具体测试结果绑定。** 本节在现有 CLAIM / CHECKPOINT / TERMINAL 事件中条件式补齐；不新建环境注册表、第二种事件或必须填满的机器 schema。
+
+当本次事实/测试/构建/异常解释**依赖具体执行面**时，Executor（包含末端 child）应在执行前或首次观察时自报并保存最小 `execution_context`，随后把每个有意义的验证证据绑定到该 context 的 `as_of` 与 `ref`。没有本地执行面、仅修改 GitHub 文档的简单任务，可写 `execution_context: GITHUB_ONLY / N/A` 或不填。可引用仍适用的 current Capability Self Check / Worksite Log / CI job URL，**不必复制一份主机清单**。
+
+```yaml
+execution_context:
+  agent:                    # Agent 逻辑身份，不等于 OS 账号
+    provider: <observed product/provider | UNKNOWN>
+    model: <observed model/version | UNKNOWN>
+    harness: <observed ZCode/Antigravity/OpenCode/Workbuddy/etc or other | UNKNOWN>
+    session: <provider run/session pointer if available; otherwise UNKNOWN>
+  surface: <LOCAL | WSL | SSH_REMOTE | CONTAINER | VM | CI | BROWSER | DEVICE | CLOUD | MIXED>
+  host: <owner-approved alias/node identity; no unauthorised private topology>
+  guest_or_container: <OS/distro/kernel/arch + runtime/namespace when relevant | N/A>
+  principal: <actual OS account or UID/GID/class when relevant | UNKNOWN>
+  toolchain: <actual command/runtime/tool versions used; not full package list>
+  workspace: <authorized repo/worktree/ref/exact HEAD/dirty state when relevant>
+  profile: <material config/profile ID or digest; never credential values>
+  as_of: <ISO-8601 timestamp with timezone or exact CI job evidence URL>
+  evidence: <command/test/job/source receipt proving these fields>
+  confidence: <OBSERVED | INHERITED_REVALIDATED | UNKNOWN>
+```
+
+最小填写原则：
+
+1. **分层，不混淆**：Agent provider/model/session、实际执行主体（Host 用户/UID）、工作负载容器 UID、Fleet node identity、可调用能力、当次授权/lease 是不同事实。Host OS 与 WSL/guest/container 的 OS、运行时、工具版本分开；远端运行不能用本机环境替代。未知身份/版本写 `UNKNOWN/NOT_OBSERVED`，不能凭提示词或旧记忆自报为 observed。
+2. **结果随环境走**：对测试/构建/动态观察至少绑定执行命令或测试集、返回状态、目标 exact HEAD/制品 digest、适用 OS/arch/runtime、时间或 CI run/job 指针。若 `PATH`、版本、容器 profile、node、principal、source HEAD、权限或网络路径变化会改变结论，新写一条 context delta 或引用新快照；**不能覆盖原测试的环境**。
+3. **最小而安全**：不采集完整 `env` dump、Cookie/token、密钥、完整私有配置或无关本地路径；公共 GitHub 只放非敏感别名与证据摘要，敏感拓扑/locator 留给 owner 私有来源。Tool access/SSH/目录存在不等于真实执行成功、持久工作叶授权或 Host mutation authority；缺授权只停止受影响操作。
+4. **多 Agent 与失败也要标来源**：子对话可在自己的 evidence/局部回执中记录该 context，由 Foreman 核验后引用；不同 Agent 或多台节点的结果不得拼成一个“同环境全通过”。Job 若 `runner_id=0` / `steps=[]`，只能报告未分配执行者或步骤未执行，不能虚构 Runner 环境或测试 PASS。
+5. **按需压缩**：已经通过同一 context 当前核验且没有实质 delta 时，后续 CHECKPOINT/TERMINAL 使用 `execution_context_ref: <exact prior evidence>` 即可；简单、短小、确定性的工作只保留对复现/解释有影响的字段。字段可以缩短，**不能把未知伪装已测**。
+
+在 `AGENT_CLAIMED` 可记预定执行面及已实测身份；`PROGRESS_CHECKPOINT` 引用本阶段真正使用的环境与 delta；`AGENT_TERMINAL_RESULT` 引用支持最终结论的 context，或列明影响复现的 UNKNOWN。`execution_context` / `execution_context_ref` 是对既有事件的附注，不改变 CLAIM/TERMINAL、Work acceptance 或权限语义。
 
 ## 阶段性 checkpoint
 
@@ -108,6 +145,7 @@ durable_refs: <PR / branch / commit / exact head / report pointer, when availabl
 artifact_disposition: GITHUB_ONLY | NON_GITHUB_ARTIFACTS | MIXED | NO_ARTIFACTS (when artifacts have been produced)
 artifact_locations: <only for important non-GitHub artifacts; otherwise omit>
 verification: <done / pending / not-run + evidence>
+execution_context_ref: <stage execution context or delta, when material>
 remaining: <what is still not done>
 blockers: <none or current blocker/risk>
 next: <single concrete next action>
