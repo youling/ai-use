@@ -45,7 +45,7 @@ nerdctl --address "$OCI_CONTAINERD_SOCKET" --namespace "$OCI_NAMESPACE" save \
 python "$AI_USE_ROOT/capabilities/oci/verify_oci.py" inspect example.oci.tar --report example.inspect.json
 ```
 
-`inspect` 只验证**拿到的这份数据内部自洽**，并给出归档摘要与 manifest digest；它不验证制品来自可信发布者，也不证明容器已经运行。用 owner 控制的仓库/签名清单持久登记确认过的归档 SHA-256、OCI manifest digest、源提交、平台与对应测试证据。
+`inspect` 验证**本页声明的单 image graph 中必要描述符与被引用字节的一致性**，并给出归档摘要与 manifest digest；它不执行完整 image-spec JSON schema 校验，不验证制品来自可信发布者，也不证明容器已经运行。输入应先完成传输，在核验期间保持不变；并发改写归档不在本版本的证明范围内。用 owner 控制的仓库/签名清单持久登记确认过的归档 SHA-256、OCI manifest digest、源提交、平台与对应测试证据。
 
 仅当任务需要另一接收端时，将归档通过**当前授权的传输方式**交到目标主机（SSH/rsync、可移动存储、受限对象存储或其他符合权限要求的机制均可）。接收端使用**制作端已经核准的两个期望值**校验：
 
@@ -71,16 +71,18 @@ Windows 原生 Python 也可以直接运行同一脚本：使用 `py -3 <ai-use�
 | Source pin + clean checkout | 当前源码与所声明提交一致 | 基础镜像/依赖可用或产物内容可复现 |
 | Build return code | 引擎执行了构建 | 容器实际可启动 |
 | `verify_oci.py inspect` | 这份 OCI archive 内部描述符/字节一致、得到实际摘要 | 内容来自可信源、diffID 或运行通过 |
-| `verify_oci.py verify` | 与**事先获信任**的归档 SHA-256 和 image manifest digest 一致 | 目标主机已经导入/运行 |
+| `verify_oci.py verify` | 与**事先获信任**的归档 SHA-256 和 image manifest digest 一致；提供 expected platform 时再比较 `os/architecture` | 未提供 expected platform 时的目标匹配、`variant`/`os.version` 等额外兼容维度、目标主机已经导入/运行 |
 | Real container smoke | 在被记录的平台/用户/环境内按实际命令运行 | 另一个宿主或生产凭据/重启已验证 |
 | Receiver import + smoke | 指定接收端达到实际验收范围 | 任意宿主可以部署、业务数据卷能热拷贝 |
 
-特别区分：**OCI manifest digest**、**config digest/image ID**、**压缩 layer digest**、**解压 diffID** 与 **外部 tar/tar.gz 文件 SHA-256** 是不同对象。相同镜像在不同归档打包方式下，外层 tar 哈希可不同。[OCI Image Spec](https://github.com/opencontainers/image-spec/blob/main/spec.md)
+特别区分：**OCI manifest digest**、**config digest/image ID**、**压缩 layer digest**、**解压 diffID** 与 **外部 tar/tar.gz 文件 SHA-256** 是不同对象。相同镜像在不同归档打包方式下，外层 tar 哈希可不同。[OCI Image Spec v1.1.1](https://github.com/opencontainers/image-spec/blob/v1.1.1/spec.md)
 
 ## 支持范围与下一阶段
 
 - **v0.1 已有公共实现**：单 manifest 的 OCI image-layout tar/tar.gz，SHA-256 descriptor、index、config 和 layer byte verification、期望摘要比较、只读 JSON 回执；纯 Python 标准库，无 Fleet/网络依赖。
-- **未声明支持**：多平台 index/任意 artifact type、OCI referrer、多层外置对象、任意压缩算法的 diffID 完整验证、Docker-only archive、签名/发布者身份认证、自动 BuildKit/nerdctl 安装、rsync/SSH 会话启动、生产凭据交付或真实部署。
+- **明确拒绝**：多 manifest、Docker-only archive、不支持的媒体类型、embedded descriptor `data`，以及 index/manifest 的 `artifactType`、`subject` 或 descriptor 的 `artifactType`。顶层 index/manifest 的 `mediaType` 可以省略，显式提供则必须精确匹配 OCI 类型；缺 descriptor/必需字段/blob、无效 platform 和矛盾摘要都失败。
+- **未声明证明或实现**：完整 image-spec JSON schema、平台 `variant`/`os.version` 等额外维度、多层外置对象、任意压缩算法的 diffID 完整验证、签名/发布者身份认证、自动 BuildKit/nerdctl 安装、rsync/SSH 会话启动、生产凭据交付或真实部署。
+- **期望平台与回执**：两个可信 expected digests 是 `verify` 的必填项；expected platform 可选。省略时 `expected.platform=null`，且 `not_proven` 包含 `TARGET_PLATFORM_MATCH`；即使比较了 `os/architecture`，回执仍声明未证明额外平台维度。接收端的完整平台/运行验收由原 owner 继续完成。
 - **后续在同一能力中扩展**：可替换的 builder/export/transport/receiver adapters、恢复/增量传输及回滚，前提是独立测试并交付非 Fleet 消费者可运行的 canary；不得仅从既有 Fleet 私有实测自动提升为公共运行时 PASS。
 
 本仓已有 [Agent Runtime](../../agent-runtime/README.md) 是一个可选消费者，其发布/更新/回退继续遵循 [agent-runtime 的现行 release gate](../../agent-runtime/release/README.md)。普通业务容器不因此接受 Agent Runtime 特有的角色、GHCR 或模型约束。

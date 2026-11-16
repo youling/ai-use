@@ -34,7 +34,9 @@ Public contract 可以支持 registry 发布、授权 SSH/rsync、离线 tar、�
 5. **Archive SHA-256 / size**：对交付 tar/tar.gz 整个文件的实际字节计算；外部包装/压缩不同，即使 inner OCI manifest 相同，archive hash 也可能不同。
 6. **Receipt**：有 source、actual artifact digests、actual checks、time/host scope 和可信引用的证据；本地计算出的 hash 本身不是发布者真实性证明，也不是部署或权限授权。
 
-接收端必须从 owner 当前可信来源取得 **期望 archive SHA + image manifest digest + 平台**，然后验证接收字节和 OCI descriptor 关系。任何未验证、缺失或冲突的期望值不得被当作成功；完整性检验不替代签名/身份、许可合规、供应链或实际 runtime smoke。
+纯离线 `verify` 必须从 owner 当前可信来源取得 **期望 archive SHA + image manifest digest**，然后验证接收字节与本版本支持的 OCI descriptor 关系；两个期望摘要缺失、无效或冲突都不能成功。`--expected-platform` 是可选的 `os/architecture` 比较：省略时仍读取实际平台，但回执明确未完成目标平台匹配；显式空值不等于省略。
+
+真实接收端的接受标准仍须包含 owner 核准的目标平台及实际 runtime 验收。当前工具不核验 `variant`、`os.version` 等全部兼容维度，也不是完整 image-spec JSON schema 校验器。完整性检查不替代签名/身份、许可合规、供应链或实际 runtime smoke。
 
 ## 3. 分层交付与异常恢复
 
@@ -71,7 +73,10 @@ SOURCE_PIN
 - `verify_oci.py inspect <archive>`：只读生成实际 archive/index/manifest/config/layer identity，不能宣称来源已经认证。
 - `verify_oci.py verify <archive> --expected-archive-sha256 X --expected-manifest-digest Y [--expected-platform P]`：严格比对可信 owner 已声明值，未匹配必须失败。两者仍不证明目标 runtime 已执行。
 - 具体 BuildKit/nerdctl/Docker/Podman 工具链、构建上下文、分发方式、归档/缓存路径由**使用者参数或插件**解析。本能力不重写容器运行时、加密或传输实现。
-- 初版验证器只支持单 OCI image manifest 的 tar/tar.gz（OCI `oci-layout` + `index.json`）；多平台、签名、Docker-only tar 和任意 media types 必须明确报 Unsupported，不能静默降级成功。
+- 初版验证器支持单 OCI image manifest 的 tar/tar.gz（OCI `oci-layout` + `index.json`）。index/manifest 顶层 `mediaType` 可以按 OCI 规范省略；若显式提供，必须精确匹配对应 OCI 类型。descriptor 的类型、size、digest 和 blob 必须存在且一致。
+- v0.1 不支持 embedded descriptor `data`、`artifactType` 或 `subject`/referrer 语义，遇到这些字段明确拒绝；多 manifest、Docker-only tar 与不支持的 media type 同样拒绝。这样不会把未校验的附加内容或关系包装成成功。依据：[OCI v1.1.1 index](https://github.com/opencontainers/image-spec/blob/v1.1.1/image-index.md)、[manifest](https://github.com/opencontainers/image-spec/blob/v1.1.1/manifest.md)、[descriptor](https://github.com/opencontainers/image-spec/blob/v1.1.1/descriptor.md)。
+- 平台核验范围是 config 必需的非空 `os/architecture`，以及 index descriptor 可选 platform object 中相同字段的一致性；无效的显式 platform 不忽略。回执始终声明未证明额外平台维度；没有 expected platform 时另列 `TARGET_PLATFORM_MATCH` 为未证明。
+- 输入应是已完成传输、验证期间保持不变的归档；并发改写同一路径不在 v0.1 的证明范围内。
 
 本公共能力的输出不会自动推动 agent-runtime GHCR 发布、project merge、生产 deploy 或跨设备数据传输。代码库 read/write 能力不等于用户已授权操作。
 

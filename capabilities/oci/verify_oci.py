@@ -17,6 +17,7 @@ from typing import Any
 
 SCHEMA = "ai-use/oci-archive-verification/v0.1"
 HEX64 = re.compile(r"[0-9a-f]{64}\Z")
+INDEX_TYPE = "application/vnd.oci.image.index.v1+json"
 MANIFEST_TYPE = "application/vnd.oci.image.manifest.v1+json"
 CONFIG_TYPE = "application/vnd.oci.image.config.v1+json"
 LAYER_TYPES = {
@@ -38,10 +39,31 @@ def _hex(value: str, label: str) -> str:
     return value.lower()
 
 
-def _digest(value: str, label: str) -> str:
+def _digest(value: str, label: str, *, normalize: bool = False) -> str:
     if not isinstance(value, str) or not value.startswith("sha256:"):
         raise OCIError(f"{label}: expected sha256:<64hex>")
+    if not normalize and not HEX64.fullmatch(value[7:]):
+        raise OCIError(f"{label}: OCI SHA-256 digest must use lowercase hexadecimal")
     return "sha256:" + _hex(value[7:], label)
+
+
+def _image_metadata(value: dict, expected_type: str, label: str) -> None:
+    # OCI permits an absent top-level mediaType, but an explicit value is exact.
+    if "mediaType" in value and value["mediaType"] != expected_type:
+        raise OCIError(f"{label}: unsupported OCI mediaType")
+    for field in ("artifactType", "subject"):
+        if field in value:
+            raise OCIError(f"{label}: unsupported OCI {field} in v0.1")
+
+
+def _platform_identity(value: Any, label: str) -> str:
+    if not isinstance(value, dict):
+        raise OCIError(f"{label}: platform must be an object")
+    parts = [value.get("os"), value.get("architecture")]
+    if any(not isinstance(part, str) or not part or "/" in part
+           or any(char.isspace() for char in part) for part in parts):
+        raise OCIError(f"{label}: nonempty os/architecture platform identity required")
+    return "/".join(parts)
 
 
 def _stream_hash(stream) -> tuple[str, int]:
@@ -107,8 +129,13 @@ def _read_json(tar: tarfile.TarFile, members: dict, path: str) -> dict[str, Any]
 
 
 def _descriptor(tar: tarfile.TarFile, members: dict, descriptor: Any, label: str, allowed: set[str]) -> tuple[str, str, int]:
-    if not isinstance(descriptor, dict) or descriptor.get("mediaType") not in allowed:
+    if (not isinstance(descriptor, dict)
+            or not isinstance(descriptor.get("mediaType"), str)
+            or descriptor["mediaType"] not in allowed):
         raise OCIError(f"{label}: unsupported or missing OCI mediaType")
+    for field in ("data", "artifactType"):
+        if field in descriptor:
+            raise OCIError(f"{label}: unsupported embedded/OCI descriptor {field} in v0.1")
     digest = _digest(descriptor.get("digest"), label)
     size = descriptor.get("size")
     if isinstance(size, bool) or not isinstance(size, int) or size < 0:
@@ -141,8 +168,15 @@ def inspect_archive(
     path = Path(path)
     if not path.is_file():
         raise OCIError("archive is not a regular file")
-    expected_sha = _hex(expected_archive_sha256, "expected archive sha256") if expected_archive_sha256 else None
-    expected_manifest = _digest(expected_manifest_digest, "expected manifest digest") if expected_manifest_digest else None
+    expected_sha = (_hex(expected_archive_sha256, "expected archive sha256")
+                    if expected_archive_sha256 is not None else None)
+    expected_manifest = (_digest(expected_manifest_digest, "expected manifest digest", normalize=True)
+                         if expected_manifest_digest is not None else None)
+    if expected_platform is not None:
+        parts = expected_platform.split("/") if isinstance(expected_platform, str) else []
+        if len(parts) != 2:
+            raise OCIError("expected platform: use os/architecture")
+        _platform_identity(dict(zip(("os", "architecture"), parts)), "expected platform")
     with path.open("rb") as f:
         archive_hash, archive_bytes = _stream_hash(f)
     if expected_sha is not None and archive_hash != expected_sha:
@@ -155,6 +189,7 @@ def inspect_archive(
             if layout.get("imageLayoutVersion") != "1.0.0":
                 raise OCIError("unsupported OCI image-layout version")
             index = _read_json(tf, members, "index.json")
+            _image_metadata(index, INDEX_TYPE, "image index")
             manifests = index.get("manifests")
             if index.get("schemaVersion") != 2 or not isinstance(manifests, list) or len(manifests) != 1:
                 raise OCIError("v0.1 requires a single-manifest OCI image index")
@@ -163,22 +198,19 @@ def inspect_archive(
             if expected_manifest is not None and manifest_digest != expected_manifest:
                 raise OCIError("image manifest digest differs from trusted expected digest")
             manifest = _read_json(tf, members, "blobs/sha256/" + manifest_digest[7:])
+            _image_metadata(manifest, MANIFEST_TYPE, "image manifest")
             if manifest.get("schemaVersion") != 2:
                 raise OCIError("invalid OCI image manifest schemaVersion")
             _, config_digest, size = _descriptor(tf, members, manifest.get("config"), "config", {CONFIG_TYPE})
             verified_bytes += size
             config = _read_json(tf, members, "blobs/sha256/" + config_digest[7:])
-            platform = f"{config.get('os')}/{config.get('architecture')}"
-            if not isinstance(config.get("os"), str) or not isinstance(config.get("architecture"), str):
-                raise OCIError("OCI config is missing platform identity")
+            platform = _platform_identity(config, "OCI config")
             if expected_platform is not None and platform != expected_platform:
                 raise OCIError("OCI platform differs from expected platform")
-            index_platform = index_descriptor.get("platform")
-            if isinstance(index_platform, dict) and (
-                index_platform.get("os") != config.get("os")
-                or index_platform.get("architecture") != config.get("architecture")
-            ):
-                raise OCIError("index and config platform disagree")
+            if "platform" in index_descriptor:
+                index_platform = _platform_identity(index_descriptor["platform"], "index descriptor")
+                if index_platform != platform:
+                    raise OCIError("index and config platform disagree")
             layers = manifest.get("layers")
             rootfs = config.get("rootfs")
             if not isinstance(layers, list) or not isinstance(rootfs, dict) or rootfs.get("type") != "layers":
@@ -232,10 +264,11 @@ def inspect_archive(
                 "not_proven": [
                     "SOURCE_AUTHENTICITY",
                     "UNCOMPRESSED_DIFF_ID_VERIFICATION",
+                    "PLATFORM_VARIANT_OR_OS_VERSION_COMPATIBILITY",
                     "ACTUAL_IMAGE_RUNTIME",
                     "RECEIVER_IMPORT",
                     "PRODUCTION_ACCEPTANCE",
-                ],
+                ] + (["TARGET_PLATFORM_MATCH"] if expected_platform is None else []),
             }
     except (tarfile.TarError, OSError, EOFError) as exc:
         raise OCIError("not a readable OCI image-layout tar archive") from exc

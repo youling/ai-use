@@ -23,7 +23,9 @@ def jbytes(value: dict) -> bytes:
 
 def fixture(root: Path, *, mutate_layer: bool = False, duplicate: bool = False,
             unsafe: bool = False, multi: bool = False, docker_only: bool = False,
-            short_diffid: bool = False, tamper_same_size: bool = False) -> tuple[Path, str, str]:
+            short_diffid: bool = False, tamper_same_size: bool = False,
+            mutate_config=None, mutate_manifest=None, mutate_index=None,
+            omit_blob: str | None = None) -> tuple[Path, str, str]:
     inner = io.BytesIO()
     with tarfile.open(fileobj=inner, mode="w") as layer_tar:
         item = tarfile.TarInfo("hello.txt")
@@ -38,6 +40,8 @@ def fixture(root: Path, *, mutate_layer: bool = False, duplicate: bool = False,
         "config": {"User": "1000:1000", "WorkingDir": "/workspace"},
         "rootfs": {"type": "layers", "diff_ids": [] if short_diffid else ["sha256:" + sha(plain)]},
     }
+    if mutate_config is not None:
+        mutate_config(config)
     cfg = jbytes(config)
     manifest = {
         "schemaVersion": 2, "mediaType": "application/vnd.oci.image.manifest.v1+json",
@@ -46,6 +50,8 @@ def fixture(root: Path, *, mutate_layer: bool = False, duplicate: bool = False,
         "layers": [{"mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
                     "digest": "sha256:" + layer_hex, "size": len(layer)}],
     }
+    if mutate_manifest is not None:
+        mutate_manifest(manifest)
     mb = jbytes(manifest)
     manifest_digest = "sha256:" + sha(mb)
     descriptor = {
@@ -54,6 +60,8 @@ def fixture(root: Path, *, mutate_layer: bool = False, duplicate: bool = False,
         "platform": {"os": "linux", "architecture": "amd64"},
     }
     index = {"schemaVersion": 2, "manifests": [descriptor, descriptor] if multi else [descriptor]}
+    if mutate_index is not None:
+        mutate_index(index)
     files = {
         "oci-layout": jbytes({"imageLayoutVersion": "1.0.0"}),
         "index.json": jbytes(index),
@@ -61,6 +69,9 @@ def fixture(root: Path, *, mutate_layer: bool = False, duplicate: bool = False,
         "blobs/sha256/" + sha(mb): mb,
         "blobs/sha256/" + layer_hex: (layer + b"corrupt") if mutate_layer else changed_layer,
     }
+    if omit_blob is not None:
+        blob_hash = {"config": sha(cfg), "manifest": sha(mb), "layer": layer_hex}[omit_blob]
+        files.pop("blobs/sha256/" + blob_hash)
     if docker_only:
         files = {"manifest.json": b"[]"}
     archive = root / "fixture.tar"
@@ -170,6 +181,134 @@ class OCIArchiveTests(unittest.TestCase):
     def test_diff_id_count_must_match(self):
         archive, _, _ = fixture(self.root, short_diffid=True)
         with self.assertRaisesRegex(OCIError, "diff_ids"):
+            inspect_archive(archive)
+
+    def test_explicit_index_type_and_absent_manifest_type_are_valid(self):
+        archive, outer, manifest = fixture(
+            self.root,
+            mutate_index=lambda v: v.update(mediaType="application/vnd.oci.image.index.v1+json"),
+            mutate_manifest=lambda v: v.pop("mediaType"),
+        )
+        self.assertEqual(inspect_archive(
+            archive, expected_archive_sha256=outer, expected_manifest_digest=manifest,
+        )["image"]["manifest_digest"], manifest)
+
+    def test_explicit_wrong_top_level_media_types_fail_with_matching_hashes(self):
+        for field in ("mutate_index", "mutate_manifest"):
+            for wrong in ("application/example", None, []):
+                with self.subTest(field=field, wrong=wrong):
+                    archive, outer, manifest = fixture(
+                        self.root, **{field: lambda v, w=wrong: v.update(mediaType=w)},
+                    )
+                    with self.assertRaisesRegex(OCIError, "mediaType"):
+                        inspect_archive(archive, expected_archive_sha256=outer,
+                                        expected_manifest_digest=manifest)
+
+    def test_embedded_descriptor_data_is_unsupported(self):
+        # Base64 decodes to {}, conflicting with the referenced config.
+        archive, outer, manifest = fixture(
+            self.root, mutate_manifest=lambda v: v["config"].update(data="e30="),
+        )
+        with self.assertRaisesRegex(OCIError, "descriptor data"):
+            inspect_archive(archive, expected_archive_sha256=outer,
+                            expected_manifest_digest=manifest)
+
+    def test_artifact_and_subject_semantics_are_unsupported(self):
+        for level in ("mutate_index", "mutate_manifest"):
+            for field, value in (("artifactType", "application/example"), ("subject", {})):
+                with self.subTest(level=level, field=field):
+                    archive, _, _ = fixture(
+                        self.root, **{level: lambda v, f=field, x=value: v.update({f: x})},
+                    )
+                    with self.assertRaisesRegex(OCIError, "unsupported OCI"):
+                        inspect_archive(archive)
+        archive, _, _ = fixture(
+            self.root, mutate_index=lambda v: v["manifests"][0].update(artifactType="application/example"),
+        )
+        with self.assertRaisesRegex(OCIError, "descriptor artifactType"):
+            inspect_archive(archive)
+
+    def test_invalid_explicit_index_platform_fails(self):
+        for value in ("linux/amd64", [], None, {}, {"os": "linux"},
+                      {"os": "", "architecture": "amd64"}):
+            with self.subTest(platform=value):
+                archive, _, _ = fixture(
+                    self.root, mutate_index=lambda v, p=value: v["manifests"][0].update(platform=p),
+                )
+                with self.assertRaisesRegex(OCIError, "platform"):
+                    inspect_archive(archive)
+
+    def test_absent_index_platform_is_allowed(self):
+        archive, _, _ = fixture(
+            self.root, mutate_index=lambda v: v["manifests"][0].pop("platform"),
+        )
+        self.assertEqual(inspect_archive(archive)["image"]["platform"], "linux/amd64")
+
+    def test_empty_or_missing_config_platform_fails(self):
+        for field in ("os", "architecture"):
+            for value in ("", None, " "):
+                with self.subTest(field=field, value=value):
+                    archive, _, _ = fixture(
+                        self.root, mutate_config=lambda v, f=field, x=value: v.update({f: x}),
+                    )
+                    with self.assertRaisesRegex(OCIError, "platform"):
+                        inspect_archive(archive)
+
+    def test_platform_receipt_limits_are_explicit(self):
+        archive, _, _ = fixture(self.root)
+        unbound = inspect_archive(archive)
+        self.assertIsNone(unbound["expected"]["platform"])
+        self.assertIn("TARGET_PLATFORM_MATCH", unbound["not_proven"])
+        matched = inspect_archive(archive, expected_platform="linux/amd64")
+        self.assertNotIn("TARGET_PLATFORM_MATCH", matched["not_proven"])
+        self.assertIn("PLATFORM_VARIANT_OR_OS_VERSION_COMPATIBILITY", matched["not_proven"])
+        for invalid in ("", "linux/amd64/v3"):
+            with self.subTest(expected=invalid):
+                with self.assertRaisesRegex(OCIError, "platform"):
+                    inspect_archive(archive, expected_platform=invalid)
+
+    def test_empty_expected_digests_are_invalid_not_absent(self):
+        archive, _, _ = fixture(self.root)
+        for key in ("expected_archive_sha256", "expected_manifest_digest"):
+            with self.subTest(key=key):
+                with self.assertRaises(OCIError):
+                    inspect_archive(archive, **{key: ""})
+        self.assertEqual(main(["inspect", str(archive), "--expected-archive-sha256", ""]), 2)
+
+    def test_missing_config_descriptor_fails(self):
+        archive, _, _ = fixture(self.root, mutate_manifest=lambda v: v.pop("config"))
+        with self.assertRaisesRegex(OCIError, "config: unsupported or missing"):
+            inspect_archive(archive)
+
+    def test_missing_layer_descriptor_fields_fail(self):
+        for field in ("mediaType", "digest", "size"):
+            with self.subTest(field=field):
+                archive, _, _ = fixture(
+                    self.root, mutate_manifest=lambda v, f=field: v["layers"][0].pop(f),
+                )
+                with self.assertRaisesRegex(OCIError, r"layer\[0\]"):
+                    inspect_archive(archive)
+
+    def test_missing_referenced_blobs_fail(self):
+        for blob in ("config", "manifest", "layer"):
+            with self.subTest(blob=blob):
+                archive, _, _ = fixture(self.root, omit_blob=blob)
+                with self.assertRaisesRegex(OCIError, "missing referenced blob"):
+                    inspect_archive(archive)
+
+    def test_embedded_digest_is_strict_but_external_hex_is_normalized(self):
+        archive, outer, manifest = fixture(self.root)
+        inspected = inspect_archive(
+            archive, expected_archive_sha256=outer.upper(),
+            expected_manifest_digest="sha256:" + manifest[7:].upper(),
+        )
+        self.assertEqual(inspected["expected"]["manifest_digest"], manifest)
+        archive, _, _ = fixture(
+            self.root,
+            mutate_manifest=lambda v: v["config"].update(
+                digest="sha256:" + v["config"]["digest"][7:].upper()),
+        )
+        with self.assertRaisesRegex(OCIError, "lowercase"):
             inspect_archive(archive)
 
     def test_cli_verify_requires_trusted_expected(self):
