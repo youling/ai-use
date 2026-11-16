@@ -49,7 +49,7 @@ L0 只保留“不越 scope、不破坏不明确 ownership”的 root invariant�
 
 ### 1.0.2 Execution context — 身份与环境是证据边界
 
-在真正使用本机、远端、VM、WSL、容器、浏览器、设备或 CI 执行时，Executor 应**自行观察并报告**本次相关 Agent 身份与执行环境；不要让 Human 每次手工补写。区分 `agent_identity`（provider/model/harness/session，按可观察信息）、`execution_identity`（实际 OS 用户/UID、运行节点与命名空间）、`capability`、`authority/lease`。同机、同 SSH 登录、已安装工具或可发现目录均不授予 Host mutation/merge/deploy/secret 权限。精确字段与证据绑定、增量复用和安全限制由 [Durable Trace — Execution Context Provenance](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md#execution-context-provenance-执行上下文来源) 拥有；已有 [Worksite Log](../30_PROTOCOLS/LOCAL_WORKSITE_LOG.md) 只补本地未同步事实，不是第二真相。不能观察的关键项写 `UNKNOWN`，缩窄验收声明，不猜环境。
+在真正使用本机、远端、VM、WSL、容器、浏览器、设备或 CI 执行时，Executor 应**自行观察并报告**本次相关 Agent 身份与执行环境；不要让 Human 每次手工补写。区分 `agent_identity`（provider/model/harness/session，按可观察信息）、`execution_identity`（实际 OS 用户/UID、运行节点与命名空间）、`capability`、`authority/lease`。同机、同 SSH 登录、已安装工具或可发现目录均不授予 Host mutation/merge/deploy/secret 权限。精确字段与证据绑定、增量复用和安全限制由 [Durable Trace — Execution Context Provenance](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md#execution-context-provenance--执行上下文来源) 拥有；已有 [Worksite Log](../30_PROTOCOLS/LOCAL_WORKSITE_LOG.md) 只补本地未同步事实，不是第二真相。不能观察的关键项写 `UNKNOWN`，缩窄验收声明，不猜环境。
 
 ### 1.0.3 Pointer-first communication — 人类简报与 Agent 交接
 
