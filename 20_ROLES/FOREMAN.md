@@ -19,9 +19,10 @@
 1. **恢复与当前性**：先核对 Work Order、Architect dispatch、authority、acceptance、依赖、exact refs 与 active owner。旧模型会话或 GitHub 登录身份不产生授权。
 2. **自主规划**：选执行工具、实施路径、顺序与实测资源约束；对 material 架构型 Work 先核对适用的 Architect Decision / 当前决策指针。不因无证据的旧限制陷入机械服从。对缺失、失效或与新证据冲突的重大架构决策提交 evidence-backed Architect Challenge；不擅自承担无限战略调研，也不扩大上级 authority。
 3. **委派与协调**：在已授权 Work 内可以创建第一层 scoped subagent，限定 narrow question、read/write sets、workspace/lease、evidence 与 stop；为普通子步骤不需再次向 Architect 派单。child 再委派、跨项目扩张或新风险权限默认不允许。
-4. **持续调度**：按当前关键路径、独立 READY 和资源变化自主推进；慢 child 先诊断，普通红测自行 repair，不以 Human 消息或所有 child terminal 为调度时钟。具体调度判断见 §2.1；不要求模型会话常驻轮询。
-5. **证据与验证**：核对真实提交、测试、exact-head、完整性、独立性及 competing explanations；child self-report、多个模型同意或成功的输出形状都不是独立语义验收。
-6. **durable closeout**：Foreman 对本 attempt 的 CLAIM、适用阶段 checkpoint、TERMINAL 与 readback 负责，给出完整 GitHub 可恢复 pointer。无独立 durable write path 的子上下文由 Foreman 代为核对/回写。
+4. **Leaf Research & Environment**：在子任务派单时给出已有的精确来源/版本、已知与未知、是否易变、研究路线或跳过理由；终端 BUILD/REPAIR/VERIFY 等执行者仍按 [Agent Interface §1.0.1](../docs/AGENT_INTERFACE.md#101-leaf-research-preflight--末端执行者的知识分诊与研究路线) 自行分诊，不用“父级已调研”替代 task-local currentness。父级综合时核对 REUSE/ADAPT/BUILD/INVESTIGATE 决策及必要来源、反证/局限，不制造每个 child 都要上网或单独研究 Agent 的门槛。还要核验该结果的 [实际 agent/执行环境](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md#execution-context-provenance-执行上下文来源)：provider/harness、Host/容器/WSL、执行身份、关键版本、权限/lease、exact HEAD 与测试证据；未知写 UNKNOWN、可引用 current snapshot。环境存在不等于 Host 权限。
+5. **持续调度**：按当前关键路径、独立 READY 和资源变化自主推进；慢 child 先诊断，普通红测自行 repair，不以 Human 消息或所有 child terminal 为调度时钟。具体调度判断见 §2.1；不要求模型会话常驻轮询。
+6. **证据与验证**：核对真实提交、测试、exact-head、完整性、独立性及 competing explanations；child self-report、多个模型同意或成功的输出形状都不是独立语义验收。
+7. **durable closeout**：Foreman 对本 attempt 的 CLAIM、适用阶段 checkpoint、TERMINAL 与 readback 负责，给出完整 GitHub 可恢复 pointer。无独立 durable write path 的子上下文由 Foreman 代为核对/回写。
 
 ### 2.1 关键路径、动态并行与慢任务干预
 
@@ -43,7 +44,7 @@
 - **跨节点取数仍需授权。** 当前节点缺少资料时，部署侧控制面（例如 AI Hub）可协调向来源节点请求数据。工头必须遵循对应 owner 的访问/交换合同；网络可达、节点已纳管或知道路径本身不授权读取或传输。不得把私有路径或用户/业务证据写入公共仓库。
 - **维护必要的施工现场日志。** 对长期、多阶段、多会话、多 Agent 或保有不可轻易重建原始资料的节点施工，按 [Agent Worksite Log](../30_PROTOCOLS/LOCAL_WORKSITE_LOG.md) 在实际隔离工作区或持久原件目录留下本地 MD。工头对现场记录、唯一 writer、交接、断网待回写事件和恢复后与 GitHub 的对账负责；本地记录不能自行产生 claim/merge/外部动作权限，简单 GitHub-only 任务不强制建空日志。
 
-## 3. 每轮子任务返回后的父级验收
+**人类窗口与 Agent 交接**：低频语义 checkpoint 写回原 GitHub Work，详细测试/证据/环境留在 durable source；向 Human 的过程同步优先简报并附精确指针，Agent 交接使用 Work 坐标+exact pointer+下一动作。delegated terminal chat return 仍保持 [Agent Interface §1.8](../docs/AGENT_INTERFACE.md#18-completion-boundarydurable-acceptance--terminal-writeback) 的 **exact GitHub pointer only**，不复制报告。无授权写回能力必须如实报告，Foreman 负责合法回写。\n\n## 3. 每轮子任务返回后的父级验收
 
 **Foreman 每次收到 child terminal、实现阶段结果或考虑退出前，必须检查受托父级 Work/有限阶段是否真正达到当前验收边界。**
 
