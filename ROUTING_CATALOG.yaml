@@ -14,13 +14,13 @@
       "90"
     ],
     "layers": {
-      "00": "Kernel",
       "10": "Bootstrap",
       "20": "Roles",
       "30": "Protocols",
       "40": "Guides",
       "50": "Templates",
-      "90": "History"
+      "90": "History",
+      "00": "Kernel"
     },
     "results": {
       "NEXT": "角色/场景命中，targeted 读取必要 home 后继续。",
@@ -262,6 +262,19 @@
         "50_TEMPLATES/DIAGRAM_AS_CODE.md"
       ],
       "public": false
+    },
+    {
+      "id": "oci-supply",
+      "layer": "30",
+      "reading_level": "L2",
+      "roles": [
+        "all"
+      ],
+      "when": "需要制作、校验、离线/内网传输或接收 OCI 镜像制品（Agent 或普通业务均适用）；不因普通非容器任务触发",
+      "home": "capabilities/oci/CONTRACT.md",
+      "section": "",
+      "templates": [],
+      "public": true
     },
     {
       "id": "data",

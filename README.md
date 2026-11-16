@@ -65,7 +65,7 @@ flowchart TD
 
 **治理规范已接受：** [冷启动后定向收敛](30_PROTOCOLS/GITHUB_NATIVE_FIRST.md)（[PR #185](https://github.com/youling/ai-use/pull/185)）、[产物定位与本地施工日志](30_PROTOCOLS/LOCAL_WORKSITE_LOG.md)（[PR #174](https://github.com/youling/ai-use/pull/174)）、[软件工程实践](30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md)与[阶段图示](30_PROTOCOLS/DIAGRAM_AS_CODE.md#31-阶段性进展图示与领域边界复盘)（[PR #178](https://github.com/youling/ai-use/pull/178)）均已合并。方法被采用不证明各项目已部署日志或完成架构改造。
 
-**发行与候选分别看证据：** [Agent Runtime](agent-runtime/README.md) 的公共源码与首次 OCI candidate 已有[发行回执](https://github.com/youling/ai-use/issues/123#issuecomment-6044487814)和[验收关闭记录](https://github.com/youling/ai-use/issues/123#issuecomment-6247066989)；它仍是 candidate，未由此取得 stable、后续发行或 Host 部署验收。[通用 OCI Supply PR #182](https://github.com/youling/ai-use/pull/182)仍待其独立验收；[Change-aware Work Graph](https://github.com/youling/ai-hub/issues/131) 的跨任务变更影响传播仍未实现。图是注明来源版本的导航快照，真实 PR/运行状态使用前必须回读当前 owner。
+**发行与候选分别看证据：** [Agent Runtime](agent-runtime/README.md) 的公共源码与首次 OCI candidate 已有[发行回执](https://github.com/youling/ai-use/issues/123#issuecomment-6044487814)和[验收关闭记录](https://github.com/youling/ai-use/issues/123#issuecomment-6247066989)；它仍是 candidate，未由此取得 stable、后续发行或 Host 部署验收。[通用 OCI Supply](capabilities/oci/README.md) 当前范围是 Tranche A 离线验证子集；后续构建、传输、接收与真实运行仍沿 [#181](https://github.com/youling/ai-use/issues/181) 分阶段验收；[Change-aware Work Graph](https://github.com/youling/ai-hub/issues/131) 的跨任务变更影响传播仍未实现。图是注明来源版本的导航快照，真实 PR/运行状态使用前必须回读当前 owner。
 
 
 ---
@@ -195,6 +195,13 @@ Human
 ai-use **不负责**私有项目实时状态、active project topology、Runner runtime、本地 workspace 状态、私有 registry、当前谁在跑什么任务。这些属于部署实例自己的 `control_plane` role 或各项目仓。
 
 本仓不保存具体私有项目的实时拓扑与状态，也不要求公共使用者读取任何上游维护者的私有控制面。
+
+---
+
+## 可复用的工程能力
+
+- **[OCI Artifact Supply](capabilities/oci/README.md)**：面向业务与 Agent 的 OCI 制品合同与离线验证工具。当前公共子集核对单 manifest 的 OCI tar、可信期望 digest 和平台；实际构建、传输、接收仍由使用方现有授权工具承担。完整支持边界见 [能力合同](capabilities/oci/CONTRACT.md)。
+- [Agent Runtime](agent-runtime/README.md)：Agent 专用的参考容器、conformance 与受控发布流程，可按自身验收复用通用 OCI 工具；业务容器保留自己的配方与运行验收。
 
 ---
 
