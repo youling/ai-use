@@ -61,11 +61,11 @@ def test_keyboard_preview_apply_independent_results():
         app = SetupApp(engine, host_authorized=True)
         async with app.run_test(size=(80, 24)) as pilot:
             await to_review(app, pilot)
-            assert app.query_one("#apply", Button).disabled
+            assert app.query_one("#next", Button).disabled
             app.query_one("#approve", Checkbox).focus()
             await pilot.press("space")
             await pilot.pause()
-            await press_button(app, pilot, "#apply")
+            await press_button(app, pilot, "#next")
             assert app.step == 4
             text = str(app.query_one("#results", Static).render())
             assert "✔ 本地容器已安装" in text
@@ -84,11 +84,19 @@ def test_preview_and_blocked_plan_cannot_apply(authority, blocked):
         app = SetupApp(engine, host_authorized=authority)
         async with app.run_test(size=(80, 24)) as pilot:
             await to_review(app, pilot)
-            app.query_one("#approve", Checkbox).value = True
-            await pilot.pause()
-            assert app.query_one("#apply", Button).disabled
-            await press_button(app, pilot, "#next")
-            assert app.step == 4
+            if authority:
+                app.query_one("#approve", Checkbox).value = True
+                await pilot.pause()
+                assert app.query_one("#next", Button).disabled
+                await app.advance()
+                assert app.step == 3
+            else:
+                assert not app.query('#approve') and not app.query('#apply')
+                assert str(app.query_one('#next', Button).label) == '结束预览'
+                await press_button(app, pilot, "#next")
+                assert app.step == 4
+                assert not app.query('#results') and not app.query('#verify')
+                assert '预览完成' in str(app.query_one('#heading', Static).render())
             assert not any(isinstance(c, tuple) and c[0] == "apply" for c in engine.calls)
     asyncio.run(scenario())
 
@@ -129,7 +137,7 @@ def test_edited_plan_invalidates_consent_and_keyboard_advanced():
             await to_review(app, pilot)
             app.query_one("#approve", Checkbox).value = True
             await pilot.pause()
-            assert not app.query_one("#apply", Button).disabled
+            assert not app.query_one("#next", Button).disabled
             await pilot.press("escape")
             await pilot.pause()
             assert app.step == 2
@@ -139,7 +147,7 @@ def test_edited_plan_invalidates_consent_and_keyboard_advanced():
             await press_button(app, pilot, "#next")
             await press_button(app, pilot, "#next")
             assert app.step == 3
-            assert app.query_one("#apply", Button).disabled
+            assert app.query_one("#next", Button).disabled
             assert not app.query_one("#approve", Checkbox).value
             await pilot.press("tab", "down", "up")
             assert app.query_one("#controls").region.bottom <= 24
@@ -171,12 +179,12 @@ def test_runtime_edit_and_fingerprint_drift_cancel_apply():
             await pilot.pause()
             app.query_one("#runtime-requested", Checkbox).value = False
             await pilot.pause(0.4)
-            assert app.query_one("#apply", Button).disabled
+            assert app.query_one("#next", Button).disabled
             assert not app.query_one("#approve", Checkbox).value
             app.query_one("#approve", Checkbox).value = True
             await pilot.pause()
             app.plan_data["fingerprint"] = "changed-after-confirmation"
-            await press_button(app, pilot, "#apply")
+            await press_button(app, pilot, "#next")
             assert app.step == 3
             assert not any(isinstance(c, tuple) and c[0] == "apply" for c in engine.calls)
     asyncio.run(scenario())
@@ -222,9 +230,11 @@ def test_unknown_existing_config_shows_visible_actionable_blocker():
             await press_button(app, pilot, "#next")
             await press_button(app, pilot, "#next")
             assert "ROOT_CONFIG" in str(app.query_one("#status", Static).render())
-            app.query_one("#approve", Checkbox).value = True
+            app.query_one('#approve', Checkbox).value = True
             await pilot.pause()
-            assert app.query_one("#apply", Button).disabled
+            assert app.query_one('#next', Button).disabled
+            await app.advance()
+            assert app.step == 3 and not app.result
     asyncio.run(scenario())
 
 

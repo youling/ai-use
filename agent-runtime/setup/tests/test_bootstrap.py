@@ -63,12 +63,12 @@ def test_bootstrap_to_real_tui_fixture_review_and_apply(tmp_path,monkeypatch,aut
                 for _ in range(3):
                     await pilot.click('#next');await pilot.pause(0.25)
                 assert app.step==3
-                app.query_one('#approve',Checkbox).value=True
-                await pilot.pause()
-                assert app.query_one('#apply',Button).disabled is not authorized
                 if authorized:
+                    app.query_one('#approve',Checkbox).value=True
+                    await pilot.pause()
+                    assert not app.query_one('#next',Button).disabled
                     approved_fingerprint=app.plan_data['fingerprint']
-                    app.query_one('#apply',Button).focus()
+                    app.query_one('#next',Button).focus()
                     await pilot.press('enter');await pilot.pause(0.25)
                     assert app.step==4 and app.result['status']=='CONFIGURED_PENDING_AUTH'
                     receipt=json.loads(Path(app.result['receipt']).read_text())
