@@ -237,11 +237,11 @@
       "layer": "30",
       "reading_level": "L2",
       "roles": [
-        "Architect"
+        "all"
       ],
-      "when": "material 软件功能/领域与模块划分、依赖/接口设计、软件发行与部署边界、兼容范围、复杂重构与架构 Review；普通小修和已冻结窄施工不触发",
+      "when": "实际承担软件设计、编码、缺陷修复、重构、构建、发行或代码 Review 时，不论角色适用；非开发工作跳过，普通小修不触发完整架构设计",
       "home": "30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md",
-      "section": "",
+      "section": "§2–2.1；实质架构工作再读 §3–6",
       "templates": [],
       "public": true
     },
