@@ -29,7 +29,7 @@ flowchart TD
 | `workspace` / L2 | Global Architect/Human；仅 workspace 初始化 / role registration；普通项目执行不触发 | [10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md](../10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md) |
 | `roles` / L2 | all；current role / authority boundary 尚不明确 | [CONSTITUTION.md](../CONSTITUTION.md) §2 |
 | `human-host-environment` / L2 | all；Human 主控设备新机 bootstrap、目录/工具/缓存/状态归整、Host cleanup/drift，或需要解析本机 HOST_AGENT 时 | [30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md](../30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md) |
-| `execution` / L2 | all；mutation / workspace hygiene、DIRECT/DELEGATE、dispatch / review / repair / continuation / completion / Maintenance Lane | [docs/AGENT_INTERFACE.md](AGENT_INTERFACE.md) §1–4 |
+| `execution` / L2 | all；mutation / workspace hygiene、DIRECT/DELEGATE、dispatch / review / repair / continuation / completion / Maintenance Lane | [docs/AGENT_INTERFACE.md](AGENT_INTERFACE.md) §1–4 · [每轮派工 §1.1.1](AGENT_INTERFACE.md#111-rule-pointers-on-every-dispatch--每轮派工的规则援引) |
 | `recovery` / L2 | all；planned transfer / crash takeover / old context unavailable / hot or warm resume；context modes / independence / delegation | [30_PROTOCOLS/RECOVERY_HANDOFF.md](../30_PROTOCOLS/RECOVERY_HANDOFF.md) §1–5 |
 | `trace` / L2 | all；事实价值行为 / checkpoint / durable recovery evidence | [30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) |
 | `change` / L2 | Architect/Builder/Research/Repair；文档即代码、代码/文档变更分级、Issue/ADR/PR、repo-wide migration / bulk refactor；Builder/Research/Repair 仅派单要求治理 artifact 时 | [30_PROTOCOLS/CHANGE_LIFECYCLE.md](../30_PROTOCOLS/CHANGE_LIFECYCLE.md) §3–4.1 |

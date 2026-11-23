@@ -35,6 +35,20 @@ class RoutingTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "escapes"):
             routing.validate_catalog(self.catalog)
 
+    def test_route_section_links_follow_the_canonical_home(self):
+        entry = next(e for e in self.catalog["entries"] if e["id"] == "execution")
+        self.assertIn("[每轮派工 §1.1.1](#111-rule-pointers-on-every-dispatch--每轮派工的规则援引)", entry["section"])
+        rendered = routing.render(self.catalog)
+        for view, home in (("READING_MAP.md", "docs/AGENT_INTERFACE.md"),
+                           ("START_HERE.md", "docs/AGENT_INTERFACE.md"),
+                           ("docs/ROUTING_INDEX.md", "AGENT_INTERFACE.md")):
+            with self.subTest(view=view):
+                expected = entry["section"].replace("](#", f"]({home}#")
+                self.assertIn(expected, rendered[view])
+        entry["section"] = "[missing](#not-a-canonical-section)"
+        with self.assertRaisesRegex(ValueError, "missing route section anchor"):
+            routing.validate_catalog(self.catalog)
+
     def test_stable_id_removal_rejected(self):
         previous = copy.deepcopy(self.catalog)
         self.catalog["entries"][1]["id"] = "renamed-language"

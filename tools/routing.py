@@ -19,6 +19,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 CATALOG = "ROUTING_CATALOG.yaml"
 PROJECTIONS = {"human": "START_HERE.md", "reading": "READING_MAP.md",
                "compatibility": "NAMESPACE.md", "index": "docs/ROUTING_INDEX.md"}
+SECTION_LINK = re.compile(r"\[([^\]\n]+)\]\((#[^\s)]+)\)")
 
 
 def git(*args, input=None):
@@ -70,6 +71,12 @@ def validate_catalog(c, previous=None):
         require(isinstance(e["when"], str) and e["when"], "missing scene trigger")
         require(isinstance(e["section"], str) and isinstance(e["public"], bool), "invalid projection metadata")
         local_path(e["home"])
+        section_links = SECTION_LINK.findall(e["section"])
+        if section_links:
+            home_anchors = anchors((ROOT / e["home"]).read_text(encoding="utf-8"))
+            for _, fragment in section_links:
+                require(urllib.parse.unquote(fragment[1:]) in home_anchors,
+                        "missing route section anchor: " + e["home"] + fragment)
         require(isinstance(e["templates"], list), "invalid template pointers")
         for p in e["templates"]:
             local_path(p)
@@ -87,8 +94,9 @@ def validate_catalog(c, previous=None):
         require(row["status"] in {"forward", "retired-forward"}, "unknown compatibility state")
 
 
-def link(source, target, label=None):
-    return "[" + (label or target) + "](" + posixpath.relpath(target, posixpath.dirname(source) or ".") + ")"
+def link(source, target, label=None, fragment=""):
+    relative = posixpath.relpath(target, posixpath.dirname(source) or ".")
+    return f"[{label or target}]({relative}{fragment})"
 
 
 def render(c):
@@ -121,7 +129,8 @@ def render(c):
                 if kind == "human" and not e["public"]:
                     continue
                 roles = "/".join(e["roles"])
-                home = link(path, e["home"]) + (" " + e["section"] if e["section"] else "")
+                section = SECTION_LINK.sub(lambda m: link(path, e["home"], m[1], m[2]), e["section"])
+                home = link(path, e["home"]) + (" " + section if section else "")
                 lines += ["| `" + e["id"] + "` / " + e["reading_level"] + " | " + roles + "；" + e["when"] + " | " + home + " |"]
             lines += [""]
         if kind == "reading":

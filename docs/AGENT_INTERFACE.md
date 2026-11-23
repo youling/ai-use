@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** Read when dispatching/executing Agent work, choosing Architect execution mode, advancing an authorized program, or producing/reviewing Human/Agent interface artifacts.
 
-**Protocol Version: 2.12.3**
+**Protocol Version: 2.13.0**
 
 本文是 **execution / dispatch / continuation interface** 的 canonical home。公共 `ai-use` 不绑定特定 owner/repo、私有 control-plane 名称或账号。[Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md) 拥有 recovery、Work Context、正交 context/mode 与 independence/delegation 语义；[CONTEXT_MODE_SEED](../50_TEMPLATES/CONTEXT_MODE_SEED.md) 只给形态。本文保留 continuation、`PREMATURE_YIELD` 与完成边界。
 
@@ -89,6 +89,12 @@ DISPATCH -> AGENT_CLAIMED -> [PROGRESS_CHECKPOINT]* -> AGENT_TERMINAL_RESULT
 ```
 
 事件的 durable shape 由 [Durable Trace Principle](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md#delegated-execution-attempt-events) 拥有；本接口只拥有这些事件与 execution/completion 的关系。
+
+#### 1.1.1 Rule pointers on every dispatch — 每轮派工的规则援引
+
+Architect 和 Foreman 每轮向下派工，包括在同一对话续派或返修，都须把本轮必要的 ai-use 章节直达链接放在实际发出的动作或验收旁。派发者核对当前治理仓、版本、锚点及接收方可读性，先修正失效的必需链接，并在已有派单或检查点留链接。
+
+换执行者时，随单附当前 [AGENTS.md](../AGENTS.md)、当前 Work 或交接指针，以及 [适用规则](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#2-applicable-rules--适用规则) 和 [开工门](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#3-execution-gate--开工门) 的直达链接。接任者先读 L0，再按现有 Bootstrap 和随单链接补齐本角色所需规则。有缺口时查 [Reading Map](../READING_MAP.md)，达到本轮所需即可停止读取。Work 的授权和接任沿用现行合同。
 
 ### 1.2 Bootstrap relationship
 
@@ -494,6 +500,7 @@ Human Completion Card 仅保留为 Architect / orchestrator 在**非 delegated e
 
 ## 6. Versioned Definitions
 
+- `2.13.0`：Architect 与 Foreman 每轮派工随实际指令发送当前适用的 ai-use 章节直达链接，覆盖原对话续派与换执行者，规则归 §1.1.1。
 - `2.12.3`：Human 2026-10-24：Architect 对实质软件架构变更使用 targeted 软件工程分解实践，在有意义阶段以当前图示与证据 delta 外显领域/模块边界；具体画图语义仍由 Diagram-as-Code 拥有，执行状态和验收未改变。
 - `2.12.2`：#167 原生 GitHub 工作自助发现。Human/Agent 从可回源的 Issue 标签和 Projects 查看当前可行动任务；可见状态仅为 derived projection，不新增 Work claim/dispatch/permission，也不复制 Native First 的字段语义。
 

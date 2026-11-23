@@ -1,6 +1,6 @@
 # 双词派单模板
 
-**版本：1.2.0**
+**版本：1.3.0**
 
 Human Card / Seed、运行位置、最小化与 transport fallback 的语义由 [Agent Interface §2–3](../docs/AGENT_INTERFACE.md#2-human-dispatch-card) 定义。复制对应形态并替换占位符；可选行无值即省略。所有坐标是 inert placeholders，不指向实际实例。
 
@@ -80,6 +80,8 @@ Machine 字段形态见 [CONTEXT_MODE_SEED.md](CONTEXT_MODE_SEED.md)，值与语
 通信与回执（可选）：<语义 checkpoint 的 GitHub pointer；非 GitHub 原件的 owner 位置；Human 简报，delegated terminal 只返 exact terminal pointer>
 拆分与交付：<独立方向；原生子返回形状；语义阶段回写；需升级架构师的确切问题>
 ```
+
+按[每轮规则援引](../docs/AGENT_INTERFACE.md#111-rule-pointers-on-every-dispatch--每轮派工的规则援引)把章节链接写在实际动作旁。例如「按[工程原则 §2.1](../30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md#21-标准化软件发行与跨节点可移植性)复验本次修复涉及的兼容行为」。发出时使用当前治理仓的完整章节 URL。
 
 ### 阶段交付
 
