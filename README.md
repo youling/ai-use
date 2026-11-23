@@ -29,8 +29,6 @@
 
 **给正在执行/恢复任务的 Agent：** 当前治理仓 [`AGENTS.md`](AGENTS.md) 是第一份规范性读取（BOOT-1 只允许先寻址）；[START_HERE](START_HERE.md) / [Reading Map](READING_MAP.md) 是**规则导航**，不是面向新人的逐步教程。仅加载本次任务需要的规则与项目事实。
 
-接任 `youling/ai-use` 本仓总架构师时，从[本仓角色登记](https://github.com/youling/ai-use/issues/98#issuecomment-6009956598)定位角色，并核对同一工单中的最新接任记录与本轮 Human 授权。
-
 [路由总览](docs/ROUTING_INDEX.md) · [规则路由目录源](ROUTING_CATALOG.yaml)
 
 ---

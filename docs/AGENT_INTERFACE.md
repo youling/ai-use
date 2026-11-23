@@ -92,11 +92,9 @@ DISPATCH -> AGENT_CLAIMED -> [PROGRESS_CHECKPOINT]* -> AGENT_TERMINAL_RESULT
 
 #### 1.1.1 Rule pointers on every dispatch — 每轮派工的规则援引
 
-Architect 给 Foreman 或受托执行者派活，Foreman 给内部子对话或独立 child Work 派活，**每轮都必须在执行者实际收到的指令里，把当前适用的 ai-use 章节链接放在对应动作或验收要求旁边**。同一末端对话中的续派、返修和阶段切换也要再次给出链接，让执行者回到适用规则再行动。仅同步进度时无需重发。将本轮链接保存在已有 durable dispatch 或适用 checkpoint 中，以便恢复。
+Architect 和 Foreman 每轮向下派工，包括在同一对话续派或返修，都须把本轮必要的 ai-use 章节直达链接放在实际发出的动作或验收旁。派发者核对当前治理仓、版本、锚点及接收方可读性，并在已有派单或检查点留链接。
 
-派发者从本部署当前使用的治理仓选择必要章节，发送接收方可打开的直达链接，并核对目标版本及章节锚点。在 GitHub 工单、评论与聊天中，规则援引使用完整 URL 和能定位该版本章节的锚点，持久回写优先使用提交永久链接。引用仓库首页、泛用目录或上轮聊天位置，无法让接收方直达本轮规则。实际开发任务可指向[工程原则](../30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md#21-标准化软件发行与跨节点可移植性)，会改变做法的知识未知可指向[末端知识分诊](#101-leaf-research-preflight--末端执行者的知识分诊与研究路线)。
-
-换建造者、换执行会话或由新身份接任时，派发者必须重新选择和核对链接，即便任务相同。发给接任者当前的 [AGENTS.md](../AGENTS.md) 和本轮适用章节。接任者先读 L0，再按 Bootstrap 的[适用规则](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#2-applicable-rules--适用规则)与[开工门](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#3-execution-gate--开工门)核对 Work、授权及归属。链接只负责定向阅读，原 Work 的写域、验收及主责迁移仍按既有合同。Minimal Seed 照常负责寻址。
+换执行者时随单附当前 [AGENTS.md](../AGENTS.md)。接任者先读 L0，再按 [Bootstrap](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#2-applicable-rules--适用规则) 和随单链接补齐本角色所需规则；有缺口时查 [Reading Map](../READING_MAP.md)，达到本轮所需即可停止读取。Work 的授权和接任沿用现行合同。
 
 ### 1.2 Bootstrap relationship
 

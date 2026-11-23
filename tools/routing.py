@@ -46,15 +46,6 @@ def local_path(path):
     require((ROOT / path).is_file(), "missing canonical/projection pointer: " + path)
 
 
-def canonical_home(pointer):
-    require(isinstance(pointer, str), "invalid canonical home")
-    path, separator, fragment = pointer.partition("#")
-    local_path(path)
-    if separator:
-        require(fragment and urllib.parse.unquote(fragment) in anchors((ROOT / path).read_text(encoding="utf-8")),
-                "missing canonical section: " + pointer)
-
-
 def validate_catalog(c, previous=None):
     require(set(c) == {"schema_version", "format", "boundary", "navigation",
                        "projections", "entries", "compatibility"}, "unknown catalog fields")
@@ -78,7 +69,7 @@ def validate_catalog(c, previous=None):
         require(isinstance(e["roles"], list) and e["roles"] and all(isinstance(x, str) and x for x in e["roles"]), "invalid role trigger")
         require(isinstance(e["when"], str) and e["when"], "missing scene trigger")
         require(isinstance(e["section"], str) and isinstance(e["public"], bool), "invalid projection metadata")
-        canonical_home(e["home"])
+        local_path(e["home"])
         require(isinstance(e["templates"], list), "invalid template pointers")
         for p in e["templates"]:
             local_path(p)
@@ -97,9 +88,7 @@ def validate_catalog(c, previous=None):
 
 
 def link(source, target, label=None):
-    path, separator, fragment = target.partition("#")
-    relative = posixpath.relpath(path, posixpath.dirname(source) or ".")
-    return "[" + (label or path) + "](" + relative + separator + fragment + ")"
+    return "[" + (label or target) + "](" + posixpath.relpath(target, posixpath.dirname(source) or ".") + ")"
 
 
 def render(c):
@@ -132,10 +121,7 @@ def render(c):
                 if kind == "human" and not e["public"]:
                     continue
                 roles = "/".join(e["roles"])
-                target = e["home"]
-                section = " " + e["section"] if e["section"] else ""
-                home = (link(path, target, target.partition("#")[0] + section)
-                        if "#" in target else link(path, target) + section)
+                home = link(path, e["home"]) + (" " + e["section"] if e["section"] else "")
                 lines += ["| `" + e["id"] + "` / " + e["reading_level"] + " | " + roles + "；" + e["when"] + " | " + home + " |"]
             lines += [""]
         if kind == "reading":

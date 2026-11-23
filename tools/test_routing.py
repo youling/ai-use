@@ -35,25 +35,6 @@ class RoutingTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "escapes"):
             routing.validate_catalog(self.catalog)
 
-    def test_canonical_home_links_directly_to_section_from_each_index(self):
-        route = next(entry for entry in self.catalog["entries"] if entry["id"] == "dispatch-rule-pointers")
-        path, fragment = route["home"].split("#")
-        views = routing.render(self.catalog)
-        expected_paths = {
-            "START_HERE.md": path,
-            "READING_MAP.md": path,
-            "docs/ROUTING_INDEX.md": "AGENT_INTERFACE.md",
-        }
-        for view, relative in expected_paths.items():
-            expected = f"[{path} §1.1.1]({relative}#{fragment})"
-            self.assertIn(expected, views[view])
-
-    def test_missing_canonical_section_rejected(self):
-        route = next(entry for entry in self.catalog["entries"] if entry["id"] == "leaf-research")
-        route["home"] = "docs/AGENT_INTERFACE.md#missing-canonical-section"
-        with self.assertRaisesRegex(ValueError, "missing canonical section"):
-            routing.validate_catalog(self.catalog)
-
     def test_stable_id_removal_rejected(self):
         previous = copy.deepcopy(self.catalog)
         self.catalog["entries"][1]["id"] = "renamed-language"
