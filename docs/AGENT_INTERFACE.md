@@ -96,7 +96,7 @@ Architect 给 Foreman 或受托执行者派活，Foreman 给内部子对话或�
 
 派发者从本部署当前使用的治理仓选择必要章节，发送接收方可打开的直达链接，并核对目标版本及章节锚点。在 GitHub 工单、评论与聊天中，规则援引使用完整 URL 和能定位该版本章节的锚点，持久回写优先使用提交永久链接。引用仓库首页、泛用目录或上轮聊天位置，无法让接收方直达本轮规则。实际开发任务可指向[工程原则](../30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md#21-标准化软件发行与跨节点可移植性)，会改变做法的知识未知可指向[末端知识分诊](#101-leaf-research-preflight--末端执行者的知识分诊与研究路线)。
 
-换建造者、换执行会话或由新身份接任时，派发者必须重新选择和核对链接，即便任务相同。接任者先按 Bootstrap 的[适用规则](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#2-applicable-rules--适用规则)与[开工门](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#3-execution-gate--开工门)核对 current L0、Work、授权及归属，再按本轮指针执行。链接只负责定向阅读，原 Work 的写域、验收及主责迁移仍按既有合同。Minimal Seed 照常负责寻址。
+换建造者、换执行会话或由新身份接任时，派发者必须重新选择和核对链接，即便任务相同。发给接任者当前的 [AGENTS.md](../AGENTS.md) 和本轮适用章节。接任者先读 L0，再按 Bootstrap 的[适用规则](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#2-applicable-rules--适用规则)与[开工门](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#3-execution-gate--开工门)核对 Work、授权及归属。链接只负责定向阅读，原 Work 的写域、验收及主责迁移仍按既有合同。Minimal Seed 照常负责寻址。
 
 ### 1.2 Bootstrap relationship
 

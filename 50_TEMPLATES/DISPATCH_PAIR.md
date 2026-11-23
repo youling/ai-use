@@ -88,7 +88,7 @@ Machine 字段形态见 [CONTEXT_MODE_SEED.md](CONTEXT_MODE_SEED.md)，值与语
 
 - **Architect → Foreman**。按[父级验收](../20_ROLES/FOREMAN.md#3-每轮子任务返回后的父级验收)组织本轮回读，分别核对原 Work 验收与子任务结果。
 - **Foreman → 原建造者续派**。只修这次明确的失败反例，按[工程原则 §2.1](../30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md#21-标准化软件发行与跨节点可移植性)复验受影响的兼容行为，并回指本轮原始验收。
-- **Foreman → 新建造者接手**。先按[启动协议 §2](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#2-applicable-rules--适用规则)读取当前 L0 和接手依据，核对[开工门](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#3-execution-gate--开工门)，再按[末端知识分诊](../docs/AGENT_INTERFACE.md#101-leaf-research-preflight--末端执行者的知识分诊与研究路线)判断本轮未知是否需要核验。
+- **Foreman → 新建造者接手**。先读当前 [L0](../AGENTS.md)，再按[启动协议 §2](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#2-applicable-rules--适用规则)读取接手依据并核对[开工门](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#3-execution-gate--开工门)。按[末端知识分诊](../docs/AGENT_INTERFACE.md#101-leaf-research-preflight--末端执行者的知识分诊与研究路线)判断本轮未知是否需要核验。
 
 ### 阶段交付
 
