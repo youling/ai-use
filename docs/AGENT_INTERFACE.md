@@ -92,9 +92,9 @@ DISPATCH -> AGENT_CLAIMED -> [PROGRESS_CHECKPOINT]* -> AGENT_TERMINAL_RESULT
 
 #### 1.1.1 Rule pointers on every dispatch — 每轮派工的规则援引
 
-Architect 和 Foreman 每轮向下派工，包括在同一对话续派或返修，都须把本轮必要的 ai-use 章节直达链接放在实际发出的动作或验收旁。派发者核对当前治理仓、版本、锚点及接收方可读性，并在已有派单或检查点留链接。
+Architect 和 Foreman 每轮向下派工，包括在同一对话续派或返修，都须把本轮必要的 ai-use 章节直达链接放在实际发出的动作或验收旁。派发者核对当前治理仓、版本、锚点及接收方可读性，先修正失效的必需链接，并在已有派单或检查点留链接。
 
-换执行者时随单附当前 [AGENTS.md](../AGENTS.md)。接任者先读 L0，再按 [Bootstrap](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#2-applicable-rules--适用规则) 和随单链接补齐本角色所需规则；有缺口时查 [Reading Map](../READING_MAP.md)，达到本轮所需即可停止读取。Work 的授权和接任沿用现行合同。
+换执行者时，随单附当前 [AGENTS.md](../AGENTS.md)、当前 Work 或交接指针，以及 [适用规则](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#2-applicable-rules--适用规则) 和 [开工门](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#3-execution-gate--开工门) 的直达链接。接任者先读 L0，再按现有 Bootstrap 和随单链接补齐本角色所需规则。有缺口时查 [Reading Map](../READING_MAP.md)，达到本轮所需即可停止读取。Work 的授权和接任沿用现行合同。
 
 ### 1.2 Bootstrap relationship
 

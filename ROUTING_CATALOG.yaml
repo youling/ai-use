@@ -152,7 +152,7 @@
       ],
       "when": "mutation / workspace hygiene、DIRECT/DELEGATE、dispatch / review / repair / continuation / completion / Maintenance Lane",
       "home": "docs/AGENT_INTERFACE.md",
-      "section": "§1–4",
+      "section": "§1–4 · [每轮派工 §1.1.1](#111-rule-pointers-on-every-dispatch--每轮派工的规则援引)",
       "templates": [
         "50_TEMPLATES/DISPATCH_PAIR.md"
       ],
