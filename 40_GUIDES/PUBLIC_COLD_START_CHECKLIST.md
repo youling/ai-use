@@ -200,6 +200,18 @@ Fresh/takeover Architect 完成 durable Bootstrap 后：
 - 扫描整个 workspace 所有 OPEN Work Orders 才能恢复一个项目；
 - 为了持续推进自行新增 Human goal / acceptance / project。
 
+## Fixture F1 — 每轮派工的章节援引
+
+对照 [Agent Interface §1.1.1](../docs/AGENT_INTERFACE.md#111-rule-pointers-on-every-dispatch--每轮派工的规则援引) 与[派单示例](../50_TEMPLATES/DISPATCH_PAIR.md#发给执行者的规则援引示例)，在同一有界开发 Work 里记录实际发出的消息、执行者读取的章节和读回结果。
+
+| 场景 | 通过条件 |
+| --- | --- |
+| Architect 派给 Foreman | 实际消息在父级验收动作旁给出可直接打开的[工头验收章节](../20_ROLES/FOREMAN.md#3-每轮子任务返回后的父级验收)。接收方打开并正确说出父验收仍需核对什么。 |
+| Foreman 首派和原建造者返修 | 两条消息分别附上本轮动作对应的章节链接。让建造者经历一次测试再收到返修单，它应从新消息的[工程原则 §2.1](../30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md#21-标准化软件发行与跨节点可移植性)回到受影响的兼容行为，保留原写域与验收。 |
+| 换建造者 | 新对话只收到当前派单，先读取当前 L0，重核 Work、授权与归属，再从派单直达本轮[末端知识分诊](../docs/AGENT_INTERFACE.md#101-leaf-research-preflight--末端执行者的知识分诊与研究路线)。能说出本任务何时补证、何时复用现有证据。 |
+
+每条派单从接收方视角打开实际 URL，核对治理仓、版本、锚点及落点语义。用仓库首页、同文档但无锚点、存在却无关的章节、原会话有旧链接但续派没有链接分别做负控，均应判失败。切换身份本身不赋予新的写域或独立验证资格。
+
 ## Fixture G — DIRECT eligibility
 
 Eligible：

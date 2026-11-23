@@ -1,6 +1,6 @@
 # 双词派单模板
 
-**版本：1.2.0**
+**版本：1.3.0**
 
 Human Card / Seed、运行位置、最小化与 transport fallback 的语义由 [Agent Interface §2–3](../docs/AGENT_INTERFACE.md#2-human-dispatch-card) 定义。复制对应形态并替换占位符；可选行无值即省略。所有坐标是 inert placeholders，不指向实际实例。
 
@@ -62,7 +62,7 @@ Machine 字段形态见 [CONTEXT_MODE_SEED.md](CONTEXT_MODE_SEED.md)，值与语
 
 ## 工头任务合同与阶段裁决补充
 
-以下是 [工头协作指南](../40_GUIDES/ASYNC_FOREMEN.md) 的可选形态，填写在现有 Work / durable dispatch / checkpoint 内；不是短 Seed 的新增必填键。派单和停止语义仍以 [Agent Interface](../docs/AGENT_INTERFACE.md) 为准，子对话 ownership 以 [Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md#5-durable-before-fragile-与-delegation) 为准。
+以下是 [工头协作指南](../40_GUIDES/ASYNC_FOREMEN.md) 的可复制形态，填写在现有 Work / durable dispatch / checkpoint 内；不是短 Seed 的新增必填键。派单、每轮规则援引和停止语义以 [Agent Interface](../docs/AGENT_INTERFACE.md) 为准，子对话 ownership 以 [Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md#5-durable-before-fragile-与-delegation) 为准。
 
 ### Durable dispatch 的任务合同补充
 
@@ -75,11 +75,20 @@ Machine 字段形态见 [CONTEXT_MODE_SEED.md](CONTEXT_MODE_SEED.md)，值与语
 主责与写域：<primary owner；隔离工作区；允许写的对象 / branch>
 冲突对象与依赖：<共享账号 / 进程 / 文件 / 浏览器 / 设备；当前 owner / lease；前置>
 来源与当前性：<exact source/ref/hash；完整技术单元或字段范围；投影与未读缺口>
+本轮适用规则：<动作或验收要求 + 当前治理仓的可点击章节直达链接>
 知识边界与研究（可选）：<KNOWN_CURRENT / task-local uncertainty；复用的 current evidence；QUICK_CHECK / FORWARD / REVERSE / MIXED / SKIP + reason；有界问题和 stop condition>
 执行身份与环境（可选）：<Agent/provider/harness 与实际 node/OS principal/WSL/container/CI 分开；当前环境证据 pointer 或需现场观察的 UNKNOWN；不预填未观测版本>
 通信与回执（可选）：<语义 checkpoint 的 GitHub pointer；非 GitHub 原件的 owner 位置；Human 简报，delegated terminal 只返 exact terminal pointer>
 拆分与交付：<独立方向；原生子返回形状；语义阶段回写；需升级架构师的确切问题>
 ```
+
+### 发给执行者的规则援引示例
+
+[派工规则援引](../docs/AGENT_INTERFACE.md#111-rule-pointers-on-every-dispatch--每轮派工的规则援引)适用于 Architect 和 Foreman。复制时把示例链接换成本部署当前治理仓、接收方能直接打开对应章节的完整链接。把下面的短句放在本轮实际发出的执行指令中，并引用现有 Work 的精确位置。
+
+- **Architect → Foreman**。按[父级验收](../20_ROLES/FOREMAN.md#3-每轮子任务返回后的父级验收)组织本轮回读，分别核对原 Work 验收与子任务结果。
+- **Foreman → 原建造者续派**。只修这次明确的失败反例，按[工程原则 §2.1](../30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md#21-标准化软件发行与跨节点可移植性)复验受影响的兼容行为，并回指本轮原始验收。
+- **Foreman → 新建造者接手**。先按[启动协议 §2](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#2-applicable-rules--适用规则)读取当前 L0 和接手依据，核对[开工门](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#3-execution-gate--开工门)，再按[末端知识分诊](../docs/AGENT_INTERFACE.md#101-leaf-research-preflight--末端执行者的知识分诊与研究路线)判断本轮未知是否需要核验。
 
 ### 阶段交付
 

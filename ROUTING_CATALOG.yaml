@@ -159,6 +159,35 @@
       "public": true
     },
     {
+      "id": "dispatch-rule-pointers",
+      "layer": "30",
+      "reading_level": "L2",
+      "roles": [
+        "Architect",
+        "Foreman"
+      ],
+      "when": "向下派工、原对话续派或返修、换执行者；发出的指令携带适用章节直达链接",
+      "home": "docs/AGENT_INTERFACE.md#111-rule-pointers-on-every-dispatch--每轮派工的规则援引",
+      "section": "§1.1.1",
+      "templates": [
+        "50_TEMPLATES/DISPATCH_PAIR.md"
+      ],
+      "public": true
+    },
+    {
+      "id": "leaf-research",
+      "layer": "30",
+      "reading_level": "L2",
+      "roles": [
+        "all"
+      ],
+      "when": "末端执行、Foreman 派发与父级验收；判断当前证据能否支持做法，核验会影响选择的未知",
+      "home": "docs/AGENT_INTERFACE.md#101-leaf-research-preflight--末端执行者的知识分诊与研究路线",
+      "section": "§1.0.1",
+      "templates": [],
+      "public": true
+    },
+    {
       "id": "recovery",
       "layer": "30",
       "reading_level": "L2",

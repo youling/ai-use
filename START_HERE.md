@@ -23,6 +23,8 @@ ai-use 是可复用的人机协作治理与协议。体系概览见 [README.md](
 | `workspace` / L2 | Global Architect/Human；仅 workspace 初始化 / role registration；普通项目执行不触发 | [10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md](10_BOOT/WORKSPACE_BOOTSTRAP_PROTOCOL.md) |
 | `human-host-environment` / L2 | all；Human 主控设备新机 bootstrap、目录/工具/缓存/状态归整、Host cleanup/drift，或需要解析本机 HOST_AGENT 时 | [30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md](30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md) |
 | `execution` / L2 | all；mutation / workspace hygiene、DIRECT/DELEGATE、dispatch / review / repair / continuation / completion / Maintenance Lane | [docs/AGENT_INTERFACE.md](docs/AGENT_INTERFACE.md) §1–4 |
+| `dispatch-rule-pointers` / L2 | Architect/Foreman；向下派工、原对话续派或返修、换执行者；发出的指令携带适用章节直达链接 | [docs/AGENT_INTERFACE.md §1.1.1](docs/AGENT_INTERFACE.md#111-rule-pointers-on-every-dispatch--每轮派工的规则援引) |
+| `leaf-research` / L2 | all；末端执行、Foreman 派发与父级验收；判断当前证据能否支持做法，核验会影响选择的未知 | [docs/AGENT_INTERFACE.md §1.0.1](docs/AGENT_INTERFACE.md#101-leaf-research-preflight--末端执行者的知识分诊与研究路线) |
 | `recovery` / L2 | all；planned transfer / crash takeover / old context unavailable / hot or warm resume；context modes / independence / delegation | [30_PROTOCOLS/RECOVERY_HANDOFF.md](30_PROTOCOLS/RECOVERY_HANDOFF.md) §1–5 |
 | `trace` / L2 | all；事实价值行为 / checkpoint / durable recovery evidence | [30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md](30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) |
 | `owner-instance-boundary` / L2 | all；semantic owner / storage / private instance-overlay / pointer-projection / secret reference-value 边界需要判断；仅按当前任务相关范围读取 | [30_PROTOCOLS/OWNER_INSTANCE_BOUNDARY.md](30_PROTOCOLS/OWNER_INSTANCE_BOUNDARY.md) |

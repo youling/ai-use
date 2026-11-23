@@ -30,6 +30,8 @@ flowchart TD
 | `roles` / L2 | all；current role / authority boundary 尚不明确 | [CONSTITUTION.md](../CONSTITUTION.md) §2 |
 | `human-host-environment` / L2 | all；Human 主控设备新机 bootstrap、目录/工具/缓存/状态归整、Host cleanup/drift，或需要解析本机 HOST_AGENT 时 | [30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md](../30_PROTOCOLS/HUMAN_HOST_ENVIRONMENT.md) |
 | `execution` / L2 | all；mutation / workspace hygiene、DIRECT/DELEGATE、dispatch / review / repair / continuation / completion / Maintenance Lane | [docs/AGENT_INTERFACE.md](AGENT_INTERFACE.md) §1–4 |
+| `dispatch-rule-pointers` / L2 | Architect/Foreman；向下派工、原对话续派或返修、换执行者；发出的指令携带适用章节直达链接 | [docs/AGENT_INTERFACE.md §1.1.1](AGENT_INTERFACE.md#111-rule-pointers-on-every-dispatch--每轮派工的规则援引) |
+| `leaf-research` / L2 | all；末端执行、Foreman 派发与父级验收；判断当前证据能否支持做法，核验会影响选择的未知 | [docs/AGENT_INTERFACE.md §1.0.1](AGENT_INTERFACE.md#101-leaf-research-preflight--末端执行者的知识分诊与研究路线) |
 | `recovery` / L2 | all；planned transfer / crash takeover / old context unavailable / hot or warm resume；context modes / independence / delegation | [30_PROTOCOLS/RECOVERY_HANDOFF.md](../30_PROTOCOLS/RECOVERY_HANDOFF.md) §1–5 |
 | `trace` / L2 | all；事实价值行为 / checkpoint / durable recovery evidence | [30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md) |
 | `change` / L2 | Architect/Builder/Research/Repair；文档即代码、代码/文档变更分级、Issue/ADR/PR、repo-wide migration / bulk refactor；Builder/Research/Repair 仅派单要求治理 artifact 时 | [30_PROTOCOLS/CHANGE_LIFECYCLE.md](../30_PROTOCOLS/CHANGE_LIFECYCLE.md) §3–4.1 |

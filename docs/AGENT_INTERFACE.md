@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** Read when dispatching/executing Agent work, choosing Architect execution mode, advancing an authorized program, or producing/reviewing Human/Agent interface artifacts.
 
-**Protocol Version: 2.12.3**
+**Protocol Version: 2.13.0**
 
 本文是 **execution / dispatch / continuation interface** 的 canonical home。公共 `ai-use` 不绑定特定 owner/repo、私有 control-plane 名称或账号。[Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md) 拥有 recovery、Work Context、正交 context/mode 与 independence/delegation 语义；[CONTEXT_MODE_SEED](../50_TEMPLATES/CONTEXT_MODE_SEED.md) 只给形态。本文保留 continuation、`PREMATURE_YIELD` 与完成边界。
 
@@ -89,6 +89,14 @@ DISPATCH -> AGENT_CLAIMED -> [PROGRESS_CHECKPOINT]* -> AGENT_TERMINAL_RESULT
 ```
 
 事件的 durable shape 由 [Durable Trace Principle](../30_PROTOCOLS/DURABLE_TRACE_PRINCIPLE.md#delegated-execution-attempt-events) 拥有；本接口只拥有这些事件与 execution/completion 的关系。
+
+#### 1.1.1 Rule pointers on every dispatch — 每轮派工的规则援引
+
+Architect 给 Foreman 或受托执行者派活，Foreman 给内部子对话或独立 child Work 派活，**每轮都必须在执行者实际收到的指令里，把当前适用的 ai-use 章节链接放在对应动作或验收要求旁边**。同一末端对话中的续派、返修和阶段切换也要再次给出链接，让执行者回到适用规则再行动。仅同步进度时无需重发。将本轮链接保存在已有 durable dispatch 或适用 checkpoint 中，以便恢复。
+
+派发者从本部署当前使用的治理仓选择必要章节，发送接收方可打开的直达链接，并核对目标版本及章节锚点。在 GitHub 工单、评论与聊天中，规则援引使用完整 URL 和能定位该版本章节的锚点，持久回写优先使用提交永久链接。引用仓库首页、泛用目录或上轮聊天位置，无法让接收方直达本轮规则。实际开发任务可指向[工程原则](../30_PROTOCOLS/SOFTWARE_ARCHITECTURE_PRACTICE.md#21-标准化软件发行与跨节点可移植性)，会改变做法的知识未知可指向[末端知识分诊](#101-leaf-research-preflight--末端执行者的知识分诊与研究路线)。
+
+换建造者、换执行会话或由新身份接任时，派发者必须重新选择和核对链接，即便任务相同。接任者先按 Bootstrap 的[适用规则](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#2-applicable-rules--适用规则)与[开工门](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#3-execution-gate--开工门)核对 current L0、Work、授权及归属，再按本轮指针执行。链接只负责定向阅读，原 Work 的写域、验收及主责迁移仍按既有合同。Minimal Seed 照常负责寻址。
 
 ### 1.2 Bootstrap relationship
 
@@ -494,6 +502,7 @@ Human Completion Card 仅保留为 Architect / orchestrator 在**非 delegated e
 
 ## 6. Versioned Definitions
 
+- `2.13.0`：Architect 与 Foreman 每轮派工随实际指令发送当前适用的 ai-use 章节直达链接，覆盖原对话续派与换执行者，规则归 §1.1.1。
 - `2.12.3`：Human 2026-10-24：Architect 对实质软件架构变更使用 targeted 软件工程分解实践，在有意义阶段以当前图示与证据 delta 外显领域/模块边界；具体画图语义仍由 Diagram-as-Code 拥有，执行状态和验收未改变。
 - `2.12.2`：#167 原生 GitHub 工作自助发现。Human/Agent 从可回源的 Issue 标签和 Projects 查看当前可行动任务；可见状态仅为 derived projection，不新增 Work claim/dispatch/permission，也不复制 Native First 的字段语义。
 
