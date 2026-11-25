@@ -1,6 +1,6 @@
 # 双词派单模板
 
-**版本：1.3.0**
+**版本：1.3.1**
 
 Human Card / Seed、运行位置、最小化与 transport fallback 的语义由 [Agent Interface §2–3](../docs/AGENT_INTERFACE.md#2-human-dispatch-card) 定义。复制对应形态并替换占位符；可选行无值即省略。所有坐标是 inert placeholders，不指向实际实例。
 
@@ -13,6 +13,8 @@ Human Card / Seed、运行位置、最小化与 transport fallback 的语义由 
 运行位置：<current scheduling choice>
 本轮终点：<pointer to current acceptance / stop boundary>
 ```
+
+Human 手动选择模型或思考档位时，可把[人工算力建议](../40_GUIDES/ADAPTIVE_REASONING_EFFORT.md#21-人工调度过渡)附在卡片旁。
 
 ## 网页端
 
