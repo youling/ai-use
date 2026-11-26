@@ -2,7 +2,7 @@
 
 **Classification: L2 Targeted Reference.** Read when dispatching/executing Agent work, choosing Architect execution mode, advancing an authorized program, or producing/reviewing Human/Agent interface artifacts.
 
-**Protocol Version: 2.13.0**
+**Protocol Version: 2.14.0**
 
 本文是 **execution / dispatch / continuation interface** 的 canonical home。公共 `ai-use` 不绑定特定 owner/repo、私有 control-plane 名称或账号。[Recovery & Handoff](../30_PROTOCOLS/RECOVERY_HANDOFF.md) 拥有 recovery、Work Context、正交 context/mode 与 independence/delegation 语义；[CONTEXT_MODE_SEED](../50_TEMPLATES/CONTEXT_MODE_SEED.md) 只给形态。本文保留 continuation、`PREMATURE_YIELD` 与完成边界。
 
@@ -95,6 +95,12 @@ DISPATCH -> AGENT_CLAIMED -> [PROGRESS_CHECKPOINT]* -> AGENT_TERMINAL_RESULT
 Architect 和 Foreman 每轮向下派工，包括在同一对话续派或返修，都须把本轮必要的 ai-use 章节直达链接放在实际发出的动作或验收旁。派发者核对当前治理仓、版本、锚点及接收方可读性，先修正失效的必需链接，并在已有派单或检查点留链接。
 
 换执行者时，随单附当前 [AGENTS.md](../AGENTS.md)、当前 Work 或交接指针，以及 [适用规则](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#2-applicable-rules--适用规则) 和 [开工门](../10_BOOT/BOOTSTRAP_CHECK_PROTOCOL.md#3-execution-gate--开工门) 的直达链接。接任者先读 L0，再按现有 Bootstrap 和随单链接补齐本角色所需规则。有缺口时查 [Reading Map](../READING_MAP.md)，达到本轮所需即可停止读取。Work 的授权和接任沿用现行合同。
+
+#### 1.1.2 子对话与算力调度
+
+对采用本手册作为现行治理来源的部署，**总架构师、项目架构师和工头拥有常设调度授权**。按现有 Bootstrap 读取本节后，在各自当前角色与 Work 的授权范围内，对适合委派的任务按需创建第一层有界子对话，在已有预算和数据许可内自主选择运行时可用的子 Agent 模型与思考程度，无须 Human 在每轮对话中重申。独立 child Work 和递归委派沿用 §1.1，隔离与独立验证按 [Recovery & Handoff §5](../30_PROTOCOLS/RECOVERY_HANDOFF.md#5-durable-before-fragile-与-delegation)。
+
+按本轮验收需求选择足够的算力，派工时只传必要的上下文和 [§1.1.1 的章节指针](#111-rule-pointers-on-every-dispatch--每轮派工的规则援引)。部署侧负责模型和档位映射，升降档按 [§1.4.1](#141-adaptive-reasoning-effort)。运行时限制创建或覆盖时，使用仍符合本轮验收的可用路径，并如实记录影响交付的限制。需要 Human 手动选档时沿用[人工调度过渡](../40_GUIDES/ADAPTIVE_REASONING_EFFORT.md#21-人工调度过渡)。
 
 ### 1.2 Bootstrap relationship
 
@@ -228,7 +234,7 @@ Reasoning effort 的升降不得改变：
 
 无证据 hard cap / arbitrary resource constraint 的 challenge 语义仍由 current constraint-quality owner（source direction #106）负责；并行 Foreman / child 调度仍由其 current concurrency owner（source direction #111）负责。本节不复制第二套 constraint 或 scheduler policy。
 
-Provider / product 的具体档位映射、开放式 Human 探索等实践见 [Adaptive Reasoning Effort Guide](../40_GUIDES/ADAPTIVE_REASONING_EFFORT.md)。
+子对话的选模与选档授权见 [§1.1.2](#112-子对话与算力调度)。Provider / product 的具体档位映射、开放式 Human 探索等实践见 [Adaptive Reasoning Effort Guide](../40_GUIDES/ADAPTIVE_REASONING_EFFORT.md)。
 
 
 ### 1.4.2 Architect Constraint Challenge
@@ -500,6 +506,7 @@ Human Completion Card 仅保留为 Architect / orchestrator 在**非 delegated e
 
 ## 6. Versioned Definitions
 
+- `2.14.0`：在 §1.1.2 明确总架构师、项目架构师和工头对子对话与算力的常设调度授权，沿用现行 Work、预算、数据和验收边界。
 - `2.13.0`：Architect 与 Foreman 每轮派工随实际指令发送当前适用的 ai-use 章节直达链接，覆盖原对话续派与换执行者，规则归 §1.1.1。
 - `2.12.3`：Human 2026-10-24：Architect 对实质软件架构变更使用 targeted 软件工程分解实践，在有意义阶段以当前图示与证据 delta 外显领域/模块边界；具体画图语义仍由 Diagram-as-Code 拥有，执行状态和验收未改变。
 - `2.12.2`：#167 原生 GitHub 工作自助发现。Human/Agent 从可回源的 Issue 标签和 Projects 查看当前可行动任务；可见状态仅为 derived projection，不新增 Work claim/dispatch/permission，也不复制 Native First 的字段语义。
