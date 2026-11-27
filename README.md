@@ -29,7 +29,7 @@
 
 **给正在执行/恢复任务的 Agent：** 当前治理仓 [`AGENTS.md`](AGENTS.md) 是第一份规范性读取（BOOT-1 只允许先寻址）；[START_HERE](START_HERE.md) / [Reading Map](READING_MAP.md) 是**规则导航**，不是面向新人的逐步教程。仅加载本次任务需要的规则与项目事实。
 
-[路由总览](docs/ROUTING_INDEX.md) · [规则路由目录源](ROUTING_CATALOG.yaml)
+[路由总览](docs/ROUTING_INDEX.md) · [规则路由目录源](ROUTING_CATALOG.yaml) · [人机协作工艺](agent-craft/README.md)
 
 ---
 
