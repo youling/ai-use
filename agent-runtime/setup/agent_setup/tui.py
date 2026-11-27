@@ -3,10 +3,12 @@ from __future__ import annotations
 
 import asyncio
 import re
+from pathlib import Path
 from typing import Any
 
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, VerticalScroll
+from textual.screen import Screen
 from textual.widgets import Button, Checkbox, Collapsible, Footer, Input, Label, Static
 
 
@@ -59,6 +61,16 @@ def display(value: Any, limit: int = 240) -> str:
     return text[:limit] + ("…" if len(text) > limit else "")
 
 
+class SetupScreen(Screen):
+    """Discard hit-map entries detached before the next compositor refresh."""
+
+    def get_widget_and_offset_at(self, x: int, y: int):
+        widget, offset = super().get_widget_and_offset_at(x, y)
+        if widget is not None and widget is not self and (widget.parent is None or not widget.is_attached):
+            return None, None
+        return widget, offset
+
+
 class SetupApp(App):
     CSS = """
     Screen { background: $surface; }
@@ -96,6 +108,17 @@ class SetupApp(App):
         self.folder_picker = folder_picker
         self.placement_mode = "auto"
         self.advanced_open = False
+        self.placement_dirty = False
+        self.placement_parent_draft: str | None = None
+
+    def root_field_value(self, role: str) -> str:
+        value = self.overrides.get(role, '')
+        if self.overrides.get('isolated_scope'):
+            return Path(value).name if value else ''
+        return value
+
+    def get_default_screen(self) -> Screen:
+        return SetupScreen(id='_default')
 
     def compose(self) -> ComposeResult:
         yield Static(self.words["title"], id="heading", markup=False)
@@ -212,7 +235,14 @@ class SetupApp(App):
         return " · ".join(f"{label}: {display(value)}" for label, value in fields)
 
     async def render_step(self) -> None:
-        self.query_one("#heading", Static).update(f"{self.words['title']} · {min(self.step + 1, 4)}/4 · {self.words['steps'][self.step]}")
+        zh = self.words is TEXT['zh']
+        title = self.words['steps'][self.step]
+        if self.step == 3:
+            title = ('安装确认' if self.host_authorized else '方案预览') if zh else ('Confirm installation' if self.host_authorized else 'Plan preview')
+        elif self.step == 4 and not self.result:
+            title = '预览完成' if zh else 'Preview complete'
+        progress = ('完成' if zh else 'Complete') if self.step == 4 else f'{self.step + 1}/4'
+        self.query_one("#heading", Static).update(f"{self.words['title']} · {progress} · {title}")
         body = self.query_one("#body", VerticalScroll)
         await body.remove_children()
         widgets: list = []
@@ -224,6 +254,8 @@ class SetupApp(App):
                 widgets.append(Button('审阅新隔离目录方案（保留已有目录）' if self.words is TEXT['zh'] else 'Review separate roots; preserve existing data',id='review-isolated-roots'))
         elif self.step == 1:
             widgets = [Static(self.words["placement"], classes="section", markup=False), Static(self.placement_summary(), id="placement", markup=False)]
+            state_text = ('上次核验方案；输入已改变，尚未采用' if self.placement_dirty else '当前已核验方案') if self.words is TEXT['zh'] else ('Last validated plan; edits not adopted' if self.placement_dirty else 'Current validated plan')
+            widgets.insert(1, Static(state_text, id='placement-state', markup=False))
             if self.plan_data.get('isolated_scope_reviewed'):
                 widgets.append(Static('仅审阅新目录方案；已有目录和原生 OpenCode 保留。实际安装仍需单独授权。' if self.words is TEXT['zh'] else 'Review only: existing directories and native OpenCode preserved. Installation requires separate approval.',markup=False))
             advanced: list = []
@@ -231,11 +263,18 @@ class SetupApp(App):
             advanced.append(Static('空白输入框使用自动推荐；灰色路径仅为预览。输入或浏览后会改为自定义，重新核验后才成为方案。' if zh else 'Empty fields use recommendations; grey paths are previews. Type or browse to customize, then revalidate.', id='placement-help', markup=False))
             advanced.append(Horizontal(Button('自动推荐' if zh else 'Automatic', id='placement-auto', variant='primary' if self.placement_mode=='auto' else 'default'), Button('自定义' if zh else 'Custom', id='placement-custom', variant='primary' if self.placement_mode=='custom' else 'default'), classes='account-actions'))
             if self.overrides.get('isolated_scope'):
-                advanced.append(Static('自定义子目录必须位于当前隔离根内。更换磁盘或父目录，请用下方“重新选择隔离根目录”：将生成全新的子作用域，重新规划四个目录和 Exchange；已有数据不移动。' if zh else 'Custom subfolders must stay inside this isolation root. To change disk or parent, reselect below: a fresh child scope regenerates four roots and Exchange; old data stays.', markup=False))
-                advanced.append(Button('重新选择隔离根目录/磁盘（审阅新方案）' if zh else 'Reselect isolation parent/disk (review new plan)', id='browse-isolated-parent'))
+                scope = Path(self.overrides['isolated_scope'])
+                advanced.append(Static('先选择安装父目录，再填写四类新子目录的名称。程序会在父目录内新建独立目录，保留已有数据；下方名称不能填写盘符或绝对路径。预览不会创建任何安装目录。' if zh else 'Choose an existing installation parent, then name four new subfolders. A separate namespace preserves existing data. Enter names below, not drive letters or absolute paths. Preview creates no installation directories.', markup=False))
+                advanced.append(Label('安装父目录（已有文件夹）' if zh else 'Installation parent (existing folder)'))
+                advanced.append(Horizontal(Input(value=self.placement_parent_draft if self.placement_parent_draft is not None else str(scope.parent), id='isolated-parent'), Button('选择父目录…' if zh else 'Choose parent…', id='browse-isolated-parent'), classes='account-actions'))
+                advanced.append(Static(('将新建独立目录：' if zh else 'New separate namespace: ') + display(str(scope), 500), markup=False))
             for key, label in zip(("workspace", "config", "cache", "temp"), self.words["paths"]):
-                mode = ('自定义值' if zh else 'Custom value') if self.overrides.get(key) else ('自动推荐 · 仅预览' if zh else 'Recommended preview')
-                advanced += [Label(f'{label} · {mode}', id=f'root-label-{key}'), Horizontal(Input(value=self.overrides.get(key, ""), placeholder=display(self.plan_data.get("roots", {}).get(key, {}).get("path")), id=f"root-{key}"), Button('浏览…' if zh else 'Browse…', id=f'browse-{key}'), classes='account-actions')]
+                mode = ('自定义值' if zh else 'Custom value') if self.overrides.get(key) else (('默认名称' if zh else 'Default name') if self.overrides.get('isolated_scope') else ('自动推荐 · 仅预览' if zh else 'Recommended preview'))
+                path = self.plan_data.get('roots', {}).get(key, {}).get('path')
+                if self.overrides.get('isolated_scope'):
+                    advanced += [Label(f'{label} · 新子目录名称 · {mode}' if zh else f'{label} · New subfolder name · {mode}', id=f'root-label-{key}'), Input(value=self.root_field_value(key), placeholder=Path(path).name if path else '', id=f'root-{key}')]
+                else:
+                    advanced += [Label(f'{label} · {mode}', id=f'root-label-{key}'), Horizontal(Input(value=self.root_field_value(key), placeholder=display(path), id=f"root-{key}"), Button('浏览…' if zh else 'Browse…', id=f'browse-{key}'), classes='account-actions')]
             advanced.append(Button(self.words["recompute"], id="recompute"))
             widgets.append(Collapsible(*advanced, title=self.words["advanced"], collapsed=not self.advanced_open, id="advanced"))
         elif self.step == 2:
@@ -248,22 +287,26 @@ class SetupApp(App):
             changes = "核验安装目录并写入 HOST_AGENT.md。" if self.words is TEXT["zh"] else "Verify owned roots and write HOST_AGENT.md."
             if self.overrides.get("runtime"):
                 changes += " 拉取固定公开镜像；启动隔离本地验证容器（暂不联网）。" if self.words is TEXT["zh"] else " Pull the pinned public image; start an isolated local verification container (offline)."
-            widgets = [Static(self.words["review"], markup=False), Static(changes, markup=False), Static(self.placement_summary(), classes="summary", markup=False), Checkbox(self.words["local"], value=bool(self.overrides.get("runtime")), id="runtime-requested"), Checkbox(self.words["approve"], id="approve"), Button(self.words["apply"], id="apply", disabled=True)]
+            intro = self.words['review'] if self.host_authorized else ('以下仅为方案预览，本版本不会执行安装。' if zh else 'Plan preview only. This session cannot install.')
+            local_label = self.words['local'] if self.host_authorized else ('方案包含本地容器' if zh else 'Include local container in plan')
+            widgets = [Static(intro, markup=False), Static(changes, markup=False), Static(self.placement_summary(), classes="summary", markup=False), Checkbox(local_label, value=bool(self.overrides.get("runtime")), id="runtime-requested")]
+            if self.host_authorized:
+                widgets.append(Checkbox(self.words["approve"], id="approve"))
         else:
-            widgets = [Static(self.result_summary(), id="results", classes="summary", markup=False), Button(self.words["verify"], id="verify"), Button(self.words["repair"], id="repair")]
-            if not self.result:
-                widgets.insert(0, Static(self.words["preview"], markup=False))
+            if self.result:
+                widgets = [Static(self.result_summary(), id="results", classes="summary", markup=False), Button(self.words["verify"], id="verify"), Button(self.words["repair"], id="repair")]
+            else:
+                widgets = [Static('方案预览已结束，未执行安装，也未创建安装目录。' if zh else 'Preview finished. No installation was performed and no installation directories were created.', id='preview-complete', markup=False)]
         if self.probe_data.get('runtime_provenance',{}).get('distribution')=='UNSIGNED_TEST_ONLY':
             widgets.insert(0,Static('未签名测试版本 · 仅预览；内容核验不代表发布者签名。' if self.words is TEXT['zh'] else 'Unsigned test build · preview only; content verification is not publisher signing.',id='unsigned-notice',markup=False))
         await body.mount(*widgets)
-        self.query_one("#back", Button).disabled = self.step == 0 or self.busy
-        self.query_one("#next", Button).disabled = self.step == 4 or self.busy
+        self.update_navigation()
         self.query_one("#next", Button).focus()
         blocker = self.plan_blocker() if self.step in {1, 3} else ""
         if blocker:
             self.set_status(blocker)
         elif self.step == 3 and not self.host_authorized:
-            self.set_status(self.words["blocked"])
+            self.set_status('本次仅预览，结束预览不会执行安装。' if zh else 'Preview only. Finishing this preview will not install anything.')
 
     def set_status(self, value: str) -> None:
         self.status_text=value
@@ -273,16 +316,77 @@ class SetupApp(App):
         self.approved_fingerprint = None
         if self.step == 3 and self.query("#approve"):
             self.query_one("#approve", Checkbox).value = False
-            self.query_one("#apply", Button).disabled = True
+            self.update_navigation()
 
-    def save_fields(self) -> None:
+    def can_install(self) -> bool:
+        return bool(self.step == 3 and self.host_authorized and self.plan_data.get('host_authorized') is True
+            and self.plan_data.get('status') == 'READY' and self.query('#approve')
+            and self.query_one('#approve', Checkbox).value
+            and self.approved_fingerprint == self.plan_data.get('fingerprint'))
+
+    def update_navigation(self) -> None:
+        zh = self.words is TEXT['zh']
+        button = self.query_one('#next', Button)
+        if self.step < 3:
+            button.label = self.words['next']
+        elif self.step == 3:
+            button.label = self.words['apply'] if self.host_authorized else ('结束预览' if zh else 'Finish preview')
+        else:
+            button.label = '完成' if zh else 'Finish'
+        button.disabled = self.busy or (self.step == 3 and self.host_authorized and not self.can_install())
+        self.query_one('#back', Button).disabled = self.busy or self.step == 0 or (self.step == 4 and bool(self.result))
+
+    def save_fields(self) -> bool:
         if self.step == 1:
+            candidate = dict(self.overrides)
             for key in ("workspace", "config", "cache", "temp"):
                 value = self.query_one(f"#root-{key}", Input).value.strip()
+                if value and self.overrides.get('isolated_scope'):
+                    if (value in {'.','..'} or value.casefold() == 'exchange' or re.search(r'[<>:"/\\|?*\x00-\x1f]', value)
+                        or value.endswith(('.', ' ')) or re.fullmatch(r'(?:CON|PRN|AUX|NUL|COM[0-9]|LPT[0-9])(?:\..*)?', value, re.I)):
+                        self.set_status('这里只填写有效的新子目录名称；exchange 保留给交换目录。安装位置请在“安装父目录”中选择。输入尚未采用。' if self.words is TEXT['zh'] else 'Enter a valid new subfolder name; exchange is reserved. Select the installation location in Parent. Input has not been adopted.')
+                        return False
+                    value = str(Path(self.overrides['isolated_scope']) / value)
                 if value:
-                    self.overrides[key] = value
+                    candidate[key] = value
                 else:
-                    self.overrides.pop(key, None)
+                    candidate.pop(key, None)
+            self.overrides = candidate
+        return True
+
+    def mark_placement_custom(self) -> None:
+        self.placement_mode = 'custom'
+        if self.query('#placement-auto'):
+            self.query_one('#placement-auto', Button).variant = 'default'
+            self.query_one('#placement-custom', Button).variant = 'primary'
+
+    async def recalculate_placement(self, *, new_parent_selected: bool = False) -> bool:
+        """Resolve UI names through the existing owner-reviewed parent contract."""
+        if not self.save_fields():
+            return False
+        if not await self.refresh_probe():
+            return False
+        if self.overrides.get('isolated_scope'):
+            parent = self.query_one('#isolated-parent', Input).value.strip()
+            scope = Path(self.overrides['isolated_scope'])
+            if new_parent_selected or parent != str(scope.parent):
+                proposal = await self.invoke('propose_isolated_roots', self.probe_data, parent=parent)
+                if proposal is None:
+                    return False
+                candidate = dict(self.overrides)
+                candidate['isolated_scope'] = proposal['isolated_scope']
+                for role in ('workspace','config','cache','temp'):
+                    if role in candidate:
+                        candidate[role] = str(Path(proposal['isolated_scope']) / Path(candidate[role]).name)
+                plan = await self.invoke('plan', self.probe_data, overrides=candidate, github=self.github, model=self.model, durable=self.durable)
+                if plan is None:
+                    return False
+                self.overrides, self.plan_data = candidate, plan
+                self.placement_dirty = False
+                self.placement_parent_draft = None
+                self.set_status('')
+                return True
+        return await self.replan()
 
     async def pick_directory(self, initial_path: str | None, title: str) -> str | None:
         """The only dialog seam; the original engine validates every returned path."""
@@ -321,7 +425,7 @@ class SetupApp(App):
             return
         self.save_fields()
         self.invalidate_approval()
-        self.placement_mode = 'custom'
+        self.mark_placement_custom()
         self.advanced_open = True
         self.overrides[role] = selected
         self.query_one(f'#root-{role}', Input).value = selected
@@ -335,18 +439,11 @@ class SetupApp(App):
             self.query_one('#browse-isolated-parent', Button).focus()
             return
         self.invalidate_approval()
-        if not await self.refresh_probe():
+        self.query_one('#isolated-parent', Input).value = selected
+        self.mark_placement_custom()
+        if not await self.recalculate_placement(new_parent_selected=True):
             return
-        proposal = await self.invoke('propose_isolated_roots', self.probe_data, parent=selected)
-        if proposal is None:
-            return
-        candidate = {key:value for key,value in self.overrides.items() if key not in ('workspace','config','cache','temp')}
-        candidate['isolated_scope'] = proposal['isolated_scope']
-        plan = await self.invoke('plan', self.probe_data, overrides=candidate, github=self.github, model=self.model, durable=self.durable)
-        if plan is None:
-            return
-        self.overrides, self.plan_data = candidate, plan
-        self.placement_mode, self.advanced_open = 'auto', True
+        self.advanced_open = True
         self.root_overlap = False
         self.set_status('')
         await self.render_step()
@@ -354,6 +451,7 @@ class SetupApp(App):
 
     async def invoke(self, phase: str, *args: Any, **kwargs: Any) -> dict | None:
         self.busy = True
+        self.update_navigation()
         self.set_status(self.words["busy"])
         try:
             return await asyncio.to_thread(getattr(self.engine, phase), *args, **kwargs)
@@ -386,10 +484,13 @@ class SetupApp(App):
                 explanation+=('；保留已有数据，请审阅独立的新作用域目录。可运行只读目录诊断。' if self.words is TEXT['zh'] else '; preserve existing data, review separate scoped roots. Read-only root diagnostics are available.')
             if safe_code=='ISOLATED_SCOPE_TARGET_ESCAPE':
                 explanation+=(' 自定义子目录必须位于当前隔离根内。要换磁盘，请明确选择“重新选择隔离根目录/磁盘”，审阅新方案；已有数据保留。' if self.words is TEXT['zh'] else ' Custom folders must stay inside the current isolation root. To change disk, explicitly reselect the isolation parent and review a new plan; preserve existing data.')
+            if safe_code=='ISOLATED_SCOPE_NAME_UNAVAILABLE':
+                explanation+=(' 短目录名已被占用，请选择另一个安装父目录；已有目录保留。' if self.words is TEXT['zh'] else 'Short directory names are occupied. Choose another installation parent; existing directories are preserved.')
             self.set_status(f"{prefix} [{safe_code}]{explanation}")
             return None
         finally:
             self.busy = False
+            self.update_navigation()
 
     async def replan(self) -> bool:
         self.invalidate_approval()
@@ -401,19 +502,41 @@ class SetupApp(App):
                 self.set_status(status)
             return False
         self.plan_data = result
+        self.placement_dirty = False
+        self.placement_parent_draft = None
         self.set_status("")
         return True
 
     async def advance(self) -> None:
-        if self.busy or self.step == 4:
+        if self.busy:
             return
-        self.save_fields()
+        if self.step == 4:
+            self.exit()
+            return
+        if self.step == 3:
+            if self.host_authorized:
+                if not self.can_install():
+                    return
+                result = await self.invoke('apply', self.plan_data, approved=True)
+                if result is None:
+                    self.invalidate_approval()
+                    return
+                self.result = result
+            self.step = 4
+            self.set_status('')
+            await self.render_step()
+            return
+        if self.step == 1:
+            if not await self.recalculate_placement():
+                return
+        elif not self.save_fields():
+            return
         if self.step == 0:
             result = await self.invoke("probe")
             if result is None:
                 return
             self.probe_data = result
-        if not await self.replan():
+        if self.step != 1 and not await self.replan():
             return
         if self.step == 1:
             result = await self.invoke("discover_credentials")
@@ -425,7 +548,8 @@ class SetupApp(App):
 
     async def action_back(self) -> None:
         if self.step and not self.busy:
-            self.save_fields()
+            if not self.save_fields():
+                return
             self.invalidate_approval()
             self.step -= 1
             self.set_status("")
@@ -433,16 +557,25 @@ class SetupApp(App):
 
     async def on_input_changed(self, event: Input.Changed) -> None:
         self.invalidate_approval()
+        if self.step == 1 and event.input.id == 'isolated-parent':
+            if event.value != str(Path(self.overrides['isolated_scope']).parent):
+                self.mark_placement_custom()
+                self.placement_parent_draft = event.value
+                self.placement_dirty = True
+                self.query_one('#placement-state', Static).update('上次核验方案；父目录输入尚未采用' if self.words is TEXT['zh'] else 'Last validated plan; parent edit not adopted')
+                self.set_status('安装父目录已改变；请选择“重新规划”核验新方案。' if self.words is TEXT['zh'] else 'Parent changed; recalculate to validate the new plan.')
         if self.step == 1 and (event.input.id or '').startswith('root-'):
             role = event.input.id.removeprefix('root-')
             if role not in ('workspace','config','cache','temp'):
                 return
             if event.value:
-                self.placement_mode = 'custom'
-            if event.value.strip() != self.overrides.get(role, ''):
+                self.mark_placement_custom()
+            if event.value.strip() != self.root_field_value(role):
+                self.placement_dirty = True
                 zh = self.words is TEXT['zh']
                 label = dict(zip(('workspace','config','cache','temp'), self.words['paths']))[role]
                 self.query_one(f'#root-label-{role}', Label).update(label + (' · 待重新核验' if zh else ' · Pending revalidation'))
+                self.query_one('#placement-state', Static).update('上次核验方案；输入已改变，尚未采用' if zh else 'Last validated plan; input edit not adopted')
                 self.set_status('目录输入已改变；当前预览尚未更新。请选择“重新规划”重新核验。' if zh else 'Directory input changed; preview is stale. Recalculate to revalidate.')
 
     async def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
@@ -455,7 +588,7 @@ class SetupApp(App):
             await self.render_step()
         elif event.checkbox.id == "approve" and self.step == 3:
             self.approved_fingerprint = self.plan_data.get("fingerprint") if event.value else None
-            self.query_one("#apply", Button).disabled = not (event.value and self.host_authorized and self.plan_data.get("status") == "READY" and self.plan_data.get("host_authorized") is True and not self.busy)
+            self.update_navigation()
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         if self.busy:
@@ -474,9 +607,8 @@ class SetupApp(App):
         elif action == "back":
             await self.action_back()
         elif action == "recompute":
-            self.save_fields()
             self.advanced_open = True
-            if await self.refresh_probe() and await self.replan():
+            if await self.recalculate_placement():
                 await self.render_step()
         elif action.startswith('browse-') and self.step == 1:
             role = action.removeprefix('browse-')
@@ -486,16 +618,18 @@ class SetupApp(App):
                 await self.browse_root(role)
         elif action == 'placement-auto' and self.step == 1:
             self.invalidate_approval()
+            self.placement_parent_draft = None
             for role in ('workspace','config','cache','temp'):
                 self.overrides.pop(role, None)
             self.placement_mode, self.advanced_open = 'auto', True
-            for field in self.query('Input'):
-                field.value = ''
+            for role in ('workspace','config','cache','temp'):
+                self.query_one('#root-' + role, Input).value = ''
             if await self.refresh_probe() and await self.replan():
                 await self.render_step()
         elif action == 'placement-custom' and self.step == 1:
             self.placement_mode, self.advanced_open = 'custom', True
-            self.save_fields()
+            if not self.save_fields():
+                return
             await self.render_step()
             self.query_one('#root-workspace', Input).focus()
         elif action.startswith("mode-"):
@@ -521,14 +655,6 @@ class SetupApp(App):
                 else:
                     setattr(self, kind, {})
                 self.invalidate_approval()
-                await self.render_step()
-        elif action == "apply":
-            if self.step != 3 or not self.host_authorized or self.plan_data.get("host_authorized") is not True or self.plan_data.get("status") != "READY" or not self.query_one("#approve", Checkbox).value or self.approved_fingerprint != self.plan_data.get("fingerprint"):
-                return
-            result = await self.invoke("apply", self.plan_data, approved=True)
-            if result is not None:
-                self.result, self.step = result, 4
-                self.set_status("")
                 await self.render_step()
         elif action in ("verify", "repair"):
             result = await self.invoke(action, self.plan_data)
